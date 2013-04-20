@@ -7,3 +7,5 @@ build/
 *.un*
 *.swp
 *.clang_complete
+CTestTestfile.cmake
+Testing

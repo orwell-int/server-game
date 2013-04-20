@@ -50,6 +50,9 @@ namespace orwell {
 				// Write modifications
 				void commit();
 
+				// Get a serialized version of the message
+				std::string const & serialize_message();
+
 			protected:
 				std::string _serialized_in_string;
 				std::string _message_type;

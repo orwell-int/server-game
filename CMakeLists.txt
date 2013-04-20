@@ -8,4 +8,5 @@ project(orwell)
 
 # Communication module, containing Protobuf messages and simple library to play with them
 add_subdirectory(com)
+add_subdirectory(tasks)
 

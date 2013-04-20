@@ -74,3 +74,11 @@ void orwell::com::orwell_message::send_in_socket(zmq::socket_t & socket)
 	socket.send(msg);
 }
 
+std::string const & orwell::com::orwell_message::serialize_message()
+{
+	_serialized_in_string.clear();
+	if (_proto_message != 0)
+		_serialized_in_string = _proto_message->SerializePartialAsString();
+
+	return _serialized_in_string;
+}
