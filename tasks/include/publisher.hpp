@@ -23,7 +23,7 @@ namespace orwell {
 			zmq::socket_t * _zmq_socket;
 
 			public:
-				explicit publisher();
+				publisher();
 				publisher(std::string const & itag);
 				publisher(std::string const & itag, orwell::com::url const & iurl);
 				publisher(std::string const & itag, std::string const & ihost, uint32_t iport);

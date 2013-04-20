@@ -16,11 +16,6 @@ find_package(ZMQ REQUIRED)
 # Helpful debug stuff?
 message("-- Protobuf binary found at ${PROTOBUF_PROTOC_EXECUTABLE}")
 
-add_definitions(
-	-ggdb
-	-std=gnu++0x 
-	)
-
 # Generate the protobuf messages
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ./protobuf_messages/version1.proto)
 

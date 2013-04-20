@@ -10,16 +10,11 @@ file(GLOB EXPORTABLEHEADERS include/*.hpp include/*.h)
 
 # Required libraries
 find_package(Boost REQUIRED COMPONENTS system)
-#find_package(Protobuf REQUIRED)
+find_package(Protobuf REQUIRED)
 find_package(ZMQ REQUIRED)
 
 # Helpful debug stuff?
 message("-- Protobuf binary found at ${PROTOBUF_PROTOC_EXECUTABLE}")
-
-add_definitions(
-	-ggdb
-	-std=gnu++0x 
-	)
 
 # Generate the protobuf messages
 #PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ./protobuf_messages/version1.proto)
@@ -27,9 +22,10 @@ add_definitions(
 # The -I flag for the compiler..
 include_directories(
 		"include"
+		${PROTOBUF_INCLUDE_DIRS}
 		${CMAKE_CURRENT_BINARY_DIR} # This is needed for protobuf's messages 
 		${ZMQ_INCLUDE_DIRS}
-		${CMAKE_SOURCE_DIR}/com/
+		${CMAKE_BINARY_DIR}/com/
 		${CMAKE_SOURCE_DIR}/com/include
 		${Boost_INCLUDE_DIRS})
 
