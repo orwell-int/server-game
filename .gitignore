@@ -7,4 +7,3 @@ build/
 *.un*
 *.swp
 *.clang_complete
-*.cmake
