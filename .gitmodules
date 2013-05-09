@@ -1,0 +1,3 @@
+[submodule "com/protobuf_messages"]
+	path = com/protobuf_messages
+	url = git://github.com/dchilot/messages.git
