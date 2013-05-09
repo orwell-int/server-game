@@ -10,7 +10,7 @@ message base_message {
 // This message is used to handle a new client's login
 message login_message {
 	required string client_id = 1;
-	required string wished_robo_type = 2;
+	required string wished_robot_type = 2;
 }
 
 message sample_message {

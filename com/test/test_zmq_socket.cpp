@@ -8,7 +8,7 @@
 #include <unistd.h>
 
 const std::string _client_id("Client ID");
-const std::string _wished_robo_type("TANK");
+const std::string _wished_robot_type("TANK");
 
 void client()
 {
@@ -22,7 +22,7 @@ void client()
 	orwell::com::orwell_message rmsg("LOGIN");
 	orwell::com::login_message & rlogin = rmsg.access_internal_message<orwell::com::login_message>();
 	rlogin.set_client_id(_client_id);
-	rlogin.set_wished_robo_type(_wished_robo_type);
+	rlogin.set_wished_robot_type(_wished_robot_type);
 	rmsg.commit(); // This shouldn't be necessary 
 
 	std::cout << "Client sending message" << std::endl;
@@ -46,10 +46,10 @@ bool server()
 
 	orwell::com::login_message const & rlogin = rmsg.get_internal_message<orwell::com::login_message>();
 	std::cout << "Received: " << rlogin.client_id() << std::endl;
-	std::cout << "Received: " << rlogin.wished_robo_type() << std::endl;
+	std::cout << "Received: " << rlogin.wished_robot_type() << std::endl;
 
 	return ((rlogin.client_id() == _client_id) && 
-			(rlogin.wished_robo_type() == _wished_robo_type));
+			(rlogin.wished_robot_type() == _wished_robot_type));
 }
 
 int main()

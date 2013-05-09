@@ -5,7 +5,7 @@
 using namespace std;
 using namespace orwell::com;
 
-url::url() : _port(9000), _protocol("tcp"), _host("localhost"), _url("tcp://localhost:9000")
+url::url() : _protocol("tcp"), _port(9000), _host("localhost"), _url("tcp://localhost:9000")
 {
 }
 
