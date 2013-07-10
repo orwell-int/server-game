@@ -6,6 +6,12 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules/")
 
 project(orwell)
 
+# Generate compile_commands.json (http://clang.llvm.org/docs/JSONCompilationDatabase.html).
+# It is used by YCM (https://github.com/Valloric/YouCompleteMe).
+# You just need to create a symbolic link to the build directory's compile_commands.json file
+# to the root of the project to have completion.
+set(CMAKE_EXPORT_COMPILE_COMMANDS, "ON")
+
 # Initialize CXXFLAGS.
 set(CMAKE_CXX_FLAGS                "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
 set(CMAKE_CXX_FLAGS_DEBUG          "-O0 -g")
