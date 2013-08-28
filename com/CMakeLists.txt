@@ -14,25 +14,24 @@ find_package(Protobuf REQUIRED)
 find_package(ZMQ REQUIRED)
 
 # Helpful debug stuff?
-message("-- Protobuf binary found at ${PROTOBUF_PROTOC_EXECUTABLE}")
-
-# Generate the protobuf messages
-PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ./protobuf_messages/version1.proto)
+message ("-- cmake current bin dir "${CMAKE_CURRENT_BINARY_DIR})
 
 # The -I flag for the compiler..
 include_directories(
 		"include"
-		${CMAKE_CURRENT_BINARY_DIR} # This is needed for protobuf's messages 
+		${CMAKE_CURRENT_BINARY_DIR}/../messages
+		${CMAKE_CURRENT_BINARY_DIR} # This is needed for protobuf's messages
 		${ZMQ_INCLUDE_DIRS}
 		${PROTOBUF_INCLUDE_DIRS}
 		${Boost_INCLUDE_DIRS})
 
 # Library compilation and linking
-add_library(orwell_com SHARED ${SOURCES} ${PROTO_SRCS})
+add_library(orwell_com SHARED ${SOURCES})
 target_link_libraries(orwell_com
+        orwell_messages
 		${ZMQ_LIBRARIES}
 		${PROTOBUF_LIBRARIES}
-    ${Boost_LIBRARIES})
+        ${Boost_LIBRARIES})
 
 # Where to install stuff, protobuf messages generated H included
 install(TARGETS orwell_com LIBRARY DESTINATION lib)
@@ -41,13 +40,19 @@ install(FILES ${PROTO_HDRS} DESTINATION include)
 
 # Test suite
 enable_testing()
-add_executable(test_basics "test/test_basics.cpp")
+#add_executable(test_basics "test/test_basics.cpp")
 add_executable(test_zmq_socket "test/test_zmq_socket.cpp")
-add_executable(test_url "test/test_url.cpp")
-target_link_libraries(test_url orwell_com)
-target_link_libraries(test_basics orwell_com)
+add_executable(test_pub "test/test_pubsub_pub.cpp")
+add_executable(test_sub "test/test_pubsub_sub.cpp")
+#add_executable(test_url "test/test_url.cpp")
+#target_link_libraries(test_url orwell_com)
+#target_link_libraries(test_basics orwell_com)
 target_link_libraries(test_zmq_socket orwell_com)
+target_link_libraries(test_pub orwell_com)
+target_link_libraries(test_sub orwell_com)
 
-add_test(test_basics ${CMAKE_CURRENT_BINARY_DIR}/test_basics)
+#add_test(test_basics ${CMAKE_CURRENT_BINARY_DIR}/test_basics)
 add_test(test_zmq_socket ${CMAKE_CURRENT_BINARY_DIR}/test_zmq_socket)
-add_test(test_url ${CMAKE_CURRENT_BINARY_DIR}/test_url)
+add_test(test_pub ${CMAKE_CURRENT_BINARY_DIR}/test_pub)
+add_test(test_sub ${CMAKE_CURRENT_BINARY_DIR}/test_sub)
+#add_test(test_url ${CMAKE_CURRENT_BINARY_DIR}/test_url)
