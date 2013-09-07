@@ -1,0 +1,17 @@
+# Required libraries
+find_package(Protobuf REQUIRED)
+
+# Generate the protobuf messages
+PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ./robot.proto ./server-game.proto ./controller.proto ./server-web.proto)
+
+include_directories(
+		${CMAKE_CURRENT_BINARY_DIR}
+		${PROTOBUF_INCLUDE_DIRS})
+
+add_library(orwell_messages SHARED ${PROTO_SRCS})
+
+target_link_libraries(orwell_messages
+		${PROTOBUF_LIBRARIES})
+
+install(TARGETS orwell_messages LIBRARY DESTINATION lib)
+install(FILES ${PROTO_HDRS} DESTINATION include)
