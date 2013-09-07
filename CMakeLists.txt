@@ -33,7 +33,9 @@ else ()
 endif ()
 
 # Messages
-add_subdirectory(../messages "${CMAKE_CURRENT_BINARY_DIR}/messages")
+execute_process(COMMAND ln -fs ${CMAKE_SOURCE_DIR}/CMakeLists_messages.txt ${CMAKE_SOURCE_DIR}/messages/CMakeLists.txt)
+#add_subdirectory(../messages "${CMAKE_CURRENT_BINARY_DIR}/messages")
+add_subdirectory(messages)
 
 # Communication module
 add_subdirectory(com)
@@ -50,6 +52,7 @@ include_directories(
 		${CMAKE_CURRENT_BINARY_DIR}/../tasks/include
 		${CMAKE_CURRENT_BINARY_DIR}/messages
 		${ZMQ_INCLUDE_DIRS}
+		${LOG4CXX_INCLUDE_DIR}
 		${PROTOBUF_INCLUDE_DIRS}
 		${Boost_INCLUDE_DIRS})
 add_executable(server_main main.cpp)

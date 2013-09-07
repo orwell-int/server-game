@@ -1,8 +1,6 @@
 // Test serialization and de-serialization of messages and sending sockets
 
 #include <iostream>
-#include <EnvelopeMessage.hpp>
-#include <version1.pb.h>
 #include <zmq.hpp>
 #include <string>
 #include <unistd.h>

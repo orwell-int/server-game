@@ -13,6 +13,8 @@ find_package(Boost REQUIRED COMPONENTS system)
 find_package(Protobuf REQUIRED)
 find_package(ZMQ REQUIRED)
 
+find_package(LOG4CXX_LIBRARIES REQUIRED)
+
 # Helpful debug stuff?
 message("-- Protobuf binary found at ${PROTOBUF_PROTOC_EXECUTABLE}")
 
@@ -22,6 +24,7 @@ message("-- Protobuf binary found at ${PROTOBUF_PROTOC_EXECUTABLE}")
 # The -I flag for the compiler..
 message("-- include ${PROTOBUF_INCLUDE_DIRS}")
 message("-- include ${CMAKE_CURRENT_BINARY_DIR}")
+message("-- include ${LOG4CXX_INCLUDE_DIR}")
 message("-- include ${ZMQ_INCLUDE_DIRS}")
 message("-- include ${CMAKE_BINARY_DIR}/com/")
 message("-- include ${CMAKE_SOURCE_DIR}/com/include")
@@ -31,6 +34,7 @@ include_directories(
 		${PROTOBUF_INCLUDE_DIRS}
 		${CMAKE_CURRENT_BINARY_DIR}/../messages
 		${CMAKE_CURRENT_BINARY_DIR} # This is needed for protobuf's messages
+		${LOG4CXX_INCLUDE_DIR}
 		${ZMQ_INCLUDE_DIRS}
 		${CMAKE_BINARY_DIR}/com/
 		${CMAKE_SOURCE_DIR}/com/include
@@ -42,7 +46,8 @@ target_link_libraries(orwell_tasks
 		orwell_com
 		orwell_messages
 		${ZMQ_LIBRARIES}
-        ${Boost_LIBRARIES})
+        	${Boost_LIBRARIES}
+		${LOG4CXX_LIBRARIES})
 
 # Where to install stuff, protobuf messages generated H included
 install(TARGETS orwell_tasks LIBRARY DESTINATION lib)
