@@ -33,7 +33,6 @@ Sender::Sender(string const & iUrl, unsigned int const iSocketType) :
     }
     else
     {
-        cout << "Sender connects on " << iUrl << endl;
         _zmqSocket->connect(iUrl.c_str());
         sleep( 1 );
         LOG4CXX_INFO(_logger, "Pusher connects to " << iUrl.c_str() );
@@ -47,12 +46,12 @@ Sender::~Sender()
 	delete _zmqContext;
 }
 
-void Sender::send( string const & iDest, RawMessage const & iMessage )
+void Sender::send( RawMessage const & iMessage )
 {
     log4cxx::LoggerPtr aLogger(log4cxx::Logger::getLogger("orwell.log"));
 
     string aMessage;
-    aMessage += iDest;
+    aMessage += iMessage._routingId;
     aMessage += " ";
     aMessage += iMessage._type;
     aMessage += " ";
@@ -63,7 +62,7 @@ void Sender::send( string const & iDest, RawMessage const & iMessage )
 
     LOG4CXX_DEBUG(aLogger, "Preparing to send : " << iMessage._type);
     _zmqSocket->send( aZmqMessage );
-    LOG4CXX_DEBUG(aLogger, "Sent : " << iMessage._type);
+    LOG4CXX_INFO(aLogger, "Sent " << aZmqMessage.size() << " bytes : " << iMessage._type << "-" );
 
 }
 

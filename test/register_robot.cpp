@@ -31,7 +31,7 @@ const uint32_t _port(9000);
 // takes as sole argument the expected value of the ID that is sent back from the server if the registration goes well.
 void requestRegistration( int iExpectedId )
 {
-
+/*
     cout << "Robot starting" << endl;
 
 //logging
@@ -56,6 +56,9 @@ void requestRegistration( int iExpectedId )
     LOG4CXX_INFO(logger, "Start logger INFO")
 
 Sender aPublisher("tcp://*:9001", ZMQ_PUB);
+
+*/
+/*
     Input aInputMessage;
 
     aInputMessage.mutable_move()->set_left(10);
@@ -66,11 +69,13 @@ Sender aPublisher("tcp://*:9001", ZMQ_PUB);
 string astr = "Input";
 RawMessage aMessage(astr, aInputMessage.SerializeAsString());
 
+cout << "batman " <<  aInputMessage.SerializeAsString() << endl;
+/*
 while (true){
     aPublisher.send("",aMessage);
     sleep(2);
 }
-
+*/
 
 
 

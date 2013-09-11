@@ -21,7 +21,7 @@ public:
     Sender(std::string const & iUrl, unsigned int const iSocketType);
     ~Sender();
 
-    void send( std::string const & iDest, RawMessage const & iMessage );
+    void send( RawMessage const & iMessage );
 
 
 private:

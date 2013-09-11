@@ -11,10 +11,11 @@ class RawMessage
 {
 
 public:
+    std::string _routingId;
     std::string _type;
     std::string _payload;
 
-    RawMessage(std::string const & iType, std::string const & iPayload);
+    RawMessage(std::string const & iRoutId, std::string const & iType, std::string const & iPayload);
 
 };
 

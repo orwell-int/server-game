@@ -29,7 +29,7 @@ int main()
     PatternLayoutPtr aPatternLayout = new PatternLayout("%d %-5p (%F:%L) - %m%n");
     ConsoleAppenderPtr aConsoleAppender = new ConsoleAppender(aPatternLayout);
     filter::LevelRangeFilterPtr aLevelFilter = new filter::LevelRangeFilter();
-    aLevelFilter->setLevelMin(Level::getInfo());
+  //  aLevelFilter->setLevelMin(Level::getInfo());
     aConsoleAppender->addFilter(aLevelFilter);
     FileAppenderPtr aFileApender = new FileAppender( aPatternLayout, "orwelllog.txt");
     BasicConfigurator::configure(aFileApender);
@@ -43,6 +43,9 @@ int main()
     Receiver aPuller("tcp://*:9000", ZMQ_PULL);
 
     GlobalContext aContext( aPublisher );
+    aContext.addRobot("Gipsy Danger");
+    aContext.addRobot("Goldorak");
+    aContext.addRobot("Securitron");
 
 	while (true)
 	{

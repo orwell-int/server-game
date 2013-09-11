@@ -2,26 +2,24 @@
 
 #pragma once
 
+#include <string>
+
 namespace orwell {
 namespace tasks {
 
 class RobotContext
 {
 	public:
-		// constructor
-		RobotContext(int iId);
-
- 		// destructor
+		RobotContext(std::string const & iName);
 		~RobotContext();
 
-        // getters
-		int getId();
-
-
-		void print();
+        void setControlledBy(std::string const & iName);
+		std::string const &  getName() const;
+		std::string const &  getControlledBy() const;
 
     private:
-        int _id;
+        std::string _name;
+        std::string _controlledBy;
 };
 
 }} //end namespace
