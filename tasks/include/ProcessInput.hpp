@@ -20,13 +20,14 @@ namespace tasks {
 class ProcessInput : public InterfaceProcess
 {
 public:
-    ProcessInput(messages::Input const & iInputMsg, GlobalContext & ioCtx);
+    ProcessInput(std::string const & iDest, messages::Input const & iInputMsg, GlobalContext & ioCtx);
     ~ProcessInput ();
 
     void execute();
 
 
 private:
+    std::string _dest;
     messages::Input const & _input ;
     log4cxx::LoggerPtr _logger;
 

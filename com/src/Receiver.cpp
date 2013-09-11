@@ -6,6 +6,8 @@
 
 #include <zmq.hpp>
 
+#include <sstream>
+
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 using std::string;
@@ -60,8 +62,8 @@ RawMessage Receiver::receive()
 
 	if ( _zmqSocket->recv(&aZmqMessage) )
 	{
-	    string aMessageData = reinterpret_cast< char *>( aZmqMessage.data() );
-
+	    string aMessageData = string(static_cast<char*>(aZmqMessage.data()), aZmqMessage.size());
+	//    string aMessageData = reinterpret_cast< char *>( aZmqMessage.data() );
 	    size_t aEndDestFlag = aMessageData.find( " ", 0 );
 	    if ( aEndDestFlag != string::npos )
 	    {
@@ -76,9 +78,10 @@ RawMessage Receiver::receive()
 	    }
 	}
 
-    LOG4CXX_DEBUG(aLogger, "Received : " << aType << " - dest=" << aDest << " : " << aPayload);
+    LOG4CXX_DEBUG(aLogger, "Received "<< aZmqMessage.size() << " bytes : type=" << aType << "- dest=" << aDest << "-");
+//    LOG4CXX_DEBUG(aLogger, "Payload : " << aPayload << "-");
 
-    RawMessage aEnvelopeMessage( aType, aPayload );
+    RawMessage aEnvelopeMessage( aDest, aType, aPayload );
     return aEnvelopeMessage;
 }
 

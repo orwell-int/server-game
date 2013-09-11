@@ -1,10 +1,10 @@
-
 #include <RawMessage.hpp>
 
 #include <zmq.hpp>
 #include <string>
 
 #include <controller.pb.h>
+#include <server-game.pb.h>
 
 #include <Sender.hpp>
 #include <Receiver.hpp>
@@ -30,7 +30,7 @@ int main()
     PatternLayoutPtr aPatternLayout = new PatternLayout("%d %-5p (%F:%L) - %m%n");
     ConsoleAppenderPtr aConsoleAppender = new ConsoleAppender(aPatternLayout);
     filter::LevelRangeFilterPtr aLevelFilter = new filter::LevelRangeFilter();
-    aLevelFilter->setLevelMin(Level::getInfo());
+//    aLevelFilter->setLevelMin(Level::getInfo());
     aConsoleAppender->addFilter(aLevelFilter);
     FileAppenderPtr aFileApender = new FileAppender( aPatternLayout, "orwelllog.txt");
     BasicConfigurator::configure(aFileApender);
@@ -41,29 +41,22 @@ int main()
     Sender aPusher("tcp://*:9000", ZMQ_PUSH);
     Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB);
 
-    Input aInputMessage;
+    Hello aHelloMessage;
+    aHelloMessage.set_name("jambon");
 
-    aInputMessage.mutable_move()->set_left(10.33);
-    aInputMessage.mutable_move()->set_right(11.33);
-    aInputMessage.mutable_fire()->set_weapon1(true);
-    aInputMessage.mutable_fire()->set_weapon2(false);
+    LOG4CXX_INFO(logger, "message built Hello (size=" << aHelloMessage.ByteSize() << ")" );
 
-    LOG4CXX_INFO(logger, "message built (size=" << aInputMessage.ByteSize() << ")" );
-    LOG4CXX_INFO(logger, "message built : left" << aInputMessage.move().left() << "-right" << aInputMessage.move().right() );
-    LOG4CXX_INFO(logger, "message built : w1:" << aInputMessage.fire().weapon1() << "-w2:" << aInputMessage.fire().weapon2() );
-
-    string aType = "Input";
-    RawMessage aMessage("TANK_0", "Input", aInputMessage.SerializeAsString());
+    RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
     aPusher.send( aMessage);
 
-    aMessage = aSubscriber.receive();
-    Input aInput ;
-    aInput.ParsePartialFromString( aMessage._payload );
-    LOG4CXX_INFO(logger, "message received is (size=" << aInput.ByteSize() << ")");
-    LOG4CXX_INFO(logger, "message received : left" << aInput.move().left() << "-right" << aInput.move().right() );
-    LOG4CXX_INFO(logger, "message received : w1:" << aInput.fire().weapon1() << "-w2:" << aInput.fire().weapon2() );
+    RawMessage aResponse = aSubscriber.receive();
 
-    LOG4CXX_INFO(logger, "done")
+    Welcome aWelcome;
+    aWelcome.ParsePartialFromString(aResponse._payload);
+
+
+    LOG4CXX_INFO(logger, "message received is (size=" << aWelcome.ByteSize() << ")");
+    LOG4CXX_INFO(logger, "message received : robot:" << aWelcome.robot() << "-team:" << aWelcome.team());
 
 
 	return 0;

@@ -10,12 +10,12 @@
 
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU Lesser General Public License for more details.
 
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 
 # - Try to find the liblog4cxx libraries
@@ -29,16 +29,17 @@ FIND_PATH(LOG4CXX_INCLUDE_DIR logger.h PATHS /include/log4cxx /usr/include/log4c
 FIND_LIBRARY(LOG4CXX_LIBRARIES NAMES log4cxx log4cxxd PATHS /lib /usr/lib /usr/local/lib )
 
 IF(LOG4CXX_INCLUDE_DIR AND LOG4CXX_LIBRARIES)
-  SET(Log4cxx_FOUND 1)
-  #remove last /log4cxx string
-  STRING(REGEX REPLACE "/log4cxx" "" LOG4CXX_INCLUDE_DIR_SUP_LEVEL ${LOG4CXX_INCLUDE_DIR})
-  SET (LOG4CXX_INCLUDE_DIR ${LOG4CXX_INCLUDE_DIR_SUP_LEVEL} ${LOG4CXX_INCLUDE_DIR} )
-  if(NOT Log4cxx_FIND_QUIETLY)
-   message(STATUS "Found log4cxx: ${LOG4CXX_LIBRARIES}")
-  endif(NOT Log4cxx_FIND_QUIETLY)
+SET(Log4cxx_FOUND 1)
+#remove last /log4cxx string
+STRING(REGEX REPLACE "/log4cxx" "" LOG4CXX_INCLUDE_DIR_SUP_LEVEL ${LOG4CXX_INCLUDE_DIR})
+SET (LOG4CXX_INCLUDE_DIR ${LOG4CXX_INCLUDE_DIR_SUP_LEVEL} ${LOG4CXX_INCLUDE_DIR} )
+
+if(NOT Log4cxx_FIND_QUIETLY)
+	message(STATUS "Found log4cxx: ${LOG4CXX_LIBRARIES}")
+endif(NOT Log4cxx_FIND_QUIETLY)
 ELSE(LOG4CXX_INCLUDE_DIR AND LOG4CXX_LIBRARIES)
-  SET(Log4cxx_FOUND 0 CACHE BOOL "Not found log4cxx library")
-  message(STATUS "NOT Found log4cxx, disabling it")
+	SET(Log4cxx_FOUND 0 CACHE BOOL "Not found log4cxx library")
+message(STATUS "NOT Found log4cxx, disabling it")
 ENDIF(LOG4CXX_INCLUDE_DIR AND LOG4CXX_LIBRARIES)
 
 MARK_AS_ADVANCED(LOG4CXX_INCLUDE_DIR LOG4CXX_LIBRARIES)

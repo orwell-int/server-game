@@ -22,3 +22,6 @@ add_executable(test_input "input_to_robot.cpp")
 target_link_libraries(test_input orwell_com orwell_tasks)
 add_test(test_input ${CMAKE_CURRENT_BINARY_DIR}/test_basics)
 
+add_executable(test_hello "hello_client.cpp")
+target_link_libraries(test_hello orwell_com orwell_tasks)
+add_test(test_hello ${CMAKE_CURRENT_BINARY_DIR}/test_basics)
