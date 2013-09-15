@@ -12,7 +12,7 @@ using namespace std;
 namespace orwell {
 namespace tasks {
 
-GlobalContext::GlobalContext(com::Sender & iPublisher) :
+GlobalContext::GlobalContext(std::shared_ptr< com::Sender > iPublisher) :
 _publisher(iPublisher), _logger(log4cxx::Logger::getLogger("orwell.log"))
 {
 }
@@ -21,7 +21,7 @@ GlobalContext::~GlobalContext()
 {
 }
 
-com::Sender & GlobalContext::getPublisher()
+std::shared_ptr< com::Sender > GlobalContext::getPublisher()
 {
     return _publisher;
 }

@@ -27,7 +27,7 @@ InterfaceProcess(ioCtx), _clientId(iClientId), _hello(iHelloMsg)
 
 }
 
-ProcessHello::~ProcessHello ()
+ProcessHello::~ProcessHello()
 {
 
 }
@@ -42,9 +42,10 @@ void ProcessHello::execute()
     aWelcome.set_team( orwell::messages::RED );
 
     RawMessage aReply(_clientId, "Welcome", aWelcome.SerializeAsString() );
-    _ctx.getPublisher().send( aReply );
-
+    _ctx.getPublisher()->send( aReply );
 }
 
 
-}}
+}
+}
+

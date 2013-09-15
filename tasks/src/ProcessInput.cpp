@@ -31,12 +31,12 @@ void ProcessInput::execute()
     LOG4CXX_INFO(_logger, "ProcessInput::execute : simple relay");
 
     LOG4CXX_DEBUG(_logger, "===Input Message===");
-    LOG4CXX_DEBUG(_logger, "Move : left=" << _input.move().left() << ",right=" <<  _input.move().right() << "-" );
-    LOG4CXX_DEBUG(_logger, "Fire : w1=" << _input.fire().weapon1() << ",w2=" <<  _input.fire().weapon2() << "-" );
+    LOG4CXX_DEBUG(_logger, "Move : left=" << _input.move().left() << ",right=" <<  _input.move().right() << "-");
+    LOG4CXX_DEBUG(_logger, "Fire : w1=" << _input.fire().weapon1() << ",w2=" <<  _input.fire().weapon2() << "-");
     LOG4CXX_DEBUG(_logger, "===End Input Message===");
 
-    RawMessage aReply(_dest, "Input", _input.SerializeAsString() );
-    _ctx.getPublisher().send( aReply );
+    RawMessage aReply(_dest, "Input", _input.SerializeAsString());
+    _ctx.getPublisher()->send( aReply );
 }
 
 }}

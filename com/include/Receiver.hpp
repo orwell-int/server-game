@@ -2,9 +2,9 @@
 
 #include <string>
 
-#include <RawMessage.hpp>
+#include "RawMessage.hpp"
 
-#include "log4cxx/logger.h"
+#include <log4cxx/logger.h>
 
 namespace zmq {
 	class context_t;
@@ -18,17 +18,21 @@ class Receiver
 {
 
 public:
-    Receiver(std::string const & iUrl, unsigned int const iSocketType );
-    ~Receiver();
+	Receiver(
+			std::string const & iUrl,
+			unsigned int const iSocketType,
+			bool const iBind);
+	~Receiver();
 
-    RawMessage receive();
+	RawMessage receive();
 
 private:
 
-    zmq::context_t * _zmqContext;
-    zmq::socket_t * _zmqSocket;
-    log4cxx::LoggerPtr  _logger;
+	zmq::context_t * _zmqContext;
+	zmq::socket_t * _zmqSocket;
+	log4cxx::LoggerPtr  _logger;
 
 };
 
 }}
+

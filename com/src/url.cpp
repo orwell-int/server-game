@@ -1,8 +1,8 @@
-#include <url.hpp>
+#include "url.hpp"
 #include <string>
 #include <boost/lexical_cast.hpp>
 
-using namespace std;
+using std::string;
 using namespace orwell::com;
 
 url::url() : _protocol("tcp"), _host("localhost"),_port(9000), _url("tcp://localhost:9000")
@@ -23,25 +23,27 @@ void url::resetUrl()
 	_url += boost::lexical_cast<string>(_port);
 }
 
-void url::setProtocol(string const & iprotocol)
+void url::setProtocol(string const & iProtocol)
 {
-	if (!iprotocol.empty()) {
-		_protocol = iprotocol;
+	if (!iProtocol.empty())
+	{
+		_protocol = iProtocol;
 		resetUrl();
 	}
 }
 
-void url::setHost(string const & ihost)
+void url::setHost(string const & iHost)
 {
-	if (!ihost.empty()) {
-		_host = ihost;
+	if (!iHost.empty())
+	{
+		_host = iHost;
 		resetUrl();
 	}
 }
 
-void url::setPort(uint32_t iport)
+void url::setPort(uint32_t const iPort)
 {
-	_port = iport;
+	_port = iPort;
 	resetUrl();
 }
 

@@ -1,23 +1,23 @@
 #include <iostream>
-#include <RawMessage.hpp>
+#include "RawMessage.hpp"
 
 #include <zmq.hpp>
 #include <string>
 #include <unistd.h>
-#include <url.hpp>
+#include "url.hpp"
 
-#include <controller.pb.h>
+#include "controller.pb.h"
 
-#include <Sender.hpp>
-#include <Receiver.hpp>
+#include "Sender.hpp"
+#include "Receiver.hpp"
 
-#include "log4cxx/logger.h"
-#include "log4cxx/patternlayout.h"
-#include "log4cxx/consoleappender.h"
-#include "log4cxx/fileappender.h"
-#include "log4cxx/basicconfigurator.h"
-#include "log4cxx/helpers/exception.h"
-#include "log4cxx/filter/levelrangefilter.h"
+#include <log4cxx/logger.h>
+#include <log4cxx/patternlayout.h>
+#include <log4cxx/consoleappender.h>
+#include <log4cxx/fileappender.h>
+#include <log4cxx/basicconfigurator.h>
+#include <log4cxx/helpers/exception.h>
+#include <log4cxx/filter/levelrangefilter.h>
 
 
 using namespace log4cxx;
@@ -87,7 +87,7 @@ while (true){
     }*/
 
 /*
-    Sender aPublisher("tcp://*:9000", ZMQ_PUB);
+    Sender aPublisher("tcp://*:9000", ZMQ_PUB, true);
     Input aInputMessage;
 
     aInputMessage.mutable_move()->set_left(10);

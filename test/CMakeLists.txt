@@ -8,6 +8,7 @@ include_directories(
 		${ZMQ_INCLUDE_DIRS}
 		${CMAKE_BINARY_DIR}/com/
 		${CMAKE_SOURCE_DIR}/com/include
+		${CMAKE_SOURCE_DIR}/tasks/include
 		${Boost_INCLUDE_DIRS}
 		${LOG4CXX_INCLUDE_DIR})
 
