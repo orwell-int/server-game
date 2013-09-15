@@ -6,7 +6,7 @@ using namespace std;
 namespace orwell {
 namespace tasks {
 
-RobotContext::RobotContext(int iId) : _id(iId)
+RobotContext::RobotContext(string const & iName) : _name(iName)
 {
 
 }
@@ -16,14 +16,21 @@ RobotContext::~RobotContext()
 
 }
 
-int RobotContext::getId(){
-    return _id;
+void RobotContext::setPlayerName(string const & iName)
+{
+    _playerName = iName;
 }
 
-void RobotContext::print()
+string const & RobotContext::getName() const
 {
-	cout << "this is a robot" << endl;
+    return _name;
 }
+
+string const &  RobotContext::getPlayerName() const
+{
+    return _playerName;
+}
+
 
 }} // namespaces
 

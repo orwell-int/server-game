@@ -43,6 +43,9 @@ int main()
     Receiver aPuller("tcp://*:9000", ZMQ_PULL);
 
     GlobalContext aContext( aPublisher );
+    aContext.addRobot("Gipsy Danger");
+    aContext.addRobot("Goldorak");
+    aContext.addRobot("Securitron");
 
 	while (true)
 	{

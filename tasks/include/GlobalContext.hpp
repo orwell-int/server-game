@@ -4,7 +4,10 @@
 
 #include <map>
 #include <RobotContext.hpp>
+#include <PlayerContext.hpp>
 #include <Sender.hpp>
+
+#include "log4cxx/logger.h"
 
 namespace orwell {
 namespace tasks {
@@ -18,20 +21,29 @@ public:
     // destructor
     ~GlobalContext();
 
-    void print();
-
     com::Sender & getPublisher();
+    RobotContext & accessRobot( std::string const & iRobotName );
+    std::map<std::string, RobotContext> const & getRobots();
+    PlayerContext & accessPlayer( std::string const & iPlayerName );
+    std::map<std::string, PlayerContext> const & getPlayers();
 
-    // add an empty robotContext to the map, and gives it the first integer that is not already in the keys of the map as an ID.
-    int addRobot();
+    //add empty PlayerContext
+    bool addPlayer(std::string const & iName);
+    //add empty RobotContext
+    bool addRobot(std::string const & iName);
 
-//		robotContext get_robot(unsigned int robot_index);
+    std::string getAvailableRobot();
 
 private:
     com::Sender & _publisher;
+    log4cxx::LoggerPtr _logger;
 
-    // Each connected robot has a robotContext in this map. The key is the robot ID.
-    std::map<int, RobotContext> _robots;
+    // Each connected robot has a robotContext in this map. The key is the robot name.
+    std::map<std::string, RobotContext> _robots;
+    // Each connected controller has a playerContext in this map. The key is the player name.
+    std::map<std::string, PlayerContext> _players;
+
+
 };
 
 }} //end namespace

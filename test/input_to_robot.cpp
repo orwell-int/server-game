@@ -38,23 +38,30 @@ int main()
     log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("orwell.log"));
     logger->setLevel(log4cxx::Level::getDebug());
 
-
     Sender aPusher("tcp://*:9000", ZMQ_PUSH);
     Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB);
 
     Input aInputMessage;
 
-    aInputMessage.mutable_move()->set_left(10);
-    aInputMessage.mutable_move()->set_right(11);
-
+    aInputMessage.mutable_move()->set_left(10.33);
+    aInputMessage.mutable_move()->set_right(11.33);
     aInputMessage.mutable_fire()->set_weapon1(true);
     aInputMessage.mutable_fire()->set_weapon2(false);
 
-    string aType = "Input";
-    RawMessage aMessage(aType, aInputMessage.SerializeAsString());
-    aPusher.send("", aMessage);
+    LOG4CXX_INFO(logger, "message built (size=" << aInputMessage.ByteSize() << ")" );
+    LOG4CXX_INFO(logger, "message built : left" << aInputMessage.move().left() << "-right" << aInputMessage.move().right() );
+    LOG4CXX_INFO(logger, "message built : w1:" << aInputMessage.fire().weapon1() << "-w2:" << aInputMessage.fire().weapon2() );
 
-    aSubscriber.receive();
+    string aType = "Input";
+    RawMessage aMessage("TANK_0", "Input", aInputMessage.SerializeAsString());
+    aPusher.send( aMessage);
+
+    aMessage = aSubscriber.receive();
+    Input aInput ;
+    aInput.ParsePartialFromString( aMessage._payload );
+    LOG4CXX_INFO(logger, "message received is (size=" << aInput.ByteSize() << ")");
+    LOG4CXX_INFO(logger, "message received : left" << aInput.move().left() << "-right" << aInput.move().right() );
+    LOG4CXX_INFO(logger, "message received : w1:" << aInput.fire().weapon1() << "-w2:" << aInput.fire().weapon2() );
 
     LOG4CXX_INFO(logger, "done")
 
