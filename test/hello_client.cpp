@@ -59,6 +59,59 @@ int main()
     LOG4CXX_INFO(logger, "message received : robot:" << aWelcome.robot() << "-team:" << aWelcome.team());
 
 
+
+    aHelloMessage.set_name("fromage");
+
+    LOG4CXX_INFO(logger, "message built Hello (size=" << aHelloMessage.ByteSize() << ")" );
+
+    RawMessage aMessage2("randomid", "Hello", aHelloMessage.SerializeAsString());
+    aPusher.send( aMessage2);
+
+    aResponse = aSubscriber.receive();
+
+    aWelcome.ParsePartialFromString(aResponse._payload);
+
+    LOG4CXX_INFO(logger, "message received is (size=" << aWelcome.ByteSize() << ")");
+    LOG4CXX_INFO(logger, "message received : robot:" << aWelcome.robot() << "-team:" << aWelcome.team());
+
+
+
+
+        aHelloMessage.set_name("poulet");
+
+    LOG4CXX_INFO(logger, "message built Hello (size=" << aHelloMessage.ByteSize() << ")" );
+
+    RawMessage aMessage3("randomid", "Hello", aHelloMessage.SerializeAsString());
+    aPusher.send( aMessage3);
+
+    aResponse = aSubscriber.receive();
+
+    aWelcome.ParsePartialFromString(aResponse._payload);
+
+    LOG4CXX_INFO(logger, "message received is (size=" << aWelcome.ByteSize() << ")");
+    LOG4CXX_INFO(logger, "message received : robot:" << aWelcome.robot() << "-team:" << aWelcome.team());
+
+
+
+
+
+
+
+        aHelloMessage.set_name("rutabagas");
+
+    LOG4CXX_INFO(logger, "message built Hello (size=" << aHelloMessage.ByteSize() << ")" );
+
+    RawMessage aMessage4("randomid", "Hello", aHelloMessage.SerializeAsString());
+    aPusher.send( aMessage4);
+
+    aResponse = aSubscriber.receive();
+
+    aWelcome.ParsePartialFromString(aResponse._payload);
+
+    LOG4CXX_INFO(logger, "message received is (size=" << aWelcome.ByteSize() << ")");
+    LOG4CXX_INFO(logger, "message received : robot:" << aWelcome.robot() << "-team:" << aWelcome.team());
+
+
 	return 0;
 }
 

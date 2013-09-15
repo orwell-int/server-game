@@ -9,6 +9,8 @@
 
 #include <string>
 
+#include "log4cxx/logger.h"
+
 
 namespace orwell {
 
@@ -30,6 +32,7 @@ public:
 private:
     std::string _clientId;
     messages::Hello const & _hello ;
+    log4cxx::LoggerPtr _logger;
 
 };
 

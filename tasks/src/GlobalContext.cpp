@@ -7,7 +7,9 @@
 
 #include <boost/foreach.hpp>
 
-using namespace std;
+using std::map;
+using std::string;
+using std::pair;
 
 namespace orwell {
 namespace tasks {
@@ -26,17 +28,17 @@ com::Sender & GlobalContext::getPublisher()
     return _publisher;
 }
 
-map<string, RobotContext> & GlobalContext::accessRobots()
+RobotContext & GlobalContext::accessRobot(string const & iRobotName)
 {
-    return _robots;
+    return _robots.at(iRobotName);
 }
 map<string, RobotContext> const & GlobalContext::getRobots()
 {
     return _robots;
 }
-map<string, PlayerContext> & GlobalContext::accessPlayers()
+PlayerContext & GlobalContext::accessPlayer( string const & iPlayerName)
 {
-    return _players;
+    return _players.at(iPlayerName);
 }
 map<string, PlayerContext> const & GlobalContext::getPlayers()
 {
@@ -45,54 +47,57 @@ map<string, PlayerContext> const & GlobalContext::getPlayers()
 
 bool GlobalContext::addPlayer( string const & iName )
 {
-    if ( _players.find(iName) != _players.end() ){
+    bool aAddedPLayerSuccess;
+    if ( _players.find(iName) != _players.end() )
+    {
         LOG4CXX_WARN(_logger, "Player name (" << iName << ") is already in the player Map.");
-		return false;
 	}
-
-    //create playercontext and append
-    PlayerContext aPlayerContext( iName );
-    _players.insert( pair<string,PlayerContext>(iName, aPlayerContext) );
-    LOG4CXX_DEBUG(_logger, "new PlayerContext added with internalId=" << iName);
-    return true;
+	else
+	{
+        //create playercontext and append
+        PlayerContext aPlayerContext( iName );
+        _players.insert( pair<string,PlayerContext>(iName, aPlayerContext) );
+        LOG4CXX_DEBUG(_logger, "new PlayerContext added with internalId=" << iName);
+        aAddedPLayerSuccess = true;
+	}
+    return aAddedPLayerSuccess;
 }
 
 bool GlobalContext::addRobot(string const & iName)
 {
-	if (_robots.find(iName) != _robots.end() ){
+    bool aAddedRobotSuccess;
+	if (_robots.find(iName) != _robots.end() )
+	{
 	    LOG4CXX_WARN(_logger, "Robot name (" << iName << ") is already in the robot Map.");
-		return false;
 	}
-
-	// create RobotContext with that index
-	RobotContext aRobotCtx(iName);
-	_robots.insert( pair<string, RobotContext>( iName, aRobotCtx ) );
-    LOG4CXX_DEBUG(_logger, "new RobotContext added with internal ID=" << iName);
-    return true;
+	else
+	{
+        // create RobotContext with that index
+        RobotContext aRobotCtx(iName);
+        _robots.insert( pair<string, RobotContext>( iName, aRobotCtx ) );
+        LOG4CXX_DEBUG(_logger, "new RobotContext added with internal ID=" << iName);
+	    aAddedRobotSuccess = true;
+	}
+    return aAddedRobotSuccess;
 }
 
-bool GlobalContext::giveRobot(string const & iName)
+string GlobalContext::getAvailableRobot()
 {
+    string aFoundRobot;
+
     //search for the first robot which is not already associated to a player
-    std::map<std::string, RobotContext>::iterator aIterOnRobots;
+    map<string, RobotContext>::iterator aIterOnRobots;
     aIterOnRobots = _robots.begin();
-    while ( !aIterOnRobots->second.getControlledBy().empty() )
+    while ( aIterOnRobots != _robots.end()
+            && !aIterOnRobots->second.getPlayerName().empty())
     {
         ++aIterOnRobots;
     }
-
-    if (aIterOnRobots == _robots.end())
+    if ( !(aIterOnRobots == _robots.end()) )
     {
-        LOG4CXX_WARN(_logger, "Cannot associate robot : no more free robot");
-        return false;
+        aFoundRobot = aIterOnRobots->first;
     }
-    else
-    {
-        aIterOnRobots->second.setControlledBy(iName);
-        LOG4CXX_INFO(_logger, "Player " << iName << " now controls robot " << aIterOnRobots->first);
-        return true;
-    }
-
+    return aFoundRobot;
 }
 
 
