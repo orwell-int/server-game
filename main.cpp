@@ -32,7 +32,7 @@ int main()
 	PatternLayoutPtr aPatternLayout = new PatternLayout("%d %-5p (%F:%L) - %m%n");
 	ConsoleAppenderPtr aConsoleAppender = new ConsoleAppender(aPatternLayout);
 	filter::LevelRangeFilterPtr aLevelFilter = new filter::LevelRangeFilter();
-	//  aLevelFilter->setLevelMin(Level::getInfo());
+	aLevelFilter->setLevelMin(Level::getInfo());
 	aConsoleAppender->addFilter(aLevelFilter);
 	FileAppenderPtr aFileApender = new FileAppender( aPatternLayout, "orwelllog.txt");
 	BasicConfigurator::configure(aFileApender);

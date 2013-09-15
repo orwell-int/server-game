@@ -37,14 +37,13 @@ Receiver::Receiver(
 	{
 		_zmqSocket->bind(iUrl.c_str());
 		LOG4CXX_INFO(_logger, "Puller binds on " << iUrl.c_str());
+		sleep( 1 );
 	}
 	else
 	{
 		_zmqSocket->connect(iUrl.c_str());
 		LOG4CXX_INFO(_logger, "Subscriber connects to " << iUrl.c_str() << " - it subscribes to everything");
 	}
-	sleep( 1 );
-
 }
 
 Receiver::~Receiver()

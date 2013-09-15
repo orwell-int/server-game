@@ -9,7 +9,6 @@ using namespace log4cxx;
 using namespace log4cxx::helpers;
 
 using orwell::messages::Input;
-using orwell::messages::Welcome;
 using orwell::com::RawMessage;
 
 namespace orwell{

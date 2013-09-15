@@ -13,6 +13,7 @@
 //#include <processRegisterRobot.hpp>
 #include <ProcessHello.hpp>
 #include <ProcessInput.hpp>
+#include <ProcessRobotState.hpp>
 
 using std::string;
 using std::endl;
@@ -48,6 +49,12 @@ void processDecider::Process( RawMessage const & iMessage, GlobalContext & ioCtx
     {
         messages::Input aDecodedMsg = BuildProtobuf<messages::Input>( iMessage );
         ProcessInput aProcess (iMessage._routingId, aDecodedMsg, ioCtx);
+        aProcess.execute();
+    }
+    else if ( iMessage._type == string("RobotState") )
+    {
+        messages::RobotState aDecodedMsg = BuildProtobuf<messages::RobotState>( iMessage );
+        ProcessRobotState aProcess (iMessage._routingId, aDecodedMsg, ioCtx);
         aProcess.execute();
     }
     else

@@ -20,6 +20,9 @@
 
 
 #include <unistd.h>
+#include <mutex>
+
+std::mutex g_pages_mutex;
 
 using namespace log4cxx;
 
@@ -29,7 +32,8 @@ using std::string;
 
 static int const client(log4cxx::LoggerPtr iLogger)
 {
-	sleep(1);
+	g_pages_mutex.unlock();
+	g_pages_mutex.lock();
 	Sender aPusher("tcp://127.0.0.1:9000", ZMQ_PUSH, false);
 	Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB, false);
 
@@ -57,6 +61,7 @@ static int const client(log4cxx::LoggerPtr iLogger)
 
 	LOG4CXX_INFO(iLogger, "done")
 
+	g_pages_mutex.unlock();
 	return 0;
 }
 
@@ -65,6 +70,7 @@ static int const server(log4cxx::LoggerPtr iLogger)
 {
 	orwell::tasks::Server aServer("tcp://*:9000", "tcp://*:9001", iLogger);
 	LOG4CXX_INFO(iLogger, "server created");
+	g_pages_mutex.unlock();
 	return aServer.run();
 }
 
@@ -82,6 +88,7 @@ int main()
 	log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("orwell.log"));
 	logger->setLevel(log4cxx::Level::getDebug());
 
+	g_pages_mutex.lock();
 	int status(-1);
 	switch (fork())
 	{

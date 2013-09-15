@@ -19,8 +19,6 @@ class PlayerContext
 		std::string getName();
 		std::string getRobot();
 
-		bool giveRobot(std::map<std::string, RobotContext> & iRobotMap);
-
     private:
         std::string _name;
         std::string _robot;

@@ -38,7 +38,6 @@ Sender::Sender(
 	else
 	{
 		_zmqSocket->connect(iUrl.c_str());
-		sleep( 1 );
 		LOG4CXX_INFO(_logger, "Pusher connects to " << iUrl.c_str());
 	}
 }

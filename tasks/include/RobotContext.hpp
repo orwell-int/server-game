@@ -13,13 +13,13 @@ class RobotContext
 		RobotContext(std::string const & iName);
 		~RobotContext();
 
-        void setControlledBy(std::string const & iName);
+        void setPlayerName(std::string const & iName);
 		std::string const &  getName() const;
-		std::string const &  getControlledBy() const;
+		std::string const &  getPlayerName() const;
 
     private:
         std::string _name;
-        std::string _controlledBy;
+        std::string _playerName;
 };
 
 }} //end namespace

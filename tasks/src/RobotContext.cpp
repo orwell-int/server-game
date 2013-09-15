@@ -16,9 +16,9 @@ RobotContext::~RobotContext()
 
 }
 
-void RobotContext::setControlledBy(string const & iName)
+void RobotContext::setPlayerName(string const & iName)
 {
-    _controlledBy = iName;
+    _playerName = iName;
 }
 
 string const & RobotContext::getName() const
@@ -26,9 +26,9 @@ string const & RobotContext::getName() const
     return _name;
 }
 
-string const &  RobotContext::getControlledBy() const
+string const &  RobotContext::getPlayerName() const
 {
-    return _controlledBy;
+    return _playerName;
 }
 
 
