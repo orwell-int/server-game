@@ -1,15 +1,15 @@
 #pragma once
 
 //protobuf
-#include <controller.pb.h>
+#include "controller.pb.h"
 
 //tasks
-#include <GlobalContext.hpp>
-#include <InterfaceProcess.hpp>
+#include "GlobalContext.hpp"
+#include "InterfaceProcess.hpp"
 
 #include <string>
 
-#include "log4cxx/logger.h"
+#include <log4cxx/logger.h>
 
 
 namespace orwell {
@@ -24,16 +24,17 @@ class ProcessHello : public InterfaceProcess
 {
 public:
     ProcessHello(std::string const & iClientId, messages::Hello const & iHelloMsg, GlobalContext & ioCtx);
-    ~ProcessHello ();
+    ~ProcessHello();
 
     void execute();
 
 
 private:
     std::string _clientId;
-    messages::Hello const & _hello ;
+    messages::Hello const & _hello;
     log4cxx::LoggerPtr _logger;
 
 };
 
 }} //namespaces
+

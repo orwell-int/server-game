@@ -4,16 +4,17 @@
 
 #include "Receiver.hpp"
 #include "Sender.hpp"
+#include "ConnectionMode.hpp"
 #include "RawMessage.hpp"
 
 #include "ProcessDecider.hpp"
 
 #include <iostream>
 #include <zmq.hpp>
+#include <unistd.h>
 
-#include <boost/foreach.hpp>
-
-using namespace std;
+using orwell::com::Receiver;
+using orwell::com::Sender;
 
 namespace orwell
 {
@@ -24,11 +25,12 @@ Server::Server(
 		std::string const & iPullUrl,
 		std::string const & iPublishUrl,
 		log4cxx::LoggerPtr iLogger)
-	: _puller(make_shared< orwell::com::Receiver >(iPullUrl, ZMQ_PULL, true))
-	, _publisher(make_shared< orwell::com::Sender>(iPublishUrl, ZMQ_PUB, true))
+	: _puller(std::make_shared< Receiver >(iPullUrl, ZMQ_PULL, orwell::com::ConnectionMode::BIND))
+	, _publisher(std::make_shared< Sender >(iPublishUrl, ZMQ_PUB, orwell::com::ConnectionMode::BIND))
 	, _logger(iLogger)
 	, _globalContext(_publisher)
 {
+	usleep(10 * 1000);
 }
 
 Server::~Server()

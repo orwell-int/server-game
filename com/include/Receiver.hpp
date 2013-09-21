@@ -6,6 +6,8 @@
 
 #include <log4cxx/logger.h>
 
+#include "ConnectionMode.hpp"
+
 namespace zmq {
 	class context_t;
 	class socket_t;
@@ -18,10 +20,15 @@ class Receiver
 {
 
 public:
+	/// \param iSleep
+	///  Time to sleep after bind and connect.
+	///
 	Receiver(
 			std::string const & iUrl,
 			unsigned int const iSocketType,
-			bool const iBind);
+			ConnectionMode::ConnectionMode const iConnectionMode,
+			unsigned int const iSleep = 0);
+
 	~Receiver();
 
 	RawMessage receive();

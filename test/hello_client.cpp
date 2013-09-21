@@ -36,9 +36,9 @@ static int const client(log4cxx::LoggerPtr iLogger)
 	g_pages_mutex.unlock();
 	g_pages_mutex.lock();
 	LOG4CXX_INFO(iLogger, "create pusher");
-	Sender aPusher("tcp://127.0.0.1:9000", ZMQ_PUSH, false);
+	Sender aPusher("tcp://127.0.0.1:9000", ZMQ_PUSH, orwell::com::ConnectionMode::CONNECT);
 	LOG4CXX_INFO(iLogger, "create subscriber");
-	Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB, false);
+	Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB, orwell::com::ConnectionMode::CONNECT);
 
 	Hello aHelloMessage;
 	aHelloMessage.set_name("jambon");

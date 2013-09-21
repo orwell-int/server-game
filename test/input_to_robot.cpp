@@ -34,8 +34,8 @@ static int const client(log4cxx::LoggerPtr iLogger)
 {
 	g_pages_mutex.unlock();
 	g_pages_mutex.lock();
-	Sender aPusher("tcp://127.0.0.1:9000", ZMQ_PUSH, false);
-	Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB, false);
+	Sender aPusher("tcp://127.0.0.1:9000", ZMQ_PUSH, orwell::com::ConnectionMode::CONNECT);
+	Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB, orwell::com::ConnectionMode::CONNECT);
 
 	Input aInputMessage;
 

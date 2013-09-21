@@ -1,13 +1,13 @@
 #pragma once
 
 //protobuf
-#include <robot.pb.h>
+#include "robot.pb.h"
 
 //tasks
-#include <GlobalContext.hpp>
-#include <InterfaceProcess.hpp>
+#include "GlobalContext.hpp"
+#include "InterfaceProcess.hpp"
 
-#include "log4cxx/logger.h"
+#include <log4cxx/logger.h>
 
 namespace orwell {
 
@@ -21,7 +21,7 @@ class ProcessRobotState : public InterfaceProcess
 {
 public:
     ProcessRobotState(std::string const & iRoutingId, messages::RobotState const & iRobotStateMsg, GlobalContext & ioCtx);
-    ~ProcessRobotState ();
+    ~ProcessRobotState();
 
     void execute();
 

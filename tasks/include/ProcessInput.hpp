@@ -1,13 +1,13 @@
 #pragma once
 
 //protobuf
-#include <controller.pb.h>
+#include "controller.pb.h"
 
 //tasks
-#include <GlobalContext.hpp>
-#include <InterfaceProcess.hpp>
+#include "GlobalContext.hpp"
+#include "InterfaceProcess.hpp"
 
-#include "log4cxx/logger.h"
+#include <log4cxx/logger.h>
 
 namespace orwell {
 
@@ -21,7 +21,7 @@ class ProcessInput : public InterfaceProcess
 {
 public:
     ProcessInput(std::string const & iDest, messages::Input const & iInputMsg, GlobalContext & ioCtx);
-    ~ProcessInput ();
+    ~ProcessInput();
 
     void execute();
 

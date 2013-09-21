@@ -4,6 +4,8 @@
 
 #include <log4cxx/logger.h>
 
+#include "ConnectionMode.hpp"
+
 namespace zmq {
 	class context_t;
 	class socket_t;
@@ -27,10 +29,14 @@ public:
 	/// \param iBind
 	///    True if and only if the socket is to call bind instead of connect.
 	///
+	/// \param iSleep
+	///  Time to sleep after bind and connect.
+	///
 	Sender(
 			std::string const & iUrl,
 			unsigned int const iSocketType,
-			bool const iBind);
+			ConnectionMode::ConnectionMode const iConnectionMode,
+			unsigned int const iSleep = 0);
 	~Sender();
 
 	void send( RawMessage const & iMessage );

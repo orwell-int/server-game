@@ -20,25 +20,33 @@ namespace com{
 Sender::Sender(
 		string const & iUrl,
 		unsigned int const iSocketType,
-		bool const iBind) :
+		ConnectionMode::ConnectionMode const iConnectionMode,
+		unsigned int const iSleep) :
 	_zmqContext(new zmq::context_t(1)),
 	_zmqSocket(new zmq::socket_t(*_zmqContext, iSocketType)),
 	_logger(log4cxx::Logger::getLogger("orwell.log"))
 {
-	int aLinger = 1000; // linger 1 second max after being closed
-	LOG4CXX_INFO(_logger, "linger");
+	int aLinger = 10; // linger 0.01 second max after being closed
 	_zmqSocket->setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
 
-	if (iBind)
+	if (ConnectionMode::BIND == iConnectionMode)
 	{
 		_zmqSocket->bind(iUrl.c_str());
-		sleep( 1 );
 		LOG4CXX_INFO(_logger, "Publisher binds on " << iUrl.c_str());
+		if (iSleep < 0)
+		{
+			sleep(-iSleep);
+		}
 	}
 	else
 	{
+		assert(ConnectionMode::CONNECT == iConnectionMode);
 		_zmqSocket->connect(iUrl.c_str());
 		LOG4CXX_INFO(_logger, "Pusher connects to " << iUrl.c_str());
+	}
+	if (iSleep > 0)
+	{
+		sleep(iSleep);
 	}
 }
 
@@ -70,3 +78,4 @@ void Sender::send( RawMessage const & iMessage )
 }
 
 }} // end namespace
+
