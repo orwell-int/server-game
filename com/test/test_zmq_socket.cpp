@@ -57,18 +57,22 @@ return true;
 
 int main()
 {
-switch (fork())
-{
-case 0: // child
-client();
-return 0; // child can stop here
-break;
-default: // father
-if (server()) return 0;
-else return -1;
-break;
-}
+	switch (fork())
+	{
+		case 0: // child
+			client();
+			return 0; // child can stop here
+		default: // father
+			if (server())
+			{
+				return 0;
+			}
+			else
+			{
+				return -1;
+			}
+	}
 
-return -1; // Should never arrive here..
+	return -1; // Should never arrive here..
 }
 

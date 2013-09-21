@@ -31,14 +31,10 @@ message("-- include ${CMAKE_SOURCE_DIR}/com/include")
 message("-- include ${Boost_INCLUDE_DIRS}")
 include_directories(
 		"include"
-		${PROTOBUF_INCLUDE_DIRS}
-		${CMAKE_CURRENT_BINARY_DIR}/../messages
+		"${CMAKE_SOURCE_DIR}/com/include"
+		${CMAKE_BINARY_DIR}/messages
 		${CMAKE_CURRENT_BINARY_DIR} # This is needed for protobuf's messages
-		${LOG4CXX_INCLUDE_DIR}
-		${ZMQ_INCLUDE_DIRS}
-		${CMAKE_BINARY_DIR}/com/
-		${CMAKE_SOURCE_DIR}/com/include
-		${Boost_INCLUDE_DIRS})
+		)
 
 # Library compilation and linking
 add_library(orwell_tasks SHARED ${SOURCES})
@@ -46,7 +42,7 @@ target_link_libraries(orwell_tasks
 		orwell_com
 		orwell_messages
 		${ZMQ_LIBRARIES}
-        	${Boost_LIBRARIES}
+		${Boost_LIBRARIES}
 		${LOG4CXX_LIBRARIES})
 
 # Where to install stuff, protobuf messages generated H included

@@ -17,27 +17,37 @@ using std::endl;
 namespace orwell{
 namespace com{
 
-Sender::Sender(string const & iUrl, unsigned int const iSocketType) :
-    _zmqContext(new zmq::context_t(1)),
+Sender::Sender(
+		string const & iUrl,
+		unsigned int const iSocketType,
+		ConnectionMode::ConnectionMode const iConnectionMode,
+		unsigned int const iSleep) :
+	_zmqContext(new zmq::context_t(1)),
 	_zmqSocket(new zmq::socket_t(*_zmqContext, iSocketType)),
 	_logger(log4cxx::Logger::getLogger("orwell.log"))
 {
-     int aLinger = 1000; // linger 1 second max after being closed
-    _zmqSocket->setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
+	int aLinger = 10; // linger 0.01 second max after being closed
+	_zmqSocket->setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
 
-    if ( iSocketType == ZMQ_PUB)
-    {
-        _zmqSocket->bind(iUrl.c_str());
-         sleep( 1 );
-         LOG4CXX_INFO(_logger, "Publisher binds on " << iUrl.c_str() );
-    }
-    else
-    {
-        cout << "Sender connects on " << iUrl << endl;
-        _zmqSocket->connect(iUrl.c_str());
-        sleep( 1 );
-        LOG4CXX_INFO(_logger, "Pusher connects to " << iUrl.c_str() );
-    }
+	if (ConnectionMode::BIND == iConnectionMode)
+	{
+		_zmqSocket->bind(iUrl.c_str());
+		LOG4CXX_INFO(_logger, "Publisher binds on " << iUrl.c_str());
+		if (iSleep < 0)
+		{
+			sleep(-iSleep);
+		}
+	}
+	else
+	{
+		assert(ConnectionMode::CONNECT == iConnectionMode);
+		_zmqSocket->connect(iUrl.c_str());
+		LOG4CXX_INFO(_logger, "Pusher connects to " << iUrl.c_str());
+	}
+	if (iSleep > 0)
+	{
+		sleep(iSleep);
+	}
 }
 
 Sender::~Sender()
@@ -47,24 +57,25 @@ Sender::~Sender()
 	delete _zmqContext;
 }
 
-void Sender::send( string const & iDest, RawMessage const & iMessage )
+void Sender::send( RawMessage const & iMessage )
 {
-    log4cxx::LoggerPtr aLogger(log4cxx::Logger::getLogger("orwell.log"));
+	log4cxx::LoggerPtr aLogger(log4cxx::Logger::getLogger("orwell.log"));
 
-    string aMessage;
-    aMessage += iDest;
-    aMessage += " ";
-    aMessage += iMessage._type;
-    aMessage += " ";
-    aMessage += iMessage._payload;
+	string aMessage;
+	aMessage += iMessage._routingId;
+	aMessage += " ";
+	aMessage += iMessage._type;
+	aMessage += " ";
+	aMessage += iMessage._payload;
 
-    zmq::message_t aZmqMessage( aMessage.size() );
-    memcpy((void *) aZmqMessage.data(), aMessage.c_str(), aMessage.size());
+	zmq::message_t aZmqMessage( aMessage.size() );
+	memcpy((void *) aZmqMessage.data(), aMessage.c_str(), aMessage.size());
 
-    LOG4CXX_DEBUG(aLogger, "Preparing to send : " << iMessage._type);
-    _zmqSocket->send( aZmqMessage );
-    LOG4CXX_DEBUG(aLogger, "Sent : " << iMessage._type);
+	LOG4CXX_DEBUG(aLogger, "Preparing to send : " << iMessage._type);
+	_zmqSocket->send( aZmqMessage );
+	LOG4CXX_INFO(aLogger, "Sent " << aZmqMessage.size() << " bytes : " << iMessage._type << "-" );
 
 }
 
 }} // end namespace
+

@@ -1,7 +1,7 @@
 #pragma once
 
 //protobuf
-#include "controller.pb.h"
+#include "robot.pb.h"
 
 //tasks
 #include "GlobalContext.hpp"
@@ -12,23 +12,23 @@
 namespace orwell {
 
 namespace messages {
-class Input;
+class RobotState;
 }
 
 namespace tasks {
 
-class ProcessInput : public InterfaceProcess
+class ProcessRobotState : public InterfaceProcess
 {
 public:
-    ProcessInput(std::string const & iDest, messages::Input const & iInputMsg, GlobalContext & ioCtx);
-    ~ProcessInput();
+    ProcessRobotState(std::string const & iRoutingId, messages::RobotState const & iRobotStateMsg, GlobalContext & ioCtx);
+    ~ProcessRobotState();
 
     void execute();
 
 
 private:
     std::string _dest;
-    messages::Input const & _input ;
+    messages::RobotState const & _robotState ;
     log4cxx::LoggerPtr _logger;
 
 

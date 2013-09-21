@@ -19,12 +19,8 @@ message ("-- cmake current bin dir "${CMAKE_CURRENT_BINARY_DIR})
 # The -I flag for the compiler..
 include_directories(
 		"include"
-		${CMAKE_CURRENT_BINARY_DIR}/../messages
 		${CMAKE_CURRENT_BINARY_DIR} # This is needed for protobuf's messages
-		${ZMQ_INCLUDE_DIRS}
-		${LOG4CXX_INCLUDE_DIR}
-		${PROTOBUF_INCLUDE_DIRS}
-		${Boost_INCLUDE_DIRS})
+		)
 
 # Library compilation and linking
 add_library(orwell_com SHARED ${SOURCES})

@@ -3,31 +3,33 @@
 #pragma once
 
 #include <string>
+#include <cstdint>
 
 namespace orwell {
-	namespace com {
-		class url
-		{
-			public:
-				explicit url();
-				virtual ~url();
+namespace com {
 
-				void setProtocol(std::string const & iprotocol);
-				void setHost(std::string const & ihost);
-				void setPort(uint32_t iport);
+class url
+{
+public:
+	explicit url();
+	virtual ~url();
 
-				void resetUrl();
+	void setProtocol(std::string const & iProtocol);
+	void setHost(std::string const & iHost);
+	void setPort(uint32_t const iPort);
 
-				std::string const & toString() const;
+	void resetUrl();
 
-            private:
-                std::string _protocol;
-                std::string _host;
-                uint32_t _port;
+	std::string const & toString() const;
 
-                std::string _url;
+private:
+	std::string _protocol;
+	std::string _host;
+	uint32_t _port;
 
-		};
-	}
+	std::string _url;
+
+};
+}
 }
 
