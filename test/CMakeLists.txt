@@ -1,16 +1,12 @@
 # Tests' CMakeLists
 
+message(CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR})
+
 include_directories(
-		${CMAKE_CURRENT_BINARY_DIR}/../com
-		${CMAKE_CURRENT_BINARY_DIR}/../tasks
-		${CMAKE_CURRENT_BINARY_DIR}/../messages
-		${PROTOBUF_INCLUDE_DIRS}
-		${ZMQ_INCLUDE_DIRS}
-		${CMAKE_BINARY_DIR}/com/
-		${CMAKE_SOURCE_DIR}/com/include
-		${CMAKE_SOURCE_DIR}/tasks/include
-		${Boost_INCLUDE_DIRS}
-		${LOG4CXX_INCLUDE_DIR})
+	${CMAKE_SOURCE_DIR}/com/include
+	${CMAKE_SOURCE_DIR}/tasks/include
+	${CMAKE_BINARY_DIR}/messages
+	)
 
 # Test suite
 enable_testing()

@@ -46,15 +46,16 @@ add_subdirectory(tasks)
 # Tests module
 add_subdirectory(test)
 
+message(CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR})
 
 include_directories(
-		${CMAKE_CURRENT_BINARY_DIR}/../com/include
-		${CMAKE_CURRENT_BINARY_DIR}/../tasks/include
-		${CMAKE_CURRENT_BINARY_DIR}/messages
-		${ZMQ_INCLUDE_DIRS}
-		${LOG4CXX_INCLUDE_DIR}
-		${PROTOBUF_INCLUDE_DIRS}
-		${Boost_INCLUDE_DIRS})
+	${CMAKE_SOURCE_DIR}/com/include
+	${CMAKE_SOURCE_DIR}/tasks/include
+	${CMAKE_BINARY_DIR}/messages
+	${ZMQ_INCLUDE_DIRS}
+	${LOG4CXX_INCLUDE_DIR}
+	${PROTOBUF_INCLUDE_DIRS}
+	${Boost_INCLUDE_DIRS})
 add_executable(server_main main.cpp)
 target_link_libraries(server_main orwell_com orwell_tasks)
 
