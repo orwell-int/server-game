@@ -1,23 +1,23 @@
 #include <iostream>
-#include <RawMessage.hpp>
+#include "RawMessage.hpp"
 
 #include <zmq.hpp>
 #include <string>
 #include <unistd.h>
-#include <url.hpp>
+#include "url.hpp"
 
-#include <controller.pb.h>
+#include "controller.pb.h"
 
-#include <Sender.hpp>
-#include <Receiver.hpp>
+#include "Sender.hpp"
+#include "Receiver.hpp"
 
-#include "log4cxx/logger.h"
-#include "log4cxx/patternlayout.h"
-#include "log4cxx/consoleappender.h"
-#include "log4cxx/fileappender.h"
-#include "log4cxx/basicconfigurator.h"
-#include "log4cxx/helpers/exception.h"
-#include "log4cxx/filter/levelrangefilter.h"
+#include <log4cxx/logger.h>
+#include <log4cxx/patternlayout.h>
+#include <log4cxx/consoleappender.h>
+#include <log4cxx/fileappender.h>
+#include <log4cxx/basicconfigurator.h>
+#include <log4cxx/helpers/exception.h>
+#include <log4cxx/filter/levelrangefilter.h>
 
 
 using namespace log4cxx;
@@ -31,7 +31,7 @@ const uint32_t _port(9000);
 // takes as sole argument the expected value of the ID that is sent back from the server if the registration goes well.
 void requestRegistration( int iExpectedId )
 {
-
+/*
     cout << "Robot starting" << endl;
 
 //logging
@@ -56,6 +56,9 @@ void requestRegistration( int iExpectedId )
     LOG4CXX_INFO(logger, "Start logger INFO")
 
 Sender aPublisher("tcp://*:9001", ZMQ_PUB);
+
+*/
+/*
     Input aInputMessage;
 
     aInputMessage.mutable_move()->set_left(10);
@@ -66,11 +69,13 @@ Sender aPublisher("tcp://*:9001", ZMQ_PUB);
 string astr = "Input";
 RawMessage aMessage(astr, aInputMessage.SerializeAsString());
 
+cout << "batman " <<  aInputMessage.SerializeAsString() << endl;
+/*
 while (true){
     aPublisher.send("",aMessage);
     sleep(2);
 }
-
+*/
 
 
 
@@ -82,7 +87,7 @@ while (true){
     }*/
 
 /*
-    Sender aPublisher("tcp://*:9000", ZMQ_PUB);
+    Sender aPublisher("tcp://*:9000", ZMQ_PUB, true);
     Input aInputMessage;
 
     aInputMessage.mutable_move()->set_left(10);
