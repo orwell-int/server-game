@@ -1,4 +1,6 @@
 #include <iostream>
+#include <memory>
+#include <unistd.h>
 
 #include "Sender.hpp"
 #include "RawMessage.hpp"
@@ -17,8 +19,9 @@
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/helpers/exception.h>
 #include <log4cxx/filter/levelrangefilter.h>
+#include <log4cxx/ndc.h>
 
-#include <memory>
+
 
 using namespace log4cxx;
 
@@ -28,8 +31,7 @@ using namespace orwell::com;
 
 int main()
 {
-
-	PatternLayoutPtr aPatternLayout = new PatternLayout("%d %-5p (%F:%L) - %m%n");
+	PatternLayoutPtr aPatternLayout = new PatternLayout("%d %-5p %x (%F:%L) - %m%n");
 	ConsoleAppenderPtr aConsoleAppender = new ConsoleAppender(aPatternLayout);
 	filter::LevelRangeFilterPtr aLevelFilter = new filter::LevelRangeFilter();
 	aLevelFilter->setLevelMin(Level::getInfo());
@@ -47,7 +49,10 @@ int main()
 
 	while (true)
 	{
-		aServer.run();
+	    if ( not aServer.run() )
+	    {
+            usleep(100 * 1000);
+        }
 	}
 
 	return 0;

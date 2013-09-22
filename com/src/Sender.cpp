@@ -73,7 +73,7 @@ void Sender::send( RawMessage const & iMessage )
 
 	LOG4CXX_DEBUG(aLogger, "Preparing to send : " << iMessage._type);
 	_zmqSocket->send( aZmqMessage );
-	LOG4CXX_INFO(aLogger, "Sent " << aZmqMessage.size() << " bytes : " << iMessage._type << "-" );
+	LOG4CXX_INFO(aLogger, "Sent " << aMessage.size() << " bytes : " << iMessage._type << "-" );
 
 }
 

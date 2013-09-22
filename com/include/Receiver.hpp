@@ -2,8 +2,6 @@
 
 #include <string>
 
-#include "RawMessage.hpp"
-
 #include <log4cxx/logger.h>
 
 #include "ConnectionMode.hpp"
@@ -15,6 +13,8 @@ namespace zmq {
 
 namespace orwell {
 namespace com {
+
+class RawMessage;
 
 class Receiver
 {
@@ -31,7 +31,7 @@ public:
 
 	~Receiver();
 
-	RawMessage receive();
+	bool receive(RawMessage & oMessage);
 
 private:
 

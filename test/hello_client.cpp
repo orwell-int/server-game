@@ -17,6 +17,7 @@
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/helpers/exception.h>
 #include <log4cxx/filter/levelrangefilter.h>
+#include <log4cxx/ndc.h>
 
 
 #include <unistd.h>
@@ -33,12 +34,15 @@ using namespace std;
 
 static int const client(log4cxx::LoggerPtr iLogger)
 {
+	log4cxx::NDC ndc("client");
 	g_pages_mutex.unlock();
 	g_pages_mutex.lock();
+	usleep(6 * 1000);
 	LOG4CXX_INFO(iLogger, "create pusher");
 	Sender aPusher("tcp://127.0.0.1:9000", ZMQ_PUSH, orwell::com::ConnectionMode::CONNECT);
 	LOG4CXX_INFO(iLogger, "create subscriber");
 	Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB, orwell::com::ConnectionMode::CONNECT);
+	usleep(6 * 1000);
 
 	Hello aHelloMessage;
 	aHelloMessage.set_name("jambon");
@@ -48,7 +52,11 @@ static int const client(log4cxx::LoggerPtr iLogger)
 	RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
 	aPusher.send(aMessage);
 
-	RawMessage aResponse = aSubscriber.receive();
+	RawMessage aResponse ;
+	while ( not aSubscriber.receive(aResponse) )
+	{
+        usleep( 10 );
+	}
 
 	Welcome aWelcome;
 	aWelcome.ParsePartialFromString(aResponse._payload);
@@ -59,11 +67,14 @@ static int const client(log4cxx::LoggerPtr iLogger)
     aHelloMessage.set_name("fromage");
 
     LOG4CXX_INFO(iLogger, "message built Hello (size=" << aHelloMessage.ByteSize() << ")");
-    
+
 	RawMessage aMessage2("randomid", "Hello", aHelloMessage.SerializeAsString());
     aPusher.send(aMessage2);
 
-    aResponse = aSubscriber.receive();
+    while ( not aSubscriber.receive(aResponse) )
+	{
+        usleep( 10 );
+	}
 
     aWelcome.ParsePartialFromString(aResponse._payload);
 
@@ -77,7 +88,10 @@ static int const client(log4cxx::LoggerPtr iLogger)
 	RawMessage aMessage3("randomid", "Hello", aHelloMessage.SerializeAsString());
 	aPusher.send(aMessage3);
 
-	aResponse = aSubscriber.receive();
+	while ( not aSubscriber.receive(aResponse) )
+	{
+        usleep( 10 );
+	}
 
 	aWelcome.ParsePartialFromString(aResponse._payload);
 
@@ -91,7 +105,10 @@ static int const client(log4cxx::LoggerPtr iLogger)
     RawMessage aMessage4("randomid", "Hello", aHelloMessage.SerializeAsString());
     aPusher.send(aMessage4);
 
-    aResponse = aSubscriber.receive();
+    while ( not aSubscriber.receive(aResponse) )
+	{
+        usleep( 10 );
+	}
 
     aWelcome.ParsePartialFromString(aResponse._payload);
 
@@ -105,26 +122,37 @@ static int const client(log4cxx::LoggerPtr iLogger)
 
 static int const server(log4cxx::LoggerPtr iLogger)
 {
+	log4cxx::NDC ndc("server");
 	orwell::tasks::Server aServer("tcp://*:9000", "tcp://*:9001", iLogger);
 	LOG4CXX_INFO(iLogger, "server created");
+	aServer.accessContext().addRobot("Gipsy Danger");
+	aServer.accessContext().addRobot("Goldorak");
+	aServer.accessContext().addRobot("Securitron");
 	g_pages_mutex.unlock();
-	int aStatus = 0;
-	for (unsigned int i = 0 ; (i < 4) and (0 == aStatus) ; ++i)
+	int aNbReceived = 0;
+	while ( aNbReceived < 4)
 	{
-		aStatus = aServer.run();
+        if (aServer.run())
+        {
+            ++ aNbReceived ;
+        }
+        else
+        {
+            usleep ( 10 );
+        }
 	}
-	return aStatus;
+	return 0;
 }
 
 int main()
 {
-
-	PatternLayoutPtr aPatternLayout = new PatternLayout("%d %-5p (%F:%L) - %m%n");
+	log4cxx::NDC ndc("hello");
+	PatternLayoutPtr aPatternLayout = new PatternLayout("%d %-5p %x (%F:%L) - %m%n");
 	ConsoleAppenderPtr aConsoleAppender = new ConsoleAppender(aPatternLayout);
 	filter::LevelRangeFilterPtr aLevelFilter = new filter::LevelRangeFilter();
 	//    aLevelFilter->setLevelMin(Level::getInfo());
 	aConsoleAppender->addFilter(aLevelFilter);
-	FileAppenderPtr aFileApender = new FileAppender( aPatternLayout, "orwelllog.txt");
+	FileAppenderPtr aFileApender = new FileAppender(aPatternLayout, "orwelllog.txt");
 	BasicConfigurator::configure(aFileApender);
 	BasicConfigurator::configure(aConsoleAppender);
 	log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("orwell.log"));

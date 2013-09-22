@@ -17,6 +17,7 @@
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/helpers/exception.h>
 #include <log4cxx/filter/levelrangefilter.h>
+#include <log4cxx/ndc.h>
 
 
 #include <unistd.h>
@@ -32,10 +33,13 @@ using std::string;
 
 static int const client(log4cxx::LoggerPtr iLogger)
 {
+	log4cxx::NDC ndc("client");
 	g_pages_mutex.unlock();
 	g_pages_mutex.lock();
+	usleep(6 * 1000);
 	Sender aPusher("tcp://127.0.0.1:9000", ZMQ_PUSH, orwell::com::ConnectionMode::CONNECT);
 	Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB, orwell::com::ConnectionMode::CONNECT);
+	usleep(6 * 1000);
 
 	Input aInputMessage;
 
@@ -52,7 +56,10 @@ static int const client(log4cxx::LoggerPtr iLogger)
 	RawMessage aMessage("TANK_0", "Input", aInputMessage.SerializeAsString());
 	aPusher.send(aMessage);
 
-	aMessage = aSubscriber.receive();
+    while ( not aSubscriber.receive(aMessage) )
+	{
+        usleep( 10 );
+	}
 	Input aInput ;
 	aInput.ParsePartialFromString( aMessage._payload );
 	LOG4CXX_INFO(iLogger, "message received is (size=" << aInput.ByteSize() << ")");
@@ -68,16 +75,32 @@ static int const client(log4cxx::LoggerPtr iLogger)
 
 static int const server(log4cxx::LoggerPtr iLogger)
 {
+	log4cxx::NDC ndc("server");
 	orwell::tasks::Server aServer("tcp://*:9000", "tcp://*:9001", iLogger);
 	LOG4CXX_INFO(iLogger, "server created");
+	aServer.accessContext().addRobot("Gipsy Danger");
+	aServer.accessContext().addRobot("Goldorak");
+	aServer.accessContext().addRobot("Securitron");
 	g_pages_mutex.unlock();
-	return aServer.run();
+	int aNbReceived = 0;
+	while ( aNbReceived < 1)
+	{
+        if (aServer.run())
+        {
+            ++ aNbReceived ;
+        }
+        else
+        {
+            usleep ( 10 );
+        }
+	}
+	return 0;
 }
 
 int main()
 {
-
-	PatternLayoutPtr aPatternLayout = new PatternLayout("%d %-5p (%F:%L) - %m%n");
+	log4cxx::NDC ndc("input");
+	PatternLayoutPtr aPatternLayout = new PatternLayout("%d %-5p %x (%F:%L) - %m%n");
 	ConsoleAppenderPtr aConsoleAppender = new ConsoleAppender(aPatternLayout);
 	filter::LevelRangeFilterPtr aLevelFilter = new filter::LevelRangeFilter();
 	//    aLevelFilter->setLevelMin(Level::getInfo());

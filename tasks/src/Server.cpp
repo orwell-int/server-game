@@ -11,7 +11,6 @@
 
 #include <iostream>
 #include <zmq.hpp>
-#include <unistd.h>
 
 using orwell::com::Receiver;
 using orwell::com::Sender;
@@ -30,20 +29,22 @@ Server::Server(
 	, _logger(iLogger)
 	, _globalContext(_publisher)
 {
-	usleep(10 * 1000);
 }
 
 Server::~Server()
 {
 }
 
-int Server::run()
+bool Server::run()
 {
-	LOG4CXX_INFO(_logger, "server waiting for message")
-	orwell::com::RawMessage aMessage = _puller->receive();
-
-	processDecider::Process(aMessage, _globalContext);
-	return 0;
+	bool aProcessedMessage = false;
+	orwell::com::RawMessage aMessage;
+	if (_puller->receive(aMessage))
+	{
+	    processDecider::Process(aMessage, _globalContext);
+	    aProcessedMessage = true;
+	}
+	return aProcessedMessage;
 }
 
 orwell::tasks::GlobalContext & Server::accessContext()

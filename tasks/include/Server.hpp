@@ -27,7 +27,7 @@ public:
 
 	~Server();
 
-	int run();
+	bool run();
 
 	orwell::tasks::GlobalContext & accessContext();
 
