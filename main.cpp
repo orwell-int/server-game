@@ -1,12 +1,10 @@
 #include <iostream>
 #include <memory>
-#include <unistd.h>
 
 #include "Sender.hpp"
 #include "RawMessage.hpp"
 #include "Receiver.hpp"
 
-#include "ProcessDecider.hpp"
 #include "GlobalContext.hpp"
 #include "Server.hpp"
 
@@ -31,6 +29,8 @@ using namespace orwell::com;
 
 int main()
 {
+
+
 	PatternLayoutPtr aPatternLayout = new PatternLayout("%d %-5p %x (%F:%L) - %m%n");
 	ConsoleAppenderPtr aConsoleAppender = new ConsoleAppender(aPatternLayout);
 	filter::LevelRangeFilterPtr aLevelFilter = new filter::LevelRangeFilter();
@@ -42,18 +42,12 @@ int main()
 	log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("orwell.log"));
 	logger->setLevel(log4cxx::Level::getDebug());
 
-	orwell::tasks::Server aServer("tcp://*:9000", "tcp://*:9001", logger);
+	orwell::tasks::Server aServer("tcp://*:9000", "tcp://*:9001", 500, logger);
 	aServer.accessContext().addRobot("Gipsy Danger");
 	aServer.accessContext().addRobot("Goldorak");
 	aServer.accessContext().addRobot("Securitron");
 
-	while (true)
-	{
-	    if ( not aServer.run() )
-	    {
-            usleep(100 * 1000);
-        }
-	}
+	aServer.loop();
 
 	return 0;
 }

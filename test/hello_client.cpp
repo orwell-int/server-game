@@ -93,6 +93,7 @@ static int const client(log4cxx::LoggerPtr iLogger)
         usleep( 10 );
 	}
 
+usleep(10000 * 1000);
 	aWelcome.ParsePartialFromString(aResponse._payload);
 
 	LOG4CXX_INFO(iLogger, "message received is (size=" << aWelcome.ByteSize() << ")");
@@ -123,23 +124,16 @@ static int const client(log4cxx::LoggerPtr iLogger)
 static int const server(log4cxx::LoggerPtr iLogger)
 {
 	log4cxx::NDC ndc("server");
-	orwell::tasks::Server aServer("tcp://*:9000", "tcp://*:9001", iLogger);
+	orwell::tasks::Server aServer("tcp://*:9000", "tcp://*:9001", 500, iLogger);
 	LOG4CXX_INFO(iLogger, "server created");
 	aServer.accessContext().addRobot("Gipsy Danger");
 	aServer.accessContext().addRobot("Goldorak");
 	aServer.accessContext().addRobot("Securitron");
 	g_pages_mutex.unlock();
-	int aNbReceived = 0;
-	while ( aNbReceived < 4)
+
+	for (int i = 0 ; i < 4 ; ++i )
 	{
-        if (aServer.run())
-        {
-            ++ aNbReceived ;
-        }
-        else
-        {
-            usleep ( 10 );
-        }
+        aServer.loopUntilOneMessageIsProcessed();
 	}
 	return 0;
 }

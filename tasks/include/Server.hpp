@@ -2,9 +2,11 @@
 
 #include <string>
 #include <memory>
-#include "GlobalContext.hpp"
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <log4cxx/logger.h>
+
+#include "GlobalContext.hpp"
 
 namespace orwell {
 
@@ -23,11 +25,17 @@ public:
 	Server(
 			std::string const & iPullUrl = "tcp://*:9000",
 			std::string const & iPublishUrl = "tcp://*:9001",
-			log4cxx::LoggerPtr iLogger = log4cxx::Logger::getLogger("orwell.log"));
+	        long const iTicDuration , //milliseconds
+			log4cxx::LoggerPtr iLogger = log4cxx::Logger::getLogger("orwell.log") );
 
 	~Server();
 
-	bool run();
+    /// processMessageIfAvailable
+	bool processMessageIfAvailable();
+	/// Wait for 1 message and process it. Execute timed operations if needed.
+	void loopUntilOneMessageIsProcessed();
+    /// Loop eternaly to process all incoming messages.
+    void loop();
 
 	orwell::tasks::GlobalContext & accessContext();
 
@@ -36,6 +44,9 @@ private:
 	std::shared_ptr< com::Sender > _publisher;
 	log4cxx::LoggerPtr _logger;
 	orwell::tasks::GlobalContext _globalContext;
+
+    boost::posix_time::time_duration const _ticDuration;
+    boost::posix_time::ptime _previousTic;
 };
 
 }
