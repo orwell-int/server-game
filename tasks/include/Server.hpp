@@ -8,7 +8,8 @@
 
 #include "GlobalContext.hpp"
 
-namespace orwell {
+namespace orwell
+{
 
 namespace com
 {

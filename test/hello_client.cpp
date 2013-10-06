@@ -61,12 +61,12 @@ static int const client(log4cxx::LoggerPtr iLogger)
 	Welcome aWelcome;
 	aWelcome.ParsePartialFromString(aResponse._payload);
 
-	LOG4CXX_INFO(iLogger, "message received is (size=" << aWelcome.ByteSize() << ")");
-	LOG4CXX_INFO(iLogger, "message received : robot:" << aWelcome.robot() << "-team:" << aWelcome.team());
+	LOG4CXX_INFO(iLogger, "1 message received is (size=" << aWelcome.ByteSize() << ")");
+	LOG4CXX_INFO(iLogger, "1 message received : robot:" << aWelcome.robot() << "-team:" << aWelcome.team());
 
     aHelloMessage.set_name("fromage");
 
-    LOG4CXX_INFO(iLogger, "message built Hello (size=" << aHelloMessage.ByteSize() << ")");
+    LOG4CXX_INFO(iLogger, "1 message built Hello (size=" << aHelloMessage.ByteSize() << ")");
 
 	RawMessage aMessage2("randomid", "Hello", aHelloMessage.SerializeAsString());
     aPusher.send(aMessage2);
@@ -78,12 +78,12 @@ static int const client(log4cxx::LoggerPtr iLogger)
 
     aWelcome.ParsePartialFromString(aResponse._payload);
 
-    LOG4CXX_INFO(iLogger, "message received is (size=" << aWelcome.ByteSize() << ")");
-    LOG4CXX_INFO(iLogger, "message received : robot:" << aWelcome.robot() << "-team:" << aWelcome.team());
+    LOG4CXX_INFO(iLogger, "2 message received is (size=" << aWelcome.ByteSize() << ")");
+    LOG4CXX_INFO(iLogger, "2 message received : robot:" << aWelcome.robot() << "-team:" << aWelcome.team());
 
 	aHelloMessage.set_name("poulet");
 
-	LOG4CXX_INFO(iLogger, "message built Hello (size=" << aHelloMessage.ByteSize() << ")");
+	LOG4CXX_INFO(iLogger, "2 message built Hello (size=" << aHelloMessage.ByteSize() << ")");
 
 	RawMessage aMessage3("randomid", "Hello", aHelloMessage.SerializeAsString());
 	aPusher.send(aMessage3);
@@ -95,25 +95,31 @@ static int const client(log4cxx::LoggerPtr iLogger)
 
 	aWelcome.ParsePartialFromString(aResponse._payload);
 
-	LOG4CXX_INFO(iLogger, "message received is (size=" << aWelcome.ByteSize() << ")");
-	LOG4CXX_INFO(iLogger, "message received : robot:" << aWelcome.robot() << "-team:" << aWelcome.team());
+	LOG4CXX_INFO(iLogger, "3 message received is (size=" << aWelcome.ByteSize() << ")");
+	LOG4CXX_INFO(iLogger, "3 message received : robot:" << aWelcome.robot() << "-team:" << aWelcome.team());
 
 	aHelloMessage.set_name("rutabagas");
 
-    LOG4CXX_INFO(iLogger, "message built Hello (size=" << aHelloMessage.ByteSize() << ")");
+    LOG4CXX_INFO(iLogger, "3 message built Hello (size=" << aHelloMessage.ByteSize() << ")");
 
     RawMessage aMessage4("randomid", "Hello", aHelloMessage.SerializeAsString());
     aPusher.send(aMessage4);
 
-    while ( not aSubscriber.receive(aResponse) )
+	bool aReceivedGoodbye(false);
+	while (not aReceivedGoodbye)
 	{
-        usleep( 10 );
+		while ( not aSubscriber.receive(aResponse) )
+		{
+			usleep( 10 );
+		}
+
+		aReceivedGoodbye = ("Goodbye" == aResponse._type);
 	}
 
-    aWelcome.ParsePartialFromString(aResponse._payload);
-
-    LOG4CXX_INFO(iLogger, "message received is (size=" << aWelcome.ByteSize() << ")");
-    LOG4CXX_INFO(iLogger, "message received : robot:" << aWelcome.robot() << "-team:" << aWelcome.team());
+	Goodbye aGoodbye;
+	aGoodbye.ParsePartialFromString(aResponse._payload);
+	LOG4CXX_INFO(iLogger, "4 message received is (size=" << aGoodbye.ByteSize() << ")");
+    LOG4CXX_INFO(iLogger, "goodbye message received");
 
 	g_pages_mutex.unlock();
 	return 0;

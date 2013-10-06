@@ -65,7 +65,7 @@ void Server::loopUntilOneMessageIsProcessed()
 	    {
             if ( not processMessageIfAvailable() )
             {
-                usleep(100 * 1000);
+                usleep(10 * 1000);
             }
             else
             {
