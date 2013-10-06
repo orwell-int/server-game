@@ -93,7 +93,6 @@ static int const client(log4cxx::LoggerPtr iLogger)
         usleep( 10 );
 	}
 
-usleep(10000 * 1000);
 	aWelcome.ParsePartialFromString(aResponse._payload);
 
 	LOG4CXX_INFO(iLogger, "message received is (size=" << aWelcome.ByteSize() << ")");

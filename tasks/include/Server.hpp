@@ -25,7 +25,7 @@ public:
 	Server(
 			std::string const & iPullUrl = "tcp://*:9000",
 			std::string const & iPublishUrl = "tcp://*:9001",
-	        long const iTicDuration , //milliseconds
+	        long const iTicDuration = 500, //milliseconds
 			log4cxx::LoggerPtr iLogger = log4cxx::Logger::getLogger("orwell.log") );
 
 	~Server();

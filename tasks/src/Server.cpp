@@ -61,7 +61,6 @@ void Server::loopUntilOneMessageIsProcessed()
 	{
 	    aCurrentTic = boost::posix_time::second_clock::local_time();
 	    aDuration = aCurrentTic - _previousTic;
-        LOG4CXX_INFO(_logger, "current duration " <<aDuration.total_milliseconds() );
 	    if ( aDuration < _ticDuration )
 	    {
             if ( not processMessageIfAvailable() )
@@ -75,7 +74,6 @@ void Server::loopUntilOneMessageIsProcessed()
         }
         else
         {
-            LOG4CXX_INFO(_logger, "time out : processTimer");
             ProcessTimer aProcessTimer( _globalContext );
             aProcessTimer.execute();
             _previousTic = aCurrentTic;

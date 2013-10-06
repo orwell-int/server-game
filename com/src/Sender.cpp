@@ -71,9 +71,8 @@ void Sender::send( RawMessage const & iMessage )
 	zmq::message_t aZmqMessage( aMessage.size() );
 	memcpy((void *) aZmqMessage.data(), aMessage.c_str(), aMessage.size());
 
-	LOG4CXX_DEBUG(aLogger, "Preparing to send : " << iMessage._type);
 	_zmqSocket->send( aZmqMessage );
-	LOG4CXX_INFO(aLogger, "Sent " << aMessage.size() << " bytes : " << iMessage._type << "-" );
+	LOG4CXX_DEBUG(aLogger, "Sent " << aMessage.size() << " bytes : " << iMessage._type << "-" );
 
 }
 
