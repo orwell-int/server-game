@@ -10,6 +10,8 @@
 #include "Receiver.hpp"
 #include "Server.hpp"
 
+#include "Common.hpp"
+
 #include <log4cxx/logger.h>
 #include <log4cxx/patternlayout.h>
 #include <log4cxx/consoleappender.h>
@@ -105,16 +107,6 @@ static int const client(log4cxx::LoggerPtr iLogger)
     RawMessage aMessage4("randomid", "Hello", aHelloMessage.SerializeAsString());
     aPusher.send(aMessage4);
 
-	bool aReceivedGoodbye(false);
-	while (not aReceivedGoodbye)
-	{
-		while ( not aSubscriber.receive(aResponse) )
-		{
-			usleep( 10 );
-		}
-
-		aReceivedGoodbye = ("Goodbye" == aResponse._type);
-	}
 
 	Goodbye aGoodbye;
 	aGoodbye.ParsePartialFromString(aResponse._payload);
@@ -145,18 +137,7 @@ static int const server(log4cxx::LoggerPtr iLogger)
 
 int main()
 {
-	log4cxx::NDC ndc("hello");
-	PatternLayoutPtr aPatternLayout = new PatternLayout("%d %-5p %x (%F:%L) - %m%n");
-	ConsoleAppenderPtr aConsoleAppender = new ConsoleAppender(aPatternLayout);
-	filter::LevelRangeFilterPtr aLevelFilter = new filter::LevelRangeFilter();
-	//    aLevelFilter->setLevelMin(Level::getInfo());
-	aConsoleAppender->addFilter(aLevelFilter);
-	FileAppenderPtr aFileApender = new FileAppender(aPatternLayout, "orwelllog.txt");
-	BasicConfigurator::configure(aFileApender);
-	BasicConfigurator::configure(aConsoleAppender);
-	log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("orwell.log"));
-	logger->setLevel(log4cxx::Level::getDebug());
-
+	auto logger = Common::SetupLogger("hello");
 	g_pages_mutex.lock();
 	int status(-1);
 	switch (fork())
