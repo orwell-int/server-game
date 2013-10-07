@@ -69,13 +69,14 @@ static void const client(log4cxx::LoggerPtr iLogger)
 
 static void const server(log4cxx::LoggerPtr iLogger, std::shared_ptr< orwell::tasks::Server > ioServer)
 {
+	log4cxx::NDC ndc("server");
     ioServer->loopUntilOneMessageIsProcessed();
 }
 
 int main()
 {
 	log4cxx::LoggerPtr logger = Common::SetupLogger("Input");
-	log4cxx::NDC ndc("server");
+	log4cxx::NDC ndc("input");
 	std::shared_ptr< orwell::tasks::Server > aServer = std::make_shared< orwell::tasks::Server >("tcp://*:9000", "tcp://*:9001", 500, logger);
 	LOG4CXX_INFO(logger, "server created");
 	aServer->accessContext().addRobot("Gipsy Danger");

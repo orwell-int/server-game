@@ -24,8 +24,7 @@
 
 #include <unistd.h>
 #include <mutex>
-
-std::mutex g_pages_mutex;
+#include <thread>
 
 using namespace log4cxx;
 
@@ -33,12 +32,11 @@ using namespace orwell::com;
 using namespace orwell::messages;
 using namespace std;
 
+int g_status = 0;
 
-static int const client(log4cxx::LoggerPtr iLogger)
+static void const client(log4cxx::LoggerPtr iLogger)
 {
 	log4cxx::NDC ndc("client");
-	g_pages_mutex.unlock();
-	g_pages_mutex.lock();
 	usleep(6 * 1000);
 	LOG4CXX_INFO(iLogger, "create pusher");
 	Sender aPusher("tcp://127.0.0.1:9000", ZMQ_PUSH, orwell::com::ConnectionMode::CONNECT);
@@ -112,47 +110,31 @@ static int const client(log4cxx::LoggerPtr iLogger)
 	aGoodbye.ParsePartialFromString(aResponse._payload);
 	LOG4CXX_INFO(iLogger, "4 message received is (size=" << aGoodbye.ByteSize() << ")");
     LOG4CXX_INFO(iLogger, "goodbye message received");
-
-	g_pages_mutex.unlock();
-	return 0;
 }
 
 
-static int const server(log4cxx::LoggerPtr iLogger)
+static void const server(log4cxx::LoggerPtr iLogger, std::shared_ptr< orwell::tasks::Server > ioServer)
 {
 	log4cxx::NDC ndc("server");
-	orwell::tasks::Server aServer("tcp://*:9000", "tcp://*:9001", 500, iLogger);
-	LOG4CXX_INFO(iLogger, "server created");
-	aServer.accessContext().addRobot("Gipsy Danger");
-	aServer.accessContext().addRobot("Goldorak");
-	aServer.accessContext().addRobot("Securitron");
-	g_pages_mutex.unlock();
-
 	for (int i = 0 ; i < 4 ; ++i )
 	{
-        aServer.loopUntilOneMessageIsProcessed();
+        ioServer->loopUntilOneMessageIsProcessed();
 	}
-	return 0;
 }
 
 int main()
 {
 	auto logger = Common::SetupLogger("hello");
-	g_pages_mutex.lock();
-	int status(-1);
-	switch (fork())
-	{
-		case 0: // child
-		{
-			status = client(logger);
-			break;
-		}
-		default: // father
-		{
-			status = server(logger);
-			break;
-		}
-	}
-	return status;
+	log4cxx::NDC ndc("hello");
+	std::shared_ptr< orwell::tasks::Server > aServer = std::make_shared< orwell::tasks::Server >("tcp://*:9000", "tcp://*:9001", 500, logger);
+	LOG4CXX_INFO(logger, "server created");
+	aServer->accessContext().addRobot("Gipsy Danger");
+	aServer->accessContext().addRobot("Goldorak");
+	aServer->accessContext().addRobot("Securitron");
+	std::thread aServerThread(server, logger, aServer);
+	std::thread aClientThread(client, logger);
+	aClientThread.join();
+	aServerThread.join();
+	return g_status;
 }
 
