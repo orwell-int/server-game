@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="Debug" />
+	<File name="CMakeLists.txt" open="0" top="0" tabpos="0">
+		<Cursor position="1165" topLine="4" />
+	</File>
+	<File name="com/CMakeLists.txt" open="0" top="0" tabpos="0">
+		<Cursor position="464" topLine="8" />
+	</File>
+	<File name="com/include/RawMessage.hpp" open="0" top="0" tabpos="0">
+		<Cursor position="247" topLine="0" />
+	</File>
+	<File name="com/include/Receiver.hpp" open="0" top="0" tabpos="0">
+		<Cursor position="183" topLine="0" />
+	</File>
+	<File name="com/include/Sender.hpp" open="1" top="0" tabpos="6">
+		<Cursor position="854" topLine="12" />
+	</File>
+	<File name="com/include/url.hpp" open="0" top="0" tabpos="3">
+		<Cursor position="119" topLine="0" />
+	</File>
+	<File name="com/src/RawMessage.cpp" open="0" top="0" tabpos="6">
+		<Cursor position="129" topLine="0" />
+	</File>
+	<File name="com/src/Receiver.cpp" open="0" top="0" tabpos="3">
+		<Cursor position="2048" topLine="54" />
+	</File>
+	<File name="com/src/Sender.cpp" open="0" top="0" tabpos="4">
+		<Cursor position="1703" topLine="37" />
+	</File>
+	<File name="com/src/url.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="438" topLine="8" />
+	</File>
+	<File name="com/test/test_basics.cpp" open="0" top="0" tabpos="6">
+		<Cursor position="152" topLine="0" />
+	</File>
+	<File name="com/test/test_pubsub_pub.cpp" open="0" top="0" tabpos="6">
+		<Cursor position="21" topLine="0" />
+	</File>
+	<File name="com/test/test_pubsub_sub.cpp" open="0" top="0" tabpos="7">
+		<Cursor position="22" topLine="0" />
+	</File>
+	<File name="com/test/test_url.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="10" topLine="0" />
+	</File>
+	<File name="com/test/test_zmq_socket.cpp" open="0" top="0" tabpos="5">
+		<Cursor position="95" topLine="0" />
+	</File>
+	<File name="main.cpp" open="1" top="0" tabpos="1">
+		<Cursor position="1259" topLine="9" />
+	</File>
+	<File name="tasks/CMakeLists.txt" open="0" top="0" tabpos="0">
+		<Cursor position="1179" topLine="2" />
+	</File>
+	<File name="tasks/include/GlobalContext.hpp" open="0" top="0" tabpos="1">
+		<Cursor position="543" topLine="7" />
+	</File>
+	<File name="tasks/include/InterfaceProcess.hpp" open="0" top="0" tabpos="0">
+		<Cursor position="238" topLine="0" />
+	</File>
+	<File name="tasks/include/MissingFromTheStandard.hpp" open="0" top="0" tabpos="0">
+		<Cursor position="221" topLine="0" />
+	</File>
+	<File name="tasks/include/PlayerContext.hpp" open="0" top="0" tabpos="4">
+		<Cursor position="398" topLine="0" />
+	</File>
+	<File name="tasks/include/ProcessDecider.hpp" open="0" top="0" tabpos="0">
+		<Cursor position="139" topLine="0" />
+	</File>
+	<File name="tasks/include/ProcessHello.hpp" open="0" top="0" tabpos="4">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="tasks/include/ProcessInput.hpp" open="0" top="0" tabpos="3">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="tasks/include/ProcessRobotState.hpp" open="0" top="0" tabpos="0">
+		<Cursor position="204" topLine="0" />
+	</File>
+	<File name="tasks/include/ProcessTimer.hpp" open="0" top="0" tabpos="0">
+		<Cursor position="386" topLine="0" />
+	</File>
+	<File name="tasks/include/RobotContext.hpp" open="0" top="0" tabpos="0">
+		<Cursor position="277" topLine="0" />
+	</File>
+	<File name="tasks/include/Server.hpp" open="0" top="0" tabpos="3">
+		<Cursor position="1030" topLine="10" />
+	</File>
+	<File name="tasks/src/GlobalContext.cpp" open="0" top="0" tabpos="2">
+		<Cursor position="2466" topLine="62" />
+	</File>
+	<File name="tasks/src/InterfaceProcess.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="44" topLine="0" />
+	</File>
+	<File name="tasks/src/PlayerContext.cpp" open="0" top="0" tabpos="3">
+		<Cursor position="386" topLine="0" />
+	</File>
+	<File name="tasks/src/ProcessDecider.cpp" open="1" top="0" tabpos="8">
+		<Cursor position="1789" topLine="24" />
+	</File>
+	<File name="tasks/src/ProcessHello.cpp" open="0" top="0" tabpos="3">
+		<Cursor position="322" topLine="25" />
+	</File>
+	<File name="tasks/src/ProcessInput.cpp" open="0" top="0" tabpos="5">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="tasks/src/ProcessRobotState.cpp" open="0" top="0" tabpos="7">
+		<Cursor position="815" topLine="0" />
+	</File>
+	<File name="tasks/src/ProcessTimer.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="398" topLine="0" />
+	</File>
+	<File name="tasks/src/RobotContext.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="278" topLine="0" />
+	</File>
+	<File name="tasks/src/Server.cpp" open="1" top="0" tabpos="5">
+		<Cursor position="717" topLine="15" />
+	</File>
+	<File name="test/Common.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="1615" topLine="24" />
+	</File>
+	<File name="test/Common.hpp" open="1" top="0" tabpos="7">
+		<Cursor position="230" topLine="0" />
+	</File>
+	<File name="test/Utils.hpp" open="0" top="0" tabpos="0">
+		<Cursor position="2" topLine="0" />
+	</File>
+	<File name="test/hello_client.cpp" open="1" top="0" tabpos="2">
+		<Cursor position="0" topLine="33" />
+	</File>
+	<File name="test/input_to_robot.cpp" open="1" top="0" tabpos="4">
+		<Cursor position="1239" topLine="25" />
+	</File>
+	<File name="test/register_robot.cpp" open="0" top="0" tabpos="5">
+		<Cursor position="1628" topLine="27" />
+	</File>
+	<File name="test/test.cpp" open="1" top="1" tabpos="3">
+		<Cursor position="1516" topLine="28" />
+	</File>
+</CodeBlocks_layout_file>

@@ -19,14 +19,14 @@
 using namespace log4cxx;
 
 bool Common::ExpectMessage(std::string const & iType,
-		orwell::com::Receiver & iSubscriber, 
-		orwell::com::RawMessage & oReceived, 
+		orwell::com::Receiver & iSubscriber,
+		orwell::com::RawMessage & oReceived,
 		unsigned int const iTimeout)
 {
 	bool aReceived(false);
 	boost::posix_time::time_duration aTrueTimeout = boost::posix_time::milliseconds(iTimeout);
 	boost::posix_time::time_duration aDuration;
-	boost::posix_time::ptime aCurrentTime; 
+	boost::posix_time::ptime aCurrentTime;
 	boost::posix_time::ptime aStartTime = boost::posix_time::second_clock::local_time();
 	while (not aReceived and (aDuration < aTrueTimeout) )
 	{
@@ -36,7 +36,7 @@ bool Common::ExpectMessage(std::string const & iType,
 		{
 			usleep( 10 );
 		}
-		else 
+		else
 		{
 			aReceived = true;
 		}
@@ -45,13 +45,17 @@ bool Common::ExpectMessage(std::string const & iType,
 	return aReceived;
 }
 
-log4cxx::LoggerPtr Common::SetupLogger(std::string const & iName)
+log4cxx::LoggerPtr Common::SetupLogger(std::string const & iName, bool iDebug)
 {
 	log4cxx::NDC ndc(iName);
 	PatternLayoutPtr aPatternLayout = new PatternLayout("%d %-5p %x (%F:%L) - %m%n");
 	ConsoleAppenderPtr aConsoleAppender = new ConsoleAppender(aPatternLayout);
 	filter::LevelRangeFilterPtr aLevelFilter = new filter::LevelRangeFilter();
-	aLevelFilter->setLevelMin(Level::getInfo());
+	if (not iDebug)
+	{
+	 aLevelFilter->setLevelMin(Level::getInfo());
+
+	}
 	aConsoleAppender->addFilter(aLevelFilter);
 	FileAppenderPtr aFileApender = new FileAppender(aPatternLayout, "orwelllog.txt");
 	BasicConfigurator::configure(aFileApender);

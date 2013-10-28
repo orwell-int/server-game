@@ -14,7 +14,7 @@ class RawMessage;
 class Common
 {
 public:
-	static log4cxx::LoggerPtr SetupLogger(std::string const & iName);
+	static log4cxx::LoggerPtr SetupLogger(std::string const & iName, bool iDebug = false);
 	static bool ExpectMessage(std::string const & iType,
 			orwell::com::Receiver & iSubscriber,
 			orwell::com::RawMessage & oReceived,

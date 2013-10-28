@@ -42,3 +42,4 @@ add_test(test_input ${CMAKE_CURRENT_BINARY_DIR}/test_input)
 add_executable(test_hello "hello_client.cpp")
 target_link_libraries(test_hello orwell_com orwell_tasks orwell_test)
 add_test(test_hello ${CMAKE_CURRENT_BINARY_DIR}/test_hello)
+

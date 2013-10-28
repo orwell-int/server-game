@@ -13,14 +13,8 @@
 #include "Common.hpp"
 
 #include <log4cxx/logger.h>
-#include <log4cxx/patternlayout.h>
-#include <log4cxx/consoleappender.h>
-#include <log4cxx/fileappender.h>
-#include <log4cxx/basicconfigurator.h>
 #include <log4cxx/helpers/exception.h>
-#include <log4cxx/filter/levelrangefilter.h>
 #include <log4cxx/ndc.h>
-
 
 #include <unistd.h>
 #include <mutex>
@@ -34,7 +28,33 @@ using namespace std;
 
 int g_status = 0;
 
-static void const client(log4cxx::LoggerPtr iLogger)
+static void ExpectWelcome( 
+		string const & iPlayerName, 
+		string const & iExpectedRobotName, 
+		Sender & ioPusher,
+		Receiver & ioSubscriber)
+{
+	Hello aHelloMessage;
+	aHelloMessage.set_name( iPlayerName );
+	RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
+	ioPusher.send(aMessage);
+
+	RawMessage aResponse ;
+	if ( not Common::ExpectMessage("Welcome", ioSubscriber, aResponse) )
+	{
+		g_status = -1;
+	}
+
+	Welcome aWelcome;
+	aWelcome.ParsePartialFromString(aResponse._payload);
+
+	if ( aWelcome.robot() != iExpectedRobotName )
+	{
+		g_status = -2;
+	}
+}
+
+static void client(log4cxx::LoggerPtr iLogger)
 {
 	log4cxx::NDC ndc("client");
 	usleep(6 * 1000);
@@ -44,72 +64,21 @@ static void const client(log4cxx::LoggerPtr iLogger)
 	Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB, orwell::com::ConnectionMode::CONNECT);
 	usleep(6 * 1000);
 
+	ExpectWelcome( "jambon", "Gipsy Danger", aPusher, aSubscriber);
+	ExpectWelcome( "fromage", "Goldorak", aPusher, aSubscriber);
+	ExpectWelcome( "poulet", "Securitron", aPusher, aSubscriber);
+
 	Hello aHelloMessage;
-	aHelloMessage.set_name("jambon");
-
-	LOG4CXX_INFO(iLogger, "message built Hello (size=" << aHelloMessage.ByteSize() << ")");
-
-	RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
-	aPusher.send(aMessage);
-
-	RawMessage aResponse ;
-	while ( not aSubscriber.receive(aResponse) )
-	{
-        usleep( 10 );
-	}
-
-	Welcome aWelcome;
-	aWelcome.ParsePartialFromString(aResponse._payload);
-
-	LOG4CXX_INFO(iLogger, "1 message received is (size=" << aWelcome.ByteSize() << ")");
-	LOG4CXX_INFO(iLogger, "1 message received : robot:" << aWelcome.robot() << "-team:" << aWelcome.team());
-
-    aHelloMessage.set_name("fromage");
-
-    LOG4CXX_INFO(iLogger, "1 message built Hello (size=" << aHelloMessage.ByteSize() << ")");
-
-	RawMessage aMessage2("randomid", "Hello", aHelloMessage.SerializeAsString());
-    aPusher.send(aMessage2);
-
-    while ( not aSubscriber.receive(aResponse) )
-	{
-        usleep( 10 );
-	}
-
-    aWelcome.ParsePartialFromString(aResponse._payload);
-
-    LOG4CXX_INFO(iLogger, "2 message received is (size=" << aWelcome.ByteSize() << ")");
-    LOG4CXX_INFO(iLogger, "2 message received : robot:" << aWelcome.robot() << "-team:" << aWelcome.team());
-
-	aHelloMessage.set_name("poulet");
-
-	LOG4CXX_INFO(iLogger, "2 message built Hello (size=" << aHelloMessage.ByteSize() << ")");
-
-	RawMessage aMessage3("randomid", "Hello", aHelloMessage.SerializeAsString());
-	aPusher.send(aMessage3);
-
-	while ( not aSubscriber.receive(aResponse) )
-	{
-        usleep( 10 );
-	}
-
-	aWelcome.ParsePartialFromString(aResponse._payload);
-
-	LOG4CXX_INFO(iLogger, "3 message received is (size=" << aWelcome.ByteSize() << ")");
-	LOG4CXX_INFO(iLogger, "3 message received : robot:" << aWelcome.robot() << "-team:" << aWelcome.team());
-
 	aHelloMessage.set_name("rutabagas");
 
-    LOG4CXX_INFO(iLogger, "3 message built Hello (size=" << aHelloMessage.ByteSize() << ")");
+    RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
+    aPusher.send(aMessage);
 
-    RawMessage aMessage4("randomid", "Hello", aHelloMessage.SerializeAsString());
-    aPusher.send(aMessage4);
-
-
-	Goodbye aGoodbye;
-	aGoodbye.ParsePartialFromString(aResponse._payload);
-	LOG4CXX_INFO(iLogger, "4 message received is (size=" << aGoodbye.ByteSize() << ")");
-    LOG4CXX_INFO(iLogger, "goodbye message received");
+	RawMessage aResponse ;
+	if ( not Common::ExpectMessage("Goodbye", aSubscriber, aResponse) )
+	{
+		g_status = -1;
+	}
 }
 
 
