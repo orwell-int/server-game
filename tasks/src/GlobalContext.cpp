@@ -66,7 +66,7 @@ bool GlobalContext::addPlayer( string const & iName )
 bool GlobalContext::addRobot(string const & iName)
 {
     bool aAddedRobotSuccess;
-	if (_robots.find(iName) != _robots.end() )
+	if (_robots.find(iName) != _robots.end())
 	{
 	    LOG4CXX_WARN(_logger, "Robot name (" << iName << ") is already in the robot Map.");
 	}
@@ -93,7 +93,7 @@ string GlobalContext::getAvailableRobot()
     {
         ++aIterOnRobots;
     }
-    if ( !(aIterOnRobots == _robots.end()) )
+    if (_robots.end() != aIterOnRobots)
     {
         aFoundRobot = aIterOnRobots->first;
     }
