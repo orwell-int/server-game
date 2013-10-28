@@ -8,6 +8,8 @@
 
 #include <sstream>
 
+#include "RawMessage.hpp"
+
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 using std::string;
@@ -58,7 +60,7 @@ Receiver::~Receiver()
 	delete _zmqContext;
 }
 
-RawMessage Receiver::receive()
+bool Receiver::receive(RawMessage & oMessage)
 {
 	log4cxx::LoggerPtr aLogger(log4cxx::Logger::getLogger("orwell.log"));
 
@@ -67,9 +69,8 @@ RawMessage Receiver::receive()
 	string aPayload;
 	string aDest;
 
-	LOG4CXX_DEBUG(aLogger, "now receiving");
-
-	if ( _zmqSocket->recv(&aZmqMessage) )
+    bool aReceived = _zmqSocket->recv(&aZmqMessage, ZMQ_NOBLOCK);
+	if ( aReceived )
 	{
 		string aMessageData = string(static_cast<char*>(aZmqMessage.data()), aZmqMessage.size());
 		//    string aMessageData = reinterpret_cast< char *>( aZmqMessage.data() );
@@ -85,13 +86,12 @@ RawMessage Receiver::receive()
 				aPayload = aMessageData.substr( aEndTypeFlag + 1 );
 			}
 		}
+        oMessage._type = aType;
+        oMessage._routingId = aDest;
+        oMessage._payload = aPayload;
+        LOG4CXX_DEBUG(aLogger, "Received "<< aZmqMessage.size() << " bytes : type=" << aType << "- dest=" << aDest << "-");
 	}
-
-	LOG4CXX_DEBUG(aLogger, "Received "<< aZmqMessage.size() << " bytes : type=" << aType << "- dest=" << aDest << "-");
-	//    LOG4CXX_DEBUG(aLogger, "Payload : " << aPayload << "-");
-
-	RawMessage aEnvelopeMessage( aDest, aType, aPayload );
-	return aEnvelopeMessage;
+    return aReceived;
 }
 
 }}
