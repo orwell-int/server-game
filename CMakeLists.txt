@@ -37,26 +37,60 @@ execute_process(COMMAND ln -fs ${CMAKE_SOURCE_DIR}/CMakeLists_messages.txt ${CMA
 #add_subdirectory(../messages "${CMAKE_CURRENT_BINARY_DIR}/messages")
 add_subdirectory(messages)
 
-# Communication module
-add_subdirectory(com)
-
-# Tasks module
-add_subdirectory(tasks)
-
 # Tests module
 add_subdirectory(test)
 
 message(CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR})
 
+# Get together all the source files and all the headers
+file(GLOB_RECURSE SOURCES src/*.cpp src/*.cc)
+file(GLOB_RECURSE EXPORTABLEHEADERS include/*.hpp include/*.h)
+
+# Required libraries
+find_package(Boost REQUIRED COMPONENTS system)
+find_package(Protobuf REQUIRED)
+find_package(ZMQ REQUIRED)
+find_package(LOG4CXX_LIBRARIES REQUIRED)
+
+# Helpful debug stuff?
+#message ("-- cmake current bin dir "${CMAKE_CURRENT_BINARY_DIR})
+#message ("-- cmake zmq bin dir "${ZMQ_INCLUDE_DIRS})
+#message ("-- cmake log bin dir "${LOG4CXX_LIBRARIES})
+
+# Library compilation and linking
+add_library(orwell_server_game SHARED ${SOURCES})
+target_link_libraries(orwell_server_game
+        orwell_messages
+		${ZMQ_LIBRARIES}
+		${PROTOBUF_LIBRARIES}
+      	${Boost_LIBRARIES}
+		${LOG4CXX_LIBRARIES})
+
+# Where to install stuff, protobuf messages generated H included
+install(TARGETS orwell_server_game LIBRARY DESTINATION lib)
+install(FILES ${EXPORTABLEHEADERS} DESTINATION include)
+install(FILES ${PROTO_HDRS} DESTINATION include)
+
 include_directories(
-	${CMAKE_SOURCE_DIR}/com/include
-	${CMAKE_SOURCE_DIR}/tasks/include
-	${CMAKE_BINARY_DIR}/messages
 	${ZMQ_INCLUDE_DIRS}
 	${LOG4CXX_INCLUDE_DIR}
 	${PROTOBUF_INCLUDE_DIRS}
-	${Boost_INCLUDE_DIRS})
-add_executable(server_main main.cpp)
-target_link_libraries(server_main orwell_com orwell_tasks)
+	${Boost_INCLUDE_DIRS}
+	${CMAKE_SOURCE_DIR}/include
+	${CMAKE_SOURCE_DIR}/include/orwell
+	${CMAKE_SOURCE_DIR}/include/orwell/callbacks
+	${CMAKE_SOURCE_DIR}/include/orwell/com
+	${CMAKE_SOURCE_DIR}/include/orwell/game
+	${CMAKE_BINARY_DIR}/messages
+	)
+
+
+add_executable(server_main src/main.cpp)
+target_link_libraries(server_main 
+	orwell_server_game
+	${ZMQ_LIBRARIES}
+	${PROTOBUF_LIBRARIES}
+    ${Boost_LIBRARIES}
+	${LOG4CXX_LIBRARIES})
 
 

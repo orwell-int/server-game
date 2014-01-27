@@ -3,8 +3,11 @@
 message(CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR})
 
 include_directories(
-	${CMAKE_SOURCE_DIR}/com/include
-	${CMAKE_SOURCE_DIR}/tasks/include
+	${CMAKE_SOURCE_DIR}/include
+	${CMAKE_SOURCE_DIR}/include/orwell
+	${CMAKE_SOURCE_DIR}/include/orwell/callbacks
+	${CMAKE_SOURCE_DIR}/include/orwell/com
+	${CMAKE_SOURCE_DIR}/include/orwell/game
 	${CMAKE_BINARY_DIR}/messages
 	)
 
@@ -23,7 +26,7 @@ find_package(LOG4CXX_LIBRARIES REQUIRED)
 # Library compilation and linking
 add_library(orwell_test SHARED ${SOURCES})
 target_link_libraries(orwell_test
-		orwell_com
+		orwell_server_game
 		${ZMQ_LIBRARIES}
 		${Boost_LIBRARIES}
 		${LOG4CXX_LIBRARIES})
@@ -36,10 +39,14 @@ enable_testing()
 #add_test(test_registerRobot ${CMAKE_CURRENT_BINARY_DIR}/test_registerRobot)
 
 add_executable(test_input "input_to_robot.cpp")
-target_link_libraries(test_input orwell_com orwell_tasks orwell_test)
+target_link_libraries(test_input 
+	orwell_server_game 
+	orwell_test)
 add_test(test_input ${CMAKE_CURRENT_BINARY_DIR}/test_input)
 
 add_executable(test_hello "hello_client.cpp")
-target_link_libraries(test_hello orwell_com orwell_tasks orwell_test)
+target_link_libraries(test_hello 
+	orwell_server_game 
+	orwell_test)
 add_test(test_hello ${CMAKE_CURRENT_BINARY_DIR}/test_hello)
 
