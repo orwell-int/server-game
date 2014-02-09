@@ -33,7 +33,7 @@ void ProcessTimer::execute()
     aGameState.set_playing(false);
 
     RawMessage aMessage("all_clients", "GameState", aGameState.SerializeAsString());
-    _ctx.getPublisher()->send( aMessage );
+    _ctx->getPublisher()->send( aMessage );
 }
 
 }}

@@ -73,7 +73,6 @@ bool Receiver::receive(RawMessage & oMessage)
 	if ( aReceived )
 	{
 		string aMessageData = string(static_cast<char*>(aZmqMessage.data()), aZmqMessage.size());
-		//    string aMessageData = reinterpret_cast< char *>( aZmqMessage.data() );
 		size_t aEndDestFlag = aMessageData.find( " ", 0 );
 		if (string::npos != aEndDestFlag)
 		{
