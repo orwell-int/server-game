@@ -13,3 +13,4 @@ Testing
 *.cbp
 *.layout
 *.depend
+osx-build
