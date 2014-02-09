@@ -48,6 +48,7 @@ bool Server::processMessageIfAvailable()
 	orwell::com::RawMessage aMessage;
 	if (_puller->receive(aMessage))
 	{
+        _decider.process(aMessage, _Game);
 	    ProcessDecider::Process(aMessage, _Game);
 	    aProcessedMessage = true;
 	}

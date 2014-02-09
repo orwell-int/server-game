@@ -51,7 +51,7 @@ map<string, Player> const & Game::getPlayers()
 
 bool Game::addPlayer( string const & iName )
 {
-    bool aAddedPLayerSuccess;
+    bool aAddedPLayerSuccess = false;
     if ( _players.find(iName) != _players.end() )
     {
         LOG4CXX_WARN(_logger, "Player name (" << iName << ") is already in the player Map.");
@@ -69,7 +69,7 @@ bool Game::addPlayer( string const & iName )
 
 bool Game::addRobot(string const & iName)
 {
-    bool aAddedRobotSuccess;
+    bool aAddedRobotSuccess = false;
 	if (_robots.find(iName) != _robots.end())
 	{
 	    LOG4CXX_WARN(_logger, "Robot name (" << iName << ") is already in the robot Map.");

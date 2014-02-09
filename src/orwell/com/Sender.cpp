@@ -33,17 +33,15 @@ Sender::Sender(
 	{
 		_zmqSocket->bind(iUrl.c_str());
 		LOG4CXX_INFO(_logger, "Publisher binds on " << iUrl.c_str());
-		if (iSleep < 0)
-		{
-			sleep(-iSleep);
-		}
 	}
+
 	else
 	{
 		assert(ConnectionMode::CONNECT == iConnectionMode);
 		_zmqSocket->connect(iUrl.c_str());
 		LOG4CXX_INFO(_logger, "Pusher connects to " << iUrl.c_str());
 	}
+
 	if (iSleep > 0)
 	{
 		sleep(iSleep);

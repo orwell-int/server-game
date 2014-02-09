@@ -22,19 +22,7 @@ namespace callbacks {
 class ProcessRobotState : public InterfaceProcess
 {
 public:
-    ProcessRobotState(std::string const & iRoutingId,
-    		messages::RobotState const & iRobotStateMsg,
-    		game::Game & ioCtx);
-    ~ProcessRobotState();
-
     void execute();
-
-
-private:
-    std::string _dest;
-    messages::RobotState const & _robotState ;
-    log4cxx::LoggerPtr _logger;
-
 
 };
 

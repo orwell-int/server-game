@@ -16,28 +16,15 @@ using orwell::com::RawMessage;
 namespace orwell{
 namespace callbacks{
 
-ProcessRobotState::ProcessRobotState(std::string const & iRoutingId,
-		RobotState const & iRobotStateMsg,
-		game::Game & ioCtx) :
-InterfaceProcess(ioCtx),
-_dest(iRoutingId),
-_robotState(iRobotStateMsg),
-_logger(log4cxx::Logger::getLogger("orwell.log"))
-{
-
-}
-
-ProcessRobotState::~ProcessRobotState ()
-{
-
-}
-
 void ProcessRobotState::execute()
 {
-    LOG4CXX_INFO(_logger, "ProcessRobotState::execute : simple relay");
+    std::string aDestination = getArgument("RoutingID").second;
+    orwell::messages::RobotState const & aRobotStateMsg = static_cast<orwell::messages::RobotState const & >(*_msg);
+    
+    LOG4CXX_INFO(_loggerPtr, "ProcessRobotState::execute : simple relay");
 
-    RawMessage aForward(_dest, "RobotState", _robotState.SerializeAsString() );
-    _ctx.getPublisher()->send( aForward );
+    RawMessage aForward(aDestination, "RobotState", aRobotStateMsg.SerializeAsString() );
+    _ctx->getPublisher()->send( aForward );
 }
 
 }}

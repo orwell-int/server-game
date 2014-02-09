@@ -22,19 +22,9 @@ namespace callbacks {
 class ProcessInput : public InterfaceProcess
 {
 public:
-    ProcessInput(std::string const & iDest,
-    		messages::Input const & iInputMsg,
-    		game::Game & ioCtx);
-    ~ProcessInput();
-
     void execute();
 
-
 private:
-    std::string _dest;
-    messages::Input const & _input ;
-    log4cxx::LoggerPtr _logger;
-
 
 };
 

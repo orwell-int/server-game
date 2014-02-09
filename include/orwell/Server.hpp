@@ -5,6 +5,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <log4cxx/logger.h>
+#include <ProcessDecider.hpp>
 
 #include "Game.hpp"
 
@@ -45,6 +46,7 @@ private:
 	std::shared_ptr< com::Sender > _publisher;
 	log4cxx::LoggerPtr _logger;
 	orwell::game::Game _Game;
+    orwell::callbacks::ProcessDecider _decider;
 
     boost::posix_time::time_duration const _ticDuration;
     boost::posix_time::ptime _previousTic;
