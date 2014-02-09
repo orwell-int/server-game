@@ -1,0 +1,52 @@
+@startuml
+scale 600 width
+
+class Server
+
+class Game {
+	void start()
+	void stop()
+	void addRobot(string iName)
+	void addPlayer(string iName)
+	Robot getAvailableRobot()
+	void fillGameStateMessage (orwell::messages::GameState & iMessage)
+
+	map<string routingId, Robot &> _robots
+	map<string routingId, Player &> _players
+	map<string, Team &> _teams
+	bool _isGameStarted
+}
+
+note right of Game {
+routingId = Robot name
+}
+
+note "Do we need explicit link between robot and player ?" as N1
+N1 -- Game
+
+
+class Player {
+	string name
+	Team & _team
+}
+class Robot{
+	void fillRobotStateMessage (orwell::messages::RobotState & iMessage)
+
+	string name
+}
+
+class Team {
+	void addPlayer(Player iPlayer)
+	void removePlayer(Player iPlayer)
+	list<Player &> _players
+} 
+
+Game "1" *-- "0-*" Player 	
+Game "1" *-- "0-*" Robot
+Game "1" *-- "0-*" Team	
+Team "1" o-- "0-*" Player
+Server "1" -- "1" Game
+Robot "1" -- "1" Player
+
+
+@enduml

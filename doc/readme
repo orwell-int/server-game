@@ -1,0 +1,1 @@
+java -jar plantuml.jar "./Server-game/descriptions/" -o ../diagrams

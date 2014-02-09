@@ -14,22 +14,20 @@
 using std::map;
 using std::string;
 using std::pair;
+using std::shared_ptr;
+using std::make_shared;
 
 namespace orwell {
 namespace game {
 
-Game::Game(std::shared_ptr< com::Sender > iPublisher) :
-_publisher(iPublisher), _logger(log4cxx::Logger::getLogger("orwell.log"))
+Game::Game() :
+		_logger( log4cxx::Logger::getLogger("orwell.log") ),
+		_isRunning( false )
 {
 }
 
 Game::~Game()
 {
-}
-
-std::shared_ptr< com::Sender > Game::getPublisher()
-{
-    return _publisher;
 }
 
 Robot & Game::accessRobot(string const & iRobotName)
@@ -85,9 +83,9 @@ bool Game::addRobot(string const & iName)
     return aAddedRobotSuccess;
 }
 
-string Game::getAvailableRobot()
+shared_ptr<Robot> Game::getAvailableRobot()
 {
-    string aFoundRobot;
+    Robot aFoundRobot;
 
     //search for the first robot which is not already associated to a player
     map<string, Robot>::iterator aIterOnRobots;
@@ -101,9 +99,13 @@ string Game::getAvailableRobot()
     {
         aFoundRobot = aIterOnRobots->first;
     }
-    return aFoundRobot;
+    return make_shared<Robot>(aFoundRobot);
 }
 
+void Game::fillGameStateMessage( messages::GameState & oGameState)
+{
+	//todo
+}
 
 
 }} // namespaces

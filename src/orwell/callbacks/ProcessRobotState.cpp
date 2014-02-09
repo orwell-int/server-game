@@ -18,8 +18,9 @@ namespace callbacks{
 
 ProcessRobotState::ProcessRobotState(std::string const & iRoutingId,
 		RobotState const & iRobotStateMsg,
-		game::Game & ioCtx) :
-InterfaceProcess(ioCtx),
+		game::Game & ioCtx,
+		std::shared_ptr< com::Sender > ioPublisher) :
+InterfaceProcess(ioCtx, ioPublisher),
 _dest(iRoutingId),
 _robotState(iRobotStateMsg),
 _logger(log4cxx::Logger::getLogger("orwell.log"))
@@ -37,7 +38,7 @@ void ProcessRobotState::execute()
     LOG4CXX_INFO(_logger, "ProcessRobotState::execute : simple relay");
 
     RawMessage aForward(_dest, "RobotState", _robotState.SerializeAsString() );
-    _ctx.getPublisher()->send( aForward );
+    _publisher->send( aForward );
 }
 
 }}

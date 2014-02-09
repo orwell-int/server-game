@@ -16,8 +16,9 @@ namespace orwell{
 namespace callbacks{
 
 ProcessTimer::ProcessTimer(game::Game & ioCtx,
+		std::shared_ptr< com::Sender > ioPublisher,
 		log4cxx::LoggerPtr iLogger) :
-InterfaceProcess(ioCtx), _logger(iLogger)
+InterfaceProcess(ioCtx, ioPublisher), _logger(iLogger)
 {
 }
 
@@ -33,7 +34,7 @@ void ProcessTimer::execute()
     aGameState.set_playing(false);
 
     RawMessage aMessage("all_clients", "GameState", aGameState.SerializeAsString());
-    _ctx.getPublisher()->send( aMessage );
+    _publisher->send( aMessage );
 }
 
 }}

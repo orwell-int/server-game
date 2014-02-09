@@ -13,6 +13,7 @@ namespace game {
 class Robot
 {
 	public:
+		Robot() {}
 		Robot(std::string const & iName);
 		~Robot();
 

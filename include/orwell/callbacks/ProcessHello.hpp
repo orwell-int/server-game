@@ -23,7 +23,8 @@ class ProcessHello : public InterfaceProcess
 public:
     ProcessHello(std::string const & iClientId,
     		messages::Hello const & iHelloMsg,
-    		game::Game & ioCtx);
+    		game::Game & ioCtx,
+    		std::shared_ptr< com::Sender > ioPublisher);
     ~ProcessHello();
 
     void execute();

@@ -16,7 +16,8 @@ class ProcessTimer : public InterfaceProcess
 {
 public:
     ProcessTimer( game::Game & ioCtx,
-    		log4cxx::LoggerPtr iLogger = log4cxx::Logger::getLogger("orwell.log") );
+    		std::shared_ptr< com::Sender > ioPublisher,
+    		log4cxx::LoggerPtr iLogger = log4cxx::Logger::getLogger("orwell.log"));
     ~ProcessTimer();
 
     void execute();

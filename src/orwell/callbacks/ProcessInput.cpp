@@ -19,8 +19,9 @@ namespace callbacks {
 
 ProcessInput::ProcessInput(std::string const & iDest,
 		Input const & iInputMsg,
-		game::Game & ioCtx) :
-InterfaceProcess(ioCtx),
+		game::Game & ioCtx,
+		std::shared_ptr< com::Sender > ioPublisher) :
+InterfaceProcess(ioCtx, ioPublisher),
 _dest(iDest),
 _input(iInputMsg),
 _logger(log4cxx::Logger::getLogger("orwell.log"))
@@ -42,7 +43,7 @@ void ProcessInput::execute()
     LOG4CXX_DEBUG(_logger, "===End Input Message===");
 
     RawMessage aReply(_dest, "Input", _input.SerializeAsString());
-    _ctx.getPublisher()->send( aReply );
+    _publisher->send( aReply );
 }
 
 }}

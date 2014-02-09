@@ -36,26 +36,28 @@ static MessageType BuildProtobuf(RawMessage const & iMessage)
     return aMessage;
 };
 
-void ProcessDecider::Process( RawMessage const & iMessage, game::Game & ioCtx)
+void ProcessDecider::Process( RawMessage const & iMessage,
+		game::Game & ioGame,
+		std::shared_ptr< com::Sender > ioPublisher)
 {
     log4cxx::LoggerPtr aLogger = log4cxx::Logger::getLogger("orwell.log");
 
     if ( iMessage._type == string("Hello") )
     {
         messages::Hello aDecodedMsg = BuildProtobuf<messages::Hello>( iMessage );
-        ProcessHello aProcess (iMessage._routingId, aDecodedMsg, ioCtx);
+        ProcessHello aProcess (iMessage._routingId, aDecodedMsg, ioGame, ioPublisher);
         aProcess.execute();
     }
     else if ( iMessage._type == string("Input") )
     {
         messages::Input aDecodedMsg = BuildProtobuf<messages::Input>( iMessage );
-        ProcessInput aProcess (iMessage._routingId, aDecodedMsg, ioCtx);
+        ProcessInput aProcess (iMessage._routingId, aDecodedMsg, ioGame, ioPublisher);
         aProcess.execute();
     }
     else if ( iMessage._type == string("RobotState") )
     {
         messages::RobotState aDecodedMsg = BuildProtobuf<messages::RobotState>( iMessage );
-        ProcessRobotState aProcess (iMessage._routingId, aDecodedMsg, ioCtx);
+        ProcessRobotState aProcess (iMessage._routingId, aDecodedMsg, ioGame, ioPublisher);
         aProcess.execute();
     }
     else

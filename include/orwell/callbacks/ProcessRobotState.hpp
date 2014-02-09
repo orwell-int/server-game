@@ -24,7 +24,8 @@ class ProcessRobotState : public InterfaceProcess
 public:
     ProcessRobotState(std::string const & iRoutingId,
     		messages::RobotState const & iRobotStateMsg,
-    		game::Game & ioCtx);
+    		game::Game & ioCtx,
+    		std::shared_ptr< com::Sender > ioPublisher);
     ~ProcessRobotState();
 
     void execute();

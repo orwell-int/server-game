@@ -32,7 +32,7 @@ Server::Server(
 	: _puller(std::make_shared< Receiver >(iPullUrl, ZMQ_PULL, orwell::com::ConnectionMode::BIND))
 	, _publisher(std::make_shared< Sender >(iPublishUrl, ZMQ_PUB, orwell::com::ConnectionMode::BIND))
 	, _logger(iLogger)
-	, _Game(_publisher)
+	, _Game()
 	, _ticDuration( boost::posix_time::milliseconds(iTicDuration) )
 	, _previousTic(boost::posix_time::second_clock::local_time())
 {
@@ -48,7 +48,7 @@ bool Server::processMessageIfAvailable()
 	orwell::com::RawMessage aMessage;
 	if (_puller->receive(aMessage))
 	{
-	    ProcessDecider::Process(aMessage, _Game);
+	    ProcessDecider::Process(aMessage, _Game, _publisher);
 	    aProcessedMessage = true;
 	}
 	return aProcessedMessage;
@@ -76,7 +76,7 @@ void Server::loopUntilOneMessageIsProcessed()
         }
         else
         {
-            ProcessTimer aProcessTimer( _Game );
+            ProcessTimer aProcessTimer( _Game, _publisher);
             aProcessTimer.execute();
             _previousTic = aCurrentTic;
         }

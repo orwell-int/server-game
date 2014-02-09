@@ -24,7 +24,8 @@ class ProcessInput : public InterfaceProcess
 public:
     ProcessInput(std::string const & iDest,
     		messages::Input const & iInputMsg,
-    		game::Game & ioCtx);
+    		game::Game & ioCtx,
+    		std::shared_ptr< com::Sender > ioPublisher);
     ~ProcessInput();
 
     void execute();
