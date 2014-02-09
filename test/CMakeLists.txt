@@ -2,15 +2,6 @@
 
 message(CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR})
 
-include_directories(
-	${CMAKE_SOURCE_DIR}/include
-	${CMAKE_SOURCE_DIR}/include/orwell
-	${CMAKE_SOURCE_DIR}/include/orwell/callbacks
-	${CMAKE_SOURCE_DIR}/include/orwell/com
-	${CMAKE_SOURCE_DIR}/include/orwell/game
-	${CMAKE_BINARY_DIR}/messages
-	)
-
 # Get together all the source files and all the headers
 file(GLOB SOURCES Common.cpp)
 file(GLOB EXPORTABLEHEADERS *.hpp *.h)
@@ -21,6 +12,16 @@ find_package(Protobuf REQUIRED)
 find_package(ZMQ REQUIRED)
 
 find_package(LOG4CXX_LIBRARIES REQUIRED)
+
+include_directories(
+	${CMAKE_SOURCE_DIR}/include
+	${CMAKE_SOURCE_DIR}/include/orwell
+	${CMAKE_SOURCE_DIR}/include/orwell/callbacks
+	${CMAKE_SOURCE_DIR}/include/orwell/com
+	${CMAKE_SOURCE_DIR}/include/orwell/game
+	${CMAKE_BINARY_DIR}/messages
+    ${LOG4CXX_INCLUDE_DIR}
+	)
 
 
 # Library compilation and linking
