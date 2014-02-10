@@ -18,7 +18,7 @@ namespace callbacks{
 
 void ProcessRobotState::execute()
 {
-    std::string aDestination = getArgument("RoutingID").second;
+    std::string const & aDestination = getArgument("RoutingID").second;
     orwell::messages::RobotState const & aRobotStateMsg = static_cast<orwell::messages::RobotState const & >(*_msg);
     
     LOG4CXX_INFO(_loggerPtr, "ProcessRobotState::execute : simple relay");

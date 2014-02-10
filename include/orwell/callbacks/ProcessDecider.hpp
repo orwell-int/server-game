@@ -12,7 +12,8 @@ namespace callbacks {
 
 class ProcessDecider
 {
-    typedef std::pair<std::string, InterfaceProcess*> Couple;
+    typedef std::pair<std::string, std::unique_ptr<InterfaceProcess>> Couple;
+
 	public:
         ProcessDecider();
         ~ProcessDecider();
@@ -22,7 +23,7 @@ class ProcessDecider
                              game::Game & ioCtx);
 
 	private:
-        std::map<std::string, InterfaceProcess*> _map;
+        std::map<std::string, std::unique_ptr<InterfaceProcess>> _map;
 };
 
 }} //end namespace
