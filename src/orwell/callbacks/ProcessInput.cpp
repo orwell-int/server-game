@@ -19,7 +19,7 @@ namespace callbacks {
 
 void ProcessInput::execute()
 {
-    std::string aDestination = getArgument("RoutingID").second;
+    std::string const & aDestination = getArgument("RoutingID").second;
     orwell::messages::Input const & anInputMsg = static_cast<orwell::messages::Input const &>(*_msg);
     
     LOG4CXX_INFO(_loggerPtr, "ProcessInput::execute : simple relay");

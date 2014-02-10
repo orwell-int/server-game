@@ -32,7 +32,7 @@ void ProcessHello::execute()
     LOG4CXX_INFO(_loggerPtr, "ProcessHello::execute");
 
     orwell::messages::Hello const & anHelloMsg = static_cast<orwell::messages::Hello const & >(*_msg);
-    std::string aClientID = getArgument("RoutingID").second;
+    std::string const & aClientID = getArgument("RoutingID").second;
     
     string aNewPlayerName = anHelloMsg.name();
     bool aPlayerAddedSuccess = _ctx->addPlayer( aNewPlayerName );

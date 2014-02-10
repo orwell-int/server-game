@@ -14,6 +14,7 @@
 #include "ProcessHello.hpp"
 #include "ProcessInput.hpp"
 #include "ProcessRobotState.hpp"
+#include <map>
 
 using std::string;
 using std::endl;
@@ -37,33 +38,35 @@ static MessageType BuildProtobuf(RawMessage const & iMessage)
     
 ProcessDecider::~ProcessDecider()
 {
-    for (auto & aCouple: _map)
-    {
-        delete aCouple.second;
-    }
+
 }
 
 ProcessDecider::ProcessDecider()
 {
-    Couple aHelloCouple("Hello", new ProcessHello());
-    Couple aInputCouple("Input", new ProcessInput());
-    Couple aRbtStateCouple("RobotState", new ProcessRobotState());
-
-    _map.insert(aHelloCouple);
-    _map.insert(aInputCouple);
-    _map.insert(aRbtStateCouple);
+    _map["Hello"] = std::unique_ptr<InterfaceProcess>(new ProcessHello());
+    _map["Input"] = std::unique_ptr<InterfaceProcess>(new ProcessInput());
+    _map["RobotState"] = std::unique_ptr<InterfaceProcess>(new ProcessRobotState());
 }
     
 void ProcessDecider::process(com::RawMessage const & iMessage, game::Game & ioCtx)
 {
     log4cxx::LoggerPtr aLogger = log4cxx::Logger::getLogger("orwell.log");
-    InterfaceProcess * aProcess = _map[iMessage._type];
+    std::unique_ptr<InterfaceProcess> & aProcess = _map[iMessage._type];
     ::google::protobuf::MessageLite * aMsg = nullptr;
 
     // TODO: this can be done in a proper way using pointers the right way
-    if (iMessage._type == "Hello") aMsg = new messages::Hello(BuildProtobuf<messages::Hello>(iMessage));
-    else if (iMessage._type == "Input") aMsg = new messages::Input(BuildProtobuf<messages::Input>(iMessage));
-    else if (iMessage._type == "RobotState") aMsg = new messages::RobotState(BuildProtobuf<messages::RobotState>(iMessage));
+    if (iMessage._type == "Hello")
+    {
+        aMsg = new messages::Hello(BuildProtobuf<messages::Hello>(iMessage));
+    }
+    else if (iMessage._type == "Input")
+    {
+        aMsg = new messages::Input(BuildProtobuf<messages::Input>(iMessage));
+    }
+    else if (iMessage._type == "RobotState")
+    {
+        aMsg = new messages::RobotState(BuildProtobuf<messages::RobotState>(iMessage));   
+    }
     
     if (aMsg != nullptr && aProcess != nullptr)
     {
