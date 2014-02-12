@@ -4,7 +4,7 @@
 
 #include <log4cxx/logger.h>
 
-#include "ConnectionMode.hpp"
+#include "orwell/com/ConnectionMode.hpp"
 
 namespace zmq {
 	class context_t;

@@ -1,7 +1,7 @@
 #pragma once
 
 //tasks
-#include "InterfaceProcess.hpp"
+#include "orwell/callbacks/InterfaceProcess.hpp"
 
 #include <string>
 #include <log4cxx/logger.h>

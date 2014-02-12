@@ -4,7 +4,6 @@
 
 #include <string>
 #include <map>
-#include <Robot.hpp>
 
 namespace orwell {
 namespace game {

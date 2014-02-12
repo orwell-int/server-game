@@ -1,7 +1,7 @@
 #include "Common.hpp"
 
-#include "Receiver.hpp"
-#include "RawMessage.hpp"
+#include "orwell/com/Receiver.hpp"
+#include "orwell/com/RawMessage.hpp"
 #include "MissingFromTheStandard.hpp"
 
 #include <boost/date_time/posix_time/posix_time.hpp>

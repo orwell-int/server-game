@@ -1,10 +1,10 @@
 /* This class stores most of the useful data of the server. */
 
-#include "Game.hpp"
+#include "orwell/game/Game.hpp"
 
-#include "Robot.hpp"
-#include "Player.hpp"
-#include "Sender.hpp"
+#include "orwell/game/Robot.hpp"
+#include "orwell/game/Player.hpp"
+#include "orwell/com/Sender.hpp"
 
 #include <iostream>
 #include <zmq.hpp>

@@ -1,4 +1,4 @@
-#include "RawMessage.hpp"
+#include "orwell/com/RawMessage.hpp"
 
 #include <zmq.hpp>
 #include <string>
@@ -6,9 +6,9 @@
 #include "controller.pb.h"
 #include "server-game.pb.h"
 
-#include "Sender.hpp"
-#include "Receiver.hpp"
-#include "Server.hpp"
+#include "orwell/com/Sender.hpp"
+#include "orwell/com/Receiver.hpp"
+#include "orwell/Server.hpp"
 
 #include "Common.hpp"
 

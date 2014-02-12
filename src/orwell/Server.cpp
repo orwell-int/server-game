@@ -1,4 +1,4 @@
-#include "Server.hpp"
+#include "orwell/Server.hpp"
 
 #include <iostream>
 #include <unistd.h>
@@ -7,12 +7,12 @@
 
 #include "MissingFromTheStandard.hpp"
 
-#include "Receiver.hpp"
-#include "Sender.hpp"
-#include "ConnectionMode.hpp"
-#include "RawMessage.hpp"
-#include "ProcessDecider.hpp"
-#include "ProcessTimer.hpp"
+#include "orwell/com/Receiver.hpp"
+#include "orwell/com/Sender.hpp"
+#include "orwell/com/ConnectionMode.hpp"
+#include "orwell/com/RawMessage.hpp"
+#include "orwell/callbacks/ProcessDecider.hpp"
+#include "orwell/callbacks/ProcessTimer.hpp"
 
 using orwell::com::Receiver;
 using orwell::com::Sender;

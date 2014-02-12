@@ -1,12 +1,12 @@
-#include <ProcessInput.hpp>
+#include "orwell/callbacks/ProcessInput.hpp"
 
-#include <RawMessage.hpp>
+#include "orwell/com/RawMessage.hpp"
 
-#include <controller.pb.h>
-#include <server-game.pb.h>
-#include "Sender.hpp"
+#include "controller.pb.h"
+#include "server-game.pb.h"
+#include "orwell/com/Sender.hpp"
 
-#include "Game.hpp"
+#include "orwell/game/Game.hpp"
 
 using namespace log4cxx;
 using namespace log4cxx::helpers;

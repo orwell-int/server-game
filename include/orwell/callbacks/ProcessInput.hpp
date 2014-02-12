@@ -4,7 +4,7 @@
 #include "controller.pb.h"
 
 //tasks
-#include "InterfaceProcess.hpp"
+#include "orwell/callbacks/InterfaceProcess.hpp"
 
 #include <log4cxx/logger.h>
 

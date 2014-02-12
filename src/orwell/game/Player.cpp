@@ -1,4 +1,4 @@
-#include "Player.hpp"
+#include "orwell/game/Player.hpp"
 
 using namespace std;
 

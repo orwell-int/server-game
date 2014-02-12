@@ -5,9 +5,9 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <log4cxx/logger.h>
-#include <ProcessDecider.hpp>
+#include "orwell/callbacks/ProcessDecider.hpp"
 
-#include "Game.hpp"
+#include "orwell/game/Game.hpp"
 
 namespace orwell
 {

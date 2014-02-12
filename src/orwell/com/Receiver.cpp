@@ -1,4 +1,4 @@
-#include "Receiver.hpp"
+#include "orwell/com/Receiver.hpp"
 
 //std
 #include <iostream>
@@ -8,7 +8,7 @@
 
 #include <sstream>
 
-#include "RawMessage.hpp"
+#include "orwell/com/RawMessage.hpp"
 
 using namespace log4cxx;
 using namespace log4cxx::helpers;

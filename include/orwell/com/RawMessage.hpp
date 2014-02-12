@@ -1,8 +1,6 @@
 #pragma once
 
 #include <string>
-#include <memory>
-#include <google/protobuf/message.h>
 
 namespace orwell {
 namespace com {

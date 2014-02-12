@@ -1,6 +1,6 @@
-#include <InterfaceProcess.hpp>
+#include "orwell/callbacks/InterfaceProcess.hpp"
 #include <stdexcept>
-#include <Game.hpp>
+#include "orwell/game/Game.hpp"
 
 namespace orwell {
 namespace callbacks {

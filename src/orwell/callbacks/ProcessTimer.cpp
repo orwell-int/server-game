@@ -1,10 +1,10 @@
-#include <ProcessTimer.hpp>
+#include "orwell/callbacks/ProcessTimer.hpp"
 
-#include <RawMessage.hpp>
-#include <Game.hpp>
-#include "Sender.hpp"
+#include "orwell/com/RawMessage.hpp"
+#include "orwell/game/Game.hpp"
+#include "orwell/com/Sender.hpp"
 
-#include <server-game.pb.h>
+#include "server-game.pb.h"
 
 using namespace log4cxx;
 using namespace log4cxx::helpers;

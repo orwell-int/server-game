@@ -1,6 +1,6 @@
 /*  */
 
-#include "ProcessDecider.hpp"
+#include "orwell/callbacks/ProcessDecider.hpp"
 
 //messages
 #include "controller.pb.h"
@@ -10,10 +10,10 @@
 #include <iostream>
 #include <log4cxx/logger.h>
 
-#include "Game.hpp"
-#include "ProcessHello.hpp"
-#include "ProcessInput.hpp"
-#include "ProcessRobotState.hpp"
+#include "orwell/game/Game.hpp"
+#include "orwell/callbacks/ProcessHello.hpp"
+#include "orwell/callbacks/ProcessInput.hpp"
+#include "orwell/callbacks/ProcessRobotState.hpp"
 #include <map>
 
 using std::string;

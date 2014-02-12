@@ -5,7 +5,7 @@
 
 //protobuf
 #include "controller.pb.h"
-#include "InterfaceProcess.hpp"
+#include "orwell/callbacks/InterfaceProcess.hpp"
 
 namespace orwell {
 

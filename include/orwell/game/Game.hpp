@@ -4,9 +4,9 @@
 #include <memory>
 #include <log4cxx/logger.h>
 
-#include "Robot.hpp"
-#include "Player.hpp"
-#include "Team.hpp"
+#include "orwell/game/Robot.hpp"
+#include "orwell/game/Player.hpp"
+#include "orwell/game/Team.hpp"
 
 namespace orwell {
 namespace com {
