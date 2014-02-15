@@ -93,7 +93,7 @@ bool get_ip4(IP4 & oIp4)
 uint32_t simulateClient(log4cxx::LoggerPtr iLogger)
 {
     int aSocket;
-    unsigned long aMessageLength;
+    ssize_t aMessageLength;
     struct sockaddr_in aDestination;
     unsigned int aDestinationLength;
     char aReply[256];
