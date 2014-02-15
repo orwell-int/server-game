@@ -60,8 +60,8 @@ void Server::runBroadcastReceiver()
 {
     int aBsdSocket;
     unsigned int aClientLength(0);
-    struct sockaddr_in aServerAddress,
-                       aClientAddress;
+    struct sockaddr_in aServerAddress;
+    struct sockaddr_in aClientAddress;
     ssize_t aMessageLength;
     char aMessageBuffer[UDP_MESSAGE_LIMIT];
     
