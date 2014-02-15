@@ -111,11 +111,17 @@ uint32_t simulateClient(log4cxx::LoggerPtr iLogger)
     }
     
     IP4 address;
-    get_ip4(address);
+    if (not get_ip4(address))
+	{
+		LOG4CXX_ERROR(iLogger, "Couldn't retrieve local address");
+		return 255;
+	}
     address.b4 = 255;
     
     if (address)
+	{
         LOG4CXX_INFO(iLogger, "IP: " << address);
+	}
     
     // Build the destination object
     memset(&aDestination, 0, sizeof(aDestination));
@@ -130,20 +136,20 @@ uint32_t simulateClient(log4cxx::LoggerPtr iLogger)
     // Allow the socket to send broadcast messages
     if ( (setsockopt(aSocket, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(int))) == -1)
     {
-        LOG4CXX_INFO(iLogger, "Not allowed to send broadcast");
+        LOG4CXX_ERROR(iLogger, "Not allowed to send broadcast");
         return 255;
     }
     
     if (sendto(aSocket, aMessageToSend, aMessageLength, 0, (struct sockaddr *) &aDestination, sizeof(aDestination)) != aMessageLength)
     {
-        LOG4CXX_INFO(iLogger, "Did not send the right number of bytes..");
+        LOG4CXX_ERROR(iLogger, "Did not send the right number of bytes..");
         return 255;
     }
     
     aDestinationLength = sizeof(aDestination);
     if (recvfrom(aSocket, aReply, sizeof(aReply), 0, (struct sockaddr *) &aDestination, &aDestinationLength) == -1)
     {
-        LOG4CXX_INFO(iLogger, "Did not receive a message...");
+        LOG4CXX_ERROR(iLogger, "Did not receive a message...");
         return 255;
     }
     
