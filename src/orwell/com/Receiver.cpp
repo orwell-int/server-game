@@ -26,7 +26,8 @@ Receiver::Receiver(
 		unsigned int const iSleep) :
 	_zmqContext(new zmq::context_t(1)),
 	_zmqSocket(new zmq::socket_t(*_zmqContext, iSocketType)),
-	_logger(log4cxx::Logger::getLogger("orwell.log"))
+	_logger(log4cxx::Logger::getLogger("orwell.log")),
+    _url(iUrl)
 {
 	int aLinger = 10; // linger 0.01 second max after being closed
 	_zmqSocket->setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
@@ -91,6 +92,11 @@ bool Receiver::receive(RawMessage & oMessage)
         LOG4CXX_DEBUG(aLogger, "Received "<< aZmqMessage.size() << " bytes : type=" << aType << "- dest=" << aDest << "-");
 	}
     return aReceived;
+}
+    
+std::string const & Receiver::getUrl() const
+{
+    return _url;
 }
 
 }}
