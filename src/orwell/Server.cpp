@@ -127,7 +127,7 @@ void Server::runBroadcastReceiver()
 
 //#ifdef __HYPER_BLASTER__
         aMessageBuffer[aMessageLength] = '\0';
-        if (strncmp(aMessageBuffer, "1AFTW", sizeof("1AFTW")))
+        if (strncmp(aMessageBuffer, "1AFTW", sizeof("1AFTW") - 1) == 0)
         {
             break;
         }
