@@ -24,7 +24,7 @@
 #include <log4cxx/ndc.h>
 
 #include <string>
-#include <string.h>
+#include <cstring>
 #include <netinet/udp.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -32,8 +32,6 @@
 #include <unistd.h>
 
 #include <iostream>
-#include <ostream>
-#include <istream>
 #include <sstream>
 
 

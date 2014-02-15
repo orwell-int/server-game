@@ -1,12 +1,11 @@
 #include "Server.hpp"
 
 #include <string>
-#include <string.h>
+#include <cstring>
 #include <netinet/udp.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <ostream>
 
 #include <iostream>
 #include <unistd.h>
