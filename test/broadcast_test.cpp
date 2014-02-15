@@ -191,9 +191,9 @@ int main(int argc, const char * argv [])
             simulateServer(logger);
             return 0;
         default:
-            sleep(1);
+            usleep(2543);
             aRc = simulateClient(logger);
-            sleep(1);
+            usleep(2545);
     }
 
     return aRc;
