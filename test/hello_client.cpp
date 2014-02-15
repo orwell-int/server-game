@@ -71,8 +71,8 @@ static void client(log4cxx::LoggerPtr iLogger)
 	Hello aHelloMessage;
 	aHelloMessage.set_name("rutabagas");
 
-    RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
-    aPusher.send(aMessage);
+	RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
+	aPusher.send(aMessage);
 
 	RawMessage aResponse ;
 	if ( not Common::ExpectMessage("Goodbye", aSubscriber, aResponse) )
@@ -87,7 +87,7 @@ static void const server(log4cxx::LoggerPtr iLogger, std::shared_ptr< orwell::ta
 	log4cxx::NDC ndc("server");
 	for (int i = 0 ; i < 4 ; ++i )
 	{
-        ioServer->loopUntilOneMessageIsProcessed();
+		ioServer->loopUntilOneMessageIsProcessed();
 	}
 }
 

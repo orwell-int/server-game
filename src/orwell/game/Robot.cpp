@@ -21,17 +21,17 @@ Robot::~Robot()
 
 void Robot::setPlayerName(string const & iName)
 {
-    _playerName = iName;
+	_playerName = iName;
 }
 
 string const & Robot::getName() const
 {
-    return _name;
+	return _name;
 }
 
 string const &  Robot::getPlayerName() const
 {
-    return _playerName;
+	return _playerName;
 }
 
 void fillRobotStateMessage( messages::RobotState & oMessage )

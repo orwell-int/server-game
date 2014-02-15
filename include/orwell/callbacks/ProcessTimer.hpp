@@ -15,14 +15,14 @@ namespace callbacks {
 class ProcessTimer : public InterfaceProcess
 {
 public:
-    ProcessTimer( game::Game & ioCtx,
-    		log4cxx::LoggerPtr iLogger = log4cxx::Logger::getLogger("orwell.log") );
-    ~ProcessTimer();
+	ProcessTimer( game::Game & ioCtx,
+			log4cxx::LoggerPtr iLogger = log4cxx::Logger::getLogger("orwell.log") );
+	~ProcessTimer();
 
-    void execute();
+	void execute();
 
 private:
-    log4cxx::LoggerPtr _logger;
+	log4cxx::LoggerPtr _logger;
 
 };
 

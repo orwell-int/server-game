@@ -27,7 +27,7 @@ Receiver::Receiver(
 	_zmqContext(new zmq::context_t(1)),
 	_zmqSocket(new zmq::socket_t(*_zmqContext, iSocketType)),
 	_logger(log4cxx::Logger::getLogger("orwell.log")),
-    _url(iUrl)
+	_url(iUrl)
 {
 	int aLinger = 10; // linger 0.01 second max after being closed
 	_zmqSocket->setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
@@ -70,7 +70,7 @@ bool Receiver::receive(RawMessage & oMessage)
 	string aPayload;
 	string aDest;
 
-    bool aReceived = _zmqSocket->recv(&aZmqMessage, ZMQ_NOBLOCK);
+	bool aReceived = _zmqSocket->recv(&aZmqMessage, ZMQ_NOBLOCK);
 	if ( aReceived )
 	{
 		string aMessageData = string(static_cast<char*>(aZmqMessage.data()), aZmqMessage.size());
@@ -86,17 +86,17 @@ bool Receiver::receive(RawMessage & oMessage)
 				aPayload = aMessageData.substr( aEndTypeFlag + 1 );
 			}
 		}
-        oMessage._type = aType;
-        oMessage._routingId = aDest;
-        oMessage._payload = aPayload;
-        LOG4CXX_DEBUG(aLogger, "Received "<< aZmqMessage.size() << " bytes : type=" << aType << "- dest=" << aDest << "-");
+		oMessage._type = aType;
+		oMessage._routingId = aDest;
+		oMessage._payload = aPayload;
+		LOG4CXX_DEBUG(aLogger, "Received "<< aZmqMessage.size() << " bytes : type=" << aType << "- dest=" << aDest << "-");
 	}
-    return aReceived;
+	return aReceived;
 }
-    
+	
 std::string const & Receiver::getUrl() const
 {
-    return _url;
+	return _url;
 }
 
 }}

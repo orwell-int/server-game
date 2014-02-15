@@ -16,15 +16,15 @@ class Robot
 		Robot(std::string const & iName);
 		~Robot();
 
-        void setPlayerName(std::string const & iName);
+		void setPlayerName(std::string const & iName);
 		std::string const &  getName() const;
 		std::string const &  getPlayerName() const;
 
 		void fillRobotStateMessage( messages::RobotState & oMessage );
 
-    private:
-        std::string _name;
-        std::string _playerName;
+	private:
+		std::string _name;
+		std::string _playerName;
 };
 
 }} //end namespace

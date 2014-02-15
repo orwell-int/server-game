@@ -12,18 +12,18 @@ namespace callbacks {
 
 class ProcessDecider
 {
-    typedef std::pair<std::string, std::unique_ptr<InterfaceProcess>> Couple;
+	typedef std::pair<std::string, std::unique_ptr<InterfaceProcess>> Couple;
 
 	public:
-        ProcessDecider();
-        ~ProcessDecider();
+		ProcessDecider();
+		~ProcessDecider();
 		static void Process( com::RawMessage const & iMessage,
-                             game::Game & ioCtx);
-        void process( com::RawMessage const & iMessage,
-                             game::Game & ioCtx);
+							 game::Game & ioCtx);
+		void process( com::RawMessage const & iMessage,
+							 game::Game & ioCtx);
 
 	private:
-        std::map<std::string, std::unique_ptr<InterfaceProcess>> _map;
+		std::map<std::string, std::unique_ptr<InterfaceProcess>> _map;
 };
 
 }} //end namespace
