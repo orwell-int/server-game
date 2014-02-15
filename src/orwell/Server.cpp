@@ -120,14 +120,19 @@ void Server::runBroadcastReceiver()
                                 (struct sockaddr *) &aClientAddress,
                                 sizeof(aClientAddress));
         
-        // Special message to properly terminate the test
-#ifdef __HYPER_BLASTER__
+        /* 
+         * Special message to properly terminate the test
+         * It might be good to define some include guards when compiling for tests,
+         * or a boolean variable to keep these backports opened.. 
+         */
+
+//#ifdef __HYPER_BLASTER__
         aMessageBuffer[aMessageLength] = '\0';
         if (strncmp(aMessageBuffer, "1AFTW", sizeof("1AFTW")))
         {
             break;
         }
-#endif
+//#endif
     }
     
     close(aBsdSocket);

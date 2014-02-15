@@ -6,8 +6,6 @@
 //
 //
 
-#define __HYPER_BLASTER__ 1
-
 #include "RawMessage.hpp"
 
 #include <zmq.hpp>
@@ -172,24 +170,31 @@ uint32_t simulateClient(log4cxx::LoggerPtr iLogger)
     return (aFirstSeparator == 0xA0 and aSecondSeparator == 0xA1) ? 0 : 1;
 }
 
+void simulateServer(log4cxx::LoggerPtr iLogger)
+{
+    orwell::tasks::Server aServer("tcp://*:9801", "tcp://*:9991", 500, iLogger);
+    
+    LOG4CXX_INFO(iLogger, "Running broadcast receiver on server");
+    aServer.runBroadcastReceiver();
+    LOG4CXX_INFO(iLogger, "Server stopped correctly");
+}
 
 int main(int argc, const char * argv [])
 {
+    int aRc(0);
+    
     auto logger = Common::SetupLogger("hello");
 	NDC ndc("broadcast");
-	std::shared_ptr< orwell::tasks::Server > aServer =
-        std::make_shared< orwell::tasks::Server >("tcp://*:9801", "tcp://*:9991", 500, logger);
-    
     switch (fork())
     {
         case 0:
-            aServer->runBroadcastReceiver();
+            simulateServer(logger);
             return 0;
         default:
-            sleep(3);
-            return simulateClient(logger);
+            sleep(1);
+            aRc = simulateClient(logger);
+            sleep(1);
     }
-    
-    // We should never arrive here
-    return 2;
+
+    return aRc;
 }
