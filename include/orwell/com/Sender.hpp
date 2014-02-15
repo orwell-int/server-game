@@ -21,13 +21,13 @@ class Sender
 public:
 
 	/// \param iUrl
-	///	Url object used to know where to open the socket.
+	///    Url object used to know where to open the socket.
 	///
 	/// \param iSocketType
-	///	ZMQ type of socket.
+	///    ZMQ type of socket.
 	///
 	/// \param iBind
-	///	True if and only if the socket is to call bind instead of connect.
+	///    True if and only if the socket is to call bind instead of connect.
 	///
 	/// \param iSleep
 	///  Time to sleep after bind and connect.
@@ -40,7 +40,7 @@ public:
 	~Sender();
 
 	void send( RawMessage const & iMessage );
-	std::string const & getUrl() const;
+    std::string const & getUrl() const;
 
 
 private:
@@ -48,7 +48,7 @@ private:
 	zmq::context_t * _zmqContext;
 	zmq::socket_t * _zmqSocket;
 	log4cxx::LoggerPtr _logger;
-	std::string _url;
+    std::string _url;
 };
 
 }}

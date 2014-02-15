@@ -15,13 +15,13 @@ class Player
 		Player(std::string const & iName);
 		~Player();
 
-		void setRobot(std::string const & iName);
+        void setRobot(std::string const & iName);
 		std::string getName();
 		std::string getRobot();
 
-	private:
-		std::string _name;
-		std::string _robot;
+    private:
+        std::string _name;
+        std::string _robot;
 };
 
 }} //end namespace

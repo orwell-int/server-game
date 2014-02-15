@@ -22,7 +22,7 @@ namespace callbacks {
 class ProcessInput : public InterfaceProcess
 {
 public:
-	void execute();
+    void execute();
 
 private:
 

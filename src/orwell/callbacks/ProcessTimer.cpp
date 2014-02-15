@@ -27,13 +27,13 @@ ProcessTimer::~ProcessTimer ()
 
 void ProcessTimer::execute()
 {
-	LOG4CXX_DEBUG(_logger, "ProcessTimer::execute : broadcast Gamestate");
+    LOG4CXX_DEBUG(_logger, "ProcessTimer::execute : broadcast Gamestate");
 
-	GameState aGameState;
-	aGameState.set_playing(false);
+    GameState aGameState;
+    aGameState.set_playing(false);
 
-	RawMessage aMessage("all_clients", "GameState", aGameState.SerializeAsString());
-	_ctx->getPublisher()->send( aMessage );
+    RawMessage aMessage("all_clients", "GameState", aGameState.SerializeAsString());
+    _ctx->getPublisher()->send( aMessage );
 }
 
 }}

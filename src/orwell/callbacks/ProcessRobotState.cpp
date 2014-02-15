@@ -18,13 +18,13 @@ namespace callbacks{
 
 void ProcessRobotState::execute()
 {
-	std::string const & aDestination = getArgument("RoutingID").second;
-	orwell::messages::RobotState const & aRobotStateMsg = static_cast<orwell::messages::RobotState const & >(*_msg);
-	
-	LOG4CXX_INFO(_loggerPtr, "ProcessRobotState::execute : simple relay");
+    std::string const & aDestination = getArgument("RoutingID").second;
+    orwell::messages::RobotState const & aRobotStateMsg = static_cast<orwell::messages::RobotState const & >(*_msg);
+    
+    LOG4CXX_INFO(_loggerPtr, "ProcessRobotState::execute : simple relay");
 
-	RawMessage aForward(aDestination, "RobotState", aRobotStateMsg.SerializeAsString() );
-	_ctx->getPublisher()->send( aForward );
+    RawMessage aForward(aDestination, "RobotState", aRobotStateMsg.SerializeAsString() );
+    _ctx->getPublisher()->send( aForward );
 }
 
 }}

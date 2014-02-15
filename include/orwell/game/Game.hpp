@@ -22,21 +22,21 @@ public:
 
 	std::shared_ptr< com::Sender > getPublisher();
 
-	Robot & accessRobot( std::string const & iRobotName );
-	std::map<std::string, Robot> const & getRobots();
+    Robot & accessRobot( std::string const & iRobotName );
+    std::map<std::string, Robot> const & getRobots();
 
-	Player & accessPlayer( std::string const & iPlayerName );
-	std::map<std::string, Player> const & getPlayers();
+    Player & accessPlayer( std::string const & iPlayerName );
+    std::map<std::string, Player> const & getPlayers();
 
-	void start() { _isRunning = true; }
-	void stop() { _isRunning = false; }
+    void start() { _isRunning = true; }
+    void stop() { _isRunning = false; }
 
-	//add empty PlayerContext
-	bool addPlayer(std::string const & iName);
-	//add empty RobotContext
-	bool addRobot(std::string const & iName);
+    //add empty PlayerContext
+    bool addPlayer(std::string const & iName);
+    //add empty RobotContext
+    bool addRobot(std::string const & iName);
 
-	std::string getAvailableRobot();
+    std::string getAvailableRobot();
 
 private:
 	std::shared_ptr< com::Sender > _publisher;
@@ -44,11 +44,11 @@ private:
 
 	// Is the game started and running or not ?
 	bool _isRunning;
-	// Each connected robot has a robotContext in this map. The key is the robot name.
-	std::map<std::string, Robot> _robots;
-	// Each connected controller has a playerContext in this map. The key is the player name.
+    // Each connected robot has a robotContext in this map. The key is the robot name.
+    std::map<std::string, Robot> _robots;
+    // Each connected controller has a playerContext in this map. The key is the player name.
 	std::map<std::string, Player> _players;
-	// Each connected controller has a playerContext in this map. The key is the player name.
+    // Each connected controller has a playerContext in this map. The key is the player name.
 	std::map<std::string, Team> _teams;
 
 };

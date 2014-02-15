@@ -70,7 +70,7 @@ static void const client(log4cxx::LoggerPtr iLogger)
 static void const server(log4cxx::LoggerPtr iLogger, std::shared_ptr< orwell::tasks::Server > ioServer)
 {
 	log4cxx::NDC ndc("server");
-	ioServer->loopUntilOneMessageIsProcessed();
+    ioServer->loopUntilOneMessageIsProcessed();
 }
 
 int main()

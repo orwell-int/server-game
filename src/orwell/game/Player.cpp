@@ -17,17 +17,17 @@ Player::~Player()
 
 void Player::setRobot(string const & iName)
 {
-	_robot = iName;
+    _robot = iName;
 }
 
 string Player::getName()
 {
-	return _name;
+    return _name;
 }
 
 string Player::getRobot()
 {
-	return _robot;
+    return _robot;
 }
 
 
