@@ -1,20 +1,15 @@
 #pragma once
 
-//protobuf
-#include "controller.pb.h"
-
 //tasks
 #include "orwell/callbacks/InterfaceProcess.hpp"
-
-#include <log4cxx/logger.h>
 
 namespace orwell {
 
 namespace messages {
-	class Input;
+class Input;
 }
 namespace game {
-	class Game;
+class Game;
 }
 
 namespace callbacks {
@@ -22,7 +17,7 @@ namespace callbacks {
 class ProcessInput : public InterfaceProcess
 {
 public:
-    void execute();
+	void execute();
 
 private:
 

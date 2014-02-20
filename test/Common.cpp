@@ -28,11 +28,11 @@ bool Common::ExpectMessage(std::string const & iType,
 	boost::posix_time::time_duration aDuration;
 	boost::posix_time::ptime aCurrentTime;
 	boost::posix_time::ptime aStartTime = boost::posix_time::second_clock::local_time();
-	while (not aReceived and (aDuration < aTrueTimeout) )
+	while (not aReceived and (aDuration < aTrueTimeout))
 	{
 		aCurrentTime = boost::posix_time::second_clock::local_time();
 		aDuration = aCurrentTime - aStartTime;
-		if ( not iSubscriber.receive(oReceived) or oReceived._type != iType)
+		if (not iSubscriber.receive(oReceived) or oReceived._type != iType)
 		{
 			usleep( 10 );
 		}
@@ -53,7 +53,7 @@ log4cxx::LoggerPtr Common::SetupLogger(std::string const & iName, bool iDebug)
 	filter::LevelRangeFilterPtr aLevelFilter = new filter::LevelRangeFilter();
 	if (not iDebug)
 	{
-	 aLevelFilter->setLevelMin(Level::getInfo());
+		aLevelFilter->setLevelMin(Level::getInfo());
 
 	}
 	aConsoleAppender->addFilter(aLevelFilter);

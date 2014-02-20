@@ -28,9 +28,9 @@ using namespace std;
 
 int g_status = 0;
 
-static void ExpectWelcome( 
-		string const & iPlayerName, 
-		string const & iExpectedRobotName, 
+static void ExpectWelcome(
+		string const & iPlayerName,
+		string const & iExpectedRobotName,
 		Sender & ioPusher,
 		Receiver & ioSubscriber)
 {
@@ -71,10 +71,10 @@ static void client(log4cxx::LoggerPtr iLogger)
 	Hello aHelloMessage;
 	aHelloMessage.set_name("rutabagas");
 
-    RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
-    aPusher.send(aMessage);
+	RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
+	aPusher.send(aMessage);
 
-	RawMessage aResponse ;
+	RawMessage aResponse;
 	if ( not Common::ExpectMessage("Goodbye", aSubscriber, aResponse) )
 	{
 		g_status = -1;
@@ -85,9 +85,9 @@ static void client(log4cxx::LoggerPtr iLogger)
 static void const server(log4cxx::LoggerPtr iLogger, std::shared_ptr< orwell::tasks::Server > ioServer)
 {
 	log4cxx::NDC ndc("server");
-	for (int i = 0 ; i < 4 ; ++i )
+	for (int i = 0 ; i < 4 ; ++i)
 	{
-        ioServer->loopUntilOneMessageIsProcessed();
+		ioServer->loopUntilOneMessageIsProcessed();
 	}
 }
 

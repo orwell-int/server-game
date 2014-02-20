@@ -1,8 +1,5 @@
 #pragma once
 
-//protobuf
-#include "robot.pb.h"
-
 //tasks
 #include "orwell/callbacks/InterfaceProcess.hpp"
 
@@ -11,10 +8,10 @@
 namespace orwell {
 
 namespace messages {
-	class RobotState;
+class RobotState;
 }
 namespace game {
-	class Game;
+class Game;
 }
 
 namespace callbacks {
@@ -22,7 +19,7 @@ namespace callbacks {
 class ProcessRobotState : public InterfaceProcess
 {
 public:
-    void execute();
+	void execute();
 
 };
 

@@ -7,8 +7,8 @@
 #include "orwell/com/ConnectionMode.hpp"
 
 namespace zmq {
-	class context_t;
-	class socket_t;
+class context_t;
+class socket_t;
 }
 
 namespace orwell {
@@ -40,7 +40,7 @@ public:
 	~Sender();
 
 	void send( RawMessage const & iMessage );
-    std::string const & getUrl() const;
+	std::string const & getUrl() const;
 
 
 private:
@@ -48,7 +48,7 @@ private:
 	zmq::context_t * _zmqContext;
 	zmq::socket_t * _zmqSocket;
 	log4cxx::LoggerPtr _logger;
-    std::string _url;
+	std::string _url;
 };
 
 }}
