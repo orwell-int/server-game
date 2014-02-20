@@ -24,7 +24,8 @@ Sender::Sender(
 		unsigned int const iSleep) :
 	_zmqContext(new zmq::context_t(1)),
 	_zmqSocket(new zmq::socket_t(*_zmqContext, iSocketType)),
-	_logger(log4cxx::Logger::getLogger("orwell.log"))
+	_logger(log4cxx::Logger::getLogger("orwell.log")),
+    _url(iUrl)
 {
 	int aLinger = 10; // linger 0.01 second max after being closed
 	_zmqSocket->setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
@@ -72,6 +73,11 @@ void Sender::send( RawMessage const & iMessage )
 	_zmqSocket->send( aZmqMessage );
 	LOG4CXX_DEBUG(aLogger, "Sent " << aMessage.size() << " bytes : " << iMessage._type << "-" );
 
+}
+    
+std::string const & Sender::getUrl() const
+{
+    return _url;
 }
 
 }} // end namespace

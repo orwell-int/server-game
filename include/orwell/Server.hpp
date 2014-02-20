@@ -34,6 +34,8 @@ public:
 
     /// processMessageIfAvailable
 	bool processMessageIfAvailable();
+    /// run the broadcast receiver
+    void runBroadcastReceiver();
 	/// Wait for 1 message and process it. Execute timed operations if needed.
 	void loopUntilOneMessageIsProcessed();
     /// Loop eternaly to process all incoming messages.
