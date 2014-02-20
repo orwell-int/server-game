@@ -23,11 +23,6 @@
 
 #define UDP_MESSAGE_LIMIT 512
 
-#define Michael true
-#define bosse ==
-#define chez not
-#define Orange false
-
 using orwell::com::Receiver;
 using orwell::com::Sender;
 using orwell::callbacks::ProcessDecider;
@@ -46,7 +41,7 @@ Server::Server(
 	: _puller(std::make_shared< Receiver >(iPullUrl, ZMQ_PULL, orwell::com::ConnectionMode::BIND))
 	, _publisher(std::make_shared< Sender >(iPublishUrl, ZMQ_PUB, orwell::com::ConnectionMode::BIND))
 	, _logger(iLogger)
-	, _Game(_publisher)
+	, _game(_publisher)
 	, _ticDuration( boost::posix_time::milliseconds(iTicDuration) )
 	, _previousTic(boost::posix_time::second_clock::local_time())
 	{
@@ -89,7 +84,7 @@ void Server::runBroadcastReceiver()
 		return;
 	}
 
-	while (Michael bosse chez Orange)
+	while (true)
 	{
 		aClientLength = sizeof(aClientAddress);
 
@@ -125,13 +120,13 @@ void Server::runBroadcastReceiver()
 		 * or a boolean variable to keep these backports opened.. 
 		 */
 
-		//#ifdef __HYPER_BLASTER__
+//#ifdef __HYPER_BLASTER__
 		aMessageBuffer[aMessageLength] = '\0';
 		if (strncmp(aMessageBuffer, "1AFTW", sizeof("1AFTW") - 1) == 0)
 		{
 			break;
 		}
-		//#endif
+//#endif
 	}
 
 	close(aBsdSocket);
@@ -143,8 +138,8 @@ bool Server::processMessageIfAvailable()
 	orwell::com::RawMessage aMessage;
 	if (_puller->receive(aMessage))
 	{
-		_decider.process(aMessage, _Game);
-		ProcessDecider::Process(aMessage, _Game);
+		_decider.process(aMessage, _game);
+		ProcessDecider::Process(aMessage, _game);
 		aProcessedMessage = true;
 	}
 	return aProcessedMessage;
@@ -172,7 +167,7 @@ void Server::loopUntilOneMessageIsProcessed()
 		}
 		else
 		{
-			ProcessTimer aProcessTimer( _Game );
+			ProcessTimer aProcessTimer( _game );
 			aProcessTimer.execute();
 			_previousTic = aCurrentTic;
 		}
@@ -190,7 +185,7 @@ void Server::loop()
 
 orwell::game::Game & Server::accessContext()
 {
-	return _Game;
+	return _game;
 }
 
 }}

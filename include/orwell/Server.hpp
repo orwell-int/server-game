@@ -28,7 +28,7 @@ public:
 			std::string const & iPullUrl = "tcp://*:9000",
 			std::string const & iPublishUrl = "tcp://*:9001",
 			long const iTicDuration = 500, //milliseconds
-			log4cxx::LoggerPtr iLogger = log4cxx::Logger::getLogger("orwell.log") );
+			log4cxx::LoggerPtr iLogger = log4cxx::Logger::getLogger("orwell.log"));
 
 	~Server();
 
@@ -47,7 +47,7 @@ private:
 	std::shared_ptr< com::Receiver > _puller;
 	std::shared_ptr< com::Sender > _publisher;
 	log4cxx::LoggerPtr _logger;
-	orwell::game::Game _Game;
+	orwell::game::Game _game;
 	orwell::callbacks::ProcessDecider _decider;
 
 	boost::posix_time::time_duration const _ticDuration;
