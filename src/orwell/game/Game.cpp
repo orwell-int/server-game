@@ -104,7 +104,7 @@ shared_ptr<Robot> Game::getAvailableRobot()
 		aFoundRobot = aIterOnRobots->second;
 	}
 
-	return (aFoundRobot);
+	return aFoundRobot;
 }
 
 void Game::fillGameStateMessage(messages::GameState & oGameState)

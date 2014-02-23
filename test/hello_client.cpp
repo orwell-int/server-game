@@ -73,11 +73,8 @@ static void client(log4cxx::LoggerPtr iLogger)
 	Hello aHelloMessage;
 	aHelloMessage.set_name("rutabagas");
 
-	LOG4CXX_INFO(iLogger, "create message");
 	RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
-	LOG4CXX_INFO(iLogger, "send message");
 	aPusher.send(aMessage);
-	LOG4CXX_INFO(iLogger, "message sent");
 
 	RawMessage aResponse;
 	if ( not Common::ExpectMessage("Goodbye", aSubscriber, aResponse) )
