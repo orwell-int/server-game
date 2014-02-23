@@ -42,16 +42,16 @@ void ProcessHello::execute()
 	std::string const & aClientID = getArgument("RoutingID").second;
     
 	string aNewPlayerName = anHelloMsg.name();
-	bool aPlayerAddedSuccess = _ctx->addPlayer( aNewPlayerName );
-	string aRobotForPlayer = _ctx->getRobotNameForPlayer( aNewPlayerName );
-	string aAvailableRobot;
+	bool aPlayerAddedSuccess = _game->addPlayer( aNewPlayerName );
+	string aRobotForPlayer = _game->getRobotNameForPlayer( aNewPlayerName );
+	std::shared_ptr< ::orwell::game::Robot > aAvailableRobot;
 
 	if ( aRobotForPlayer.empty() )
 	{
-		aAvailableRobot = _ctx->getAvailableRobot();
+		aAvailableRobot = _game->getAvailableRobot();
 	}
 	
-	if ( ( aAvailableRobot.empty() and aRobotForPlayer.empty() ) || !aPlayerAddedSuccess )
+	if ((aAvailableRobot == nullptr and aRobotForPlayer.empty()) or not aPlayerAddedSuccess)
 	{
 		LOG4CXX_WARN(_loggerPtr, "Impossible to process Hello : availableRobot=" << aAvailableRobot.get() << "- player added with success :" << aPlayerAddedSuccess);
 
@@ -65,12 +65,12 @@ void ProcessHello::execute()
 
 		if (aRobotForPlayer.empty())
 		{
-			_ctx->accessPlayer(aNewPlayerName).setRobot( aAvailableRobot );
-			_ctx->accessRobot(aAvailableRobot).setPlayerName( aNewPlayerName );
+			_game->accessPlayer(aNewPlayerName).setRobot( aAvailableRobot->getName() );
+			_game->accessRobot(aAvailableRobot->getName())->setPlayerName( aNewPlayerName );
 		}
 
 		Welcome aWelcome;
-		aWelcome.set_robot( aRobotForPlayer.empty() ? aAvailableRobot : aRobotForPlayer );
+		aWelcome.set_robot(aRobotForPlayer.empty() ? aAvailableRobot->getName() : aRobotForPlayer);
 		aWelcome.set_team( orwell::messages::RED ); //currently stupidly hardoded
 		RawMessage aReply(aClientID, "Welcome", aWelcome.SerializeAsString());
 		_publisher->send( aReply );

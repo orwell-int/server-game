@@ -20,8 +20,9 @@ using std::make_shared;
 namespace orwell {
 namespace game {
 
-Game::Game(std::shared_ptr< com::Sender > iPublisher) :
-	_publisher(iPublisher), _logger(log4cxx::Logger::getLogger("orwell.log")), _isRunning(false)
+Game::Game()
+	: _logger(log4cxx::Logger::getLogger("orwell.log"))
+	, _isRunning(false)
 {
 }
 
@@ -53,7 +54,7 @@ map<string, Player> const & Game::getPlayers()
 bool Game::addPlayer(string const & iName)
 {
 	bool aAddedPlayerSuccess = false;
-	if ( _players.find(iName) != _players.end() )
+	if (_players.find(iName) != _players.end())
 	{
 		LOG4CXX_WARN(_logger, "Player name (" << iName << ") is already in the player Map.");
 		aAddedPlayerSuccess = true;
@@ -88,15 +89,15 @@ bool Game::addRobot(string const & iName)
 	return aAddedRobotSuccess;
 }
 
-string Game::getAvailableRobot() const
+std::shared_ptr<Robot> Game::getAvailableRobot() const
 {
 	shared_ptr<Robot> aFoundRobot;
 
 	//search for the first robot which is not already associated to a player
-	map<string, Robot>::const_iterator aIterOnRobots;
+	map<string, std::shared_ptr<Robot>>::const_iterator aIterOnRobots;
 	aIterOnRobots = _robots.begin();
 	while ( aIterOnRobots != _robots.end()
-		   && !aIterOnRobots->second.getPlayerName().empty())
+			&& !aIterOnRobots->second->getPlayerName().empty())
 	{
 		++aIterOnRobots;
 	}
@@ -113,16 +114,20 @@ string const Game::getRobotNameForPlayer(string const & iPlayer) const
 {
 	string retValue;
 	
-	for (pair<string, Robot> const & iItem : _robots)
+	for (pair<string, std::shared_ptr<Robot>> const & iItem : _robots)
 	{
-		if (iItem.second.getPlayerName() == iPlayer)
+		if (iItem.second.get()->getPlayerName() == iPlayer)
 		{
-			retValue = iItem.second.getName();
+			retValue = iItem.second.get()->getName();
 		}
 	}
 	
 	return retValue;
 }
-
+	
+void Game::fillGameStateMessage(messages::GameState & oGameState)
+{
+	//todo
+}
 
 }} // namespaces
