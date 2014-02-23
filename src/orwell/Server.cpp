@@ -171,6 +171,7 @@ void Server::loopUntilOneMessageIsProcessed()
 		else
 		{
 			ProcessTimer aProcessTimer(_publisher, _game);
+			aProcessTimer.init(nullptr, log4cxx::Logger::getLogger("orwelllog.txt"));
 			aProcessTimer.execute();
 			_previousTic = aCurrentTic;
 		}

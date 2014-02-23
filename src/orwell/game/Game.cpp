@@ -53,10 +53,11 @@ map<string, Player> const & Game::getPlayers()
 
 bool Game::addPlayer(string const & iName)
 {
-	bool aAddedPLayerSuccess = false;
+	bool aAddedPlayerSuccess = false;
 	if (_players.find(iName) != _players.end())
 	{
 		LOG4CXX_WARN(_logger, "Player name (" << iName << ") is already in the player Map.");
+		aAddedPlayerSuccess = true;
 	}
 	else
 	{
@@ -64,9 +65,10 @@ bool Game::addPlayer(string const & iName)
 		Player aPlayerContext( iName );
 		_players.insert(pair<string,Player>(iName, aPlayerContext));
 		LOG4CXX_DEBUG(_logger, "new PlayerContext added with internalId=" << iName);
-		aAddedPLayerSuccess = true;
+		aAddedPlayerSuccess = true;
 	}
-	return aAddedPLayerSuccess;
+
+	return aAddedPlayerSuccess;
 }
 
 bool Game::addRobot(string const & iName)
@@ -87,18 +89,19 @@ bool Game::addRobot(string const & iName)
 	return aAddedRobotSuccess;
 }
 
-shared_ptr<Robot> Game::getAvailableRobot()
+std::shared_ptr<Robot> Game::getAvailableRobot() const
 {
 	shared_ptr<Robot> aFoundRobot;
 
 	//search for the first robot which is not already associated to a player
-	map<string, shared_ptr<Robot> >::iterator aIterOnRobots;
+	map<string, std::shared_ptr<Robot>>::const_iterator aIterOnRobots;
 	aIterOnRobots = _robots.begin();
 	while ( aIterOnRobots != _robots.end()
 			&& !aIterOnRobots->second->getPlayerName().empty())
 	{
 		++aIterOnRobots;
 	}
+	
 	if (_robots.end() != aIterOnRobots)
 	{
 		aFoundRobot = aIterOnRobots->second;
@@ -107,6 +110,21 @@ shared_ptr<Robot> Game::getAvailableRobot()
 	return aFoundRobot;
 }
 
+string const Game::getRobotNameForPlayer(string const & iPlayer) const
+{
+	string retValue;
+	
+	for (pair<string, std::shared_ptr<Robot>> const & iItem : _robots)
+	{
+		if (iItem.second.get()->getPlayerName() == iPlayer)
+		{
+			retValue = iItem.second.get()->getName();
+		}
+	}
+	
+	return retValue;
+}
+	
 void Game::fillGameStateMessage(messages::GameState & oGameState)
 {
 	//todo

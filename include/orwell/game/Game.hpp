@@ -39,7 +39,8 @@ public:
 	//add empty RobotContext
 	bool addRobot(std::string const & iName);
 
-	std::shared_ptr<Robot> getAvailableRobot();
+	std::string const getRobotNameForPlayer(std::string const & iPlayer) const;
+	std::shared_ptr<Robot> getAvailableRobot() const;
 	void fillGameStateMessage( messages::GameState & oGameState);
 
 private:
