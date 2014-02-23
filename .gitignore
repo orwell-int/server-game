@@ -13,4 +13,5 @@ Testing
 *.cbp
 *.layout
 *.depend
-doc/diagrams/
+doc/Server-game/diagrams/
+.settings/
