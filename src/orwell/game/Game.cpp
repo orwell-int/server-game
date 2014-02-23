@@ -91,20 +91,21 @@ string Game::getAvailableRobot() const
 {
 	string aFoundRobot;
 
-    //search for the first robot which is not already associated to a player
-    map<string, Robot>::const_iterator aIterOnRobots;
-    aIterOnRobots = _robots.begin();
-    while ( aIterOnRobots != _robots.end()
-            && !aIterOnRobots->second.getPlayerName().empty())
-    {
-        ++aIterOnRobots;
-    }
-    if (_robots.end() != aIterOnRobots)
-    {
-        aFoundRobot = aIterOnRobots->first;
-    }
+	//search for the first robot which is not already associated to a player
+	map<string, Robot>::const_iterator aIterOnRobots;
+	aIterOnRobots = _robots.begin();
+	while ( aIterOnRobots != _robots.end()
+		   && !aIterOnRobots->second.getPlayerName().empty())
+	{
+		++aIterOnRobots;
+	}
+	
+	if (_robots.end() != aIterOnRobots)
+	{
+		aFoundRobot = aIterOnRobots->first;
+	}
 
-    return aFoundRobot;
+	return aFoundRobot;
 }
 
 string const Game::getRobotNameForPlayer(string const & iPlayer) const
