@@ -115,7 +115,9 @@ string const Game::getRobotNameForPlayer(string const & iPlayer) const
 	for (pair<string, Robot> const & iItem : _robots)
 	{
 		if (iItem.second.getPlayerName() == iPlayer)
+		{
 			retValue = iItem.second.getName();
+		}
 	}
 	
 	return retValue;
