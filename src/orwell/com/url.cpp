@@ -51,4 +51,3 @@ string const & url::toString() const
 {
 	return _url;
 }
-

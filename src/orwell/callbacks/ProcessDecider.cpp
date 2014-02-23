@@ -26,30 +26,31 @@ namespace orwell {
 namespace callbacks {
 
 template <typename MessageType>
-	static MessageType BuildProtobuf(RawMessage const & iMessage)
-	{
-		log4cxx::LoggerPtr aLogger = log4cxx::Logger::getLogger("orwell.log");
+static MessageType BuildProtobuf(RawMessage const & iMessage)
+{
+	log4cxx::LoggerPtr aLogger = log4cxx::Logger::getLogger("orwell.log");
 
-		MessageType aMessage;
-		bool aSuccess = aMessage.ParsePartialFromString( iMessage._payload );
-		LOG4CXX_DEBUG(aLogger, "BuildProtobuf success : " << aSuccess << "-" );
-		LOG4CXX_DEBUG(aLogger, "Resulting protobuf : size=" << aMessage.ByteSize() << "-" );
-		return aMessage;
-	};
+	MessageType aMessage;
+	bool aSuccess = aMessage.ParsePartialFromString( iMessage._payload );
+	LOG4CXX_DEBUG(aLogger, "BuildProtobuf success : " << aSuccess << "-" );
+	LOG4CXX_DEBUG(aLogger, "Resulting protobuf : size=" << aMessage.ByteSize() << "-" );
+	return aMessage;
+}
+
+ProcessDecider::ProcessDecider(
+		game::Game & ioGame,
+		std::shared_ptr< com::Sender > ioPublisher)
+{
+	_map["Hello"] = std::unique_ptr<InterfaceProcess>(new ProcessHello(ioPublisher, ioGame));
+	_map["Input"] = std::unique_ptr<InterfaceProcess>(new ProcessInput(ioPublisher, ioGame));
+	_map["RobotState"] = std::unique_ptr<InterfaceProcess>(new ProcessRobotState(ioPublisher, ioGame));
+}
 
 ProcessDecider::~ProcessDecider()
 {
-
 }
 
-ProcessDecider::ProcessDecider()
-{
-	_map["Hello"] = std::unique_ptr<InterfaceProcess>(new ProcessHello());
-	_map["Input"] = std::unique_ptr<InterfaceProcess>(new ProcessInput());
-	_map["RobotState"] = std::unique_ptr<InterfaceProcess>(new ProcessRobotState());
-}
-
-void ProcessDecider::process(com::RawMessage const & iMessage, game::Game & ioCtx)
+void ProcessDecider::process(com::RawMessage const & iMessage)
 {
 	log4cxx::LoggerPtr aLogger = log4cxx::Logger::getLogger("orwell.log");
 	std::unique_ptr<InterfaceProcess> & aProcess = _map[iMessage._type];
@@ -73,7 +74,7 @@ void ProcessDecider::process(com::RawMessage const & iMessage, game::Game & ioCt
 	{
 		aProcess->insertArgument("RoutingID", iMessage._routingId);
 		aProcess->insertArgument("Type", iMessage._type);
-		aProcess->setGameContext(ioCtx);
+		//aProcess->setGameContext(ioGame);
 		aProcess->init(aMsg, aLogger);
 		aProcess->execute();
 
@@ -81,16 +82,9 @@ void ProcessDecider::process(com::RawMessage const & iMessage, game::Game & ioCt
 	}
 	else
 	{
-		LOG4CXX_INFO(aLogger, "unkown message type : " << iMessage._type << "-" );
+		LOG4CXX_INFO(aLogger, "unkown message type : " << iMessage._type << "-");
 	}
 }
-
-void ProcessDecider::Process( RawMessage const & iMessage, game::Game & ioCtx)
-{
-}
-
-
-
 
 }} // namespaces
 

@@ -1,0 +1,45 @@
+@startuml
+scale 1200 width
+
+class Server 
+
+class ProcessDecider {
+	+{static} void process(com::RawMessage, game::Game, shared_ptr<Sender>)
+}
+
+abstract InterfaceProcess {
+	+{abstract} void execute()
+
+	# _game : Game
+	# _publisher : shared_ptr<Sender>
+}
+
+class ProcessHello {
+	+ void execute()
+
+    - _clientId : string
+    - _hello : messages::Hello
+}
+
+class ProcessInput {
+	+ void execute()
+
+    - _clientId : string
+    - _input : messages::Input
+}
+
+class ProcessTimer {
+	+ void execute()
+
+}
+
+InterfaceProcess <|-- ProcessHello
+InterfaceProcess <|-- ProcessInput
+InterfaceProcess <|-- ProcessTimer
+
+ProcessDecider - ProcessHello : executes >
+ProcessDecider - ProcessInput : executes >
+Server - ProcessTimer : executes >
+
+
+@enduml

@@ -86,6 +86,7 @@ bool Receiver::receive(RawMessage & oMessage)
 				aPayload = aMessageData.substr( aEndTypeFlag + 1 );
 			}
 		}
+
 		oMessage._type = aType;
 		oMessage._routingId = aDest;
 		oMessage._payload = aPayload;
@@ -100,4 +101,3 @@ std::string const & Receiver::getUrl() const
 }
 
 }}
-

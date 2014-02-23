@@ -1,0 +1,35 @@
+@startuml
+scale 600 width
+
+class Server {
+}
+
+class Sender {
+	+ send( RawMessage & )
+	- _zmqContext : zmq::context_t *
+	- _zmqSocket : zmq::socket_t *
+}
+
+class Receiver {
+	+ receive( RawMessage & )
+	- _zmqContext : zmq::context_t *
+	- _zmqSocket : zmq::socket_t *
+}
+
+class RawMessage {
+    + _routingId : string
+    + _type : string
+    + _payload : string
+}
+
+enum ConnectionMode {
+	BIND
+	CONNECT
+}
+
+
+Server "1" o-- "1" Sender 
+Server "1" o-- "1" Receiver
+
+
+@enduml

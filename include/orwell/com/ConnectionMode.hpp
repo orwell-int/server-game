@@ -9,7 +9,7 @@ namespace ConnectionMode
 {
 enum ConnectionMode
 {
-	/// Ask zmq to bind a socket so that othere can connect to it.
+	/// Ask zmq to bind a socket so that other can connect to it.
 	BIND,
 	/// Ask zmq to connect to a socket already bound.
 	CONNECT,
@@ -18,4 +18,3 @@ enum ConnectionMode
 
 }
 }
-

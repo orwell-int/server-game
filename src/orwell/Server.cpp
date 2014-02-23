@@ -41,7 +41,8 @@ Server::Server(
 	: _puller(std::make_shared< Receiver >(iPullUrl, ZMQ_PULL, orwell::com::ConnectionMode::BIND))
 	, _publisher(std::make_shared< Sender >(iPublishUrl, ZMQ_PUB, orwell::com::ConnectionMode::BIND))
 	, _logger(iLogger)
-	, _game(_publisher)
+	, _game()
+	, _decider(_game, _publisher)
 	, _ticDuration( boost::posix_time::milliseconds(iTicDuration) )
 	, _previousTic(boost::posix_time::second_clock::local_time())
 	{
@@ -89,7 +90,8 @@ void Server::runBroadcastReceiver()
 		aClientLength = sizeof(aClientAddress);
 
 		// Wait for message and fill the ClientAddress structure we will use to reply
-		if ( (aMessageLength = recvfrom(aBsdSocket, aMessageBuffer, UDP_MESSAGE_LIMIT, 0, (struct sockaddr *) &aClientAddress, &aClientLength)) == -1)
+		if ((aMessageLength = recvfrom(aBsdSocket, aMessageBuffer, UDP_MESSAGE_LIMIT, 0,
+				(struct sockaddr *) &aClientAddress, &aClientLength)) == -1)
 		{
 			return;
 		}
@@ -107,7 +109,8 @@ void Server::runBroadcastReceiver()
 		// -----------------------------------------------------------------------------------------------
 		// Total                                                                               29 bytes
 
-		aMessageLength = sendto(aBsdSocket,
+		aMessageLength = sendto(
+				aBsdSocket,
 				anOstream.str().c_str(),
 				anOstream.str().size(),
 				0,
@@ -138,8 +141,8 @@ bool Server::processMessageIfAvailable()
 	orwell::com::RawMessage aMessage;
 	if (_puller->receive(aMessage))
 	{
-		_decider.process(aMessage, _game);
-		ProcessDecider::Process(aMessage, _game);
+		_decider.process(aMessage);
+//		ProcessDecider::Process(aMessage, _game);
 		aProcessedMessage = true;
 	}
 	return aProcessedMessage;
@@ -167,7 +170,7 @@ void Server::loopUntilOneMessageIsProcessed()
 		}
 		else
 		{
-			ProcessTimer aProcessTimer( _game );
+			ProcessTimer aProcessTimer(_publisher, _game);
 			aProcessTimer.execute();
 			_previousTic = aCurrentTic;
 		}
@@ -182,11 +185,9 @@ void Server::loop()
 	}
 }
 
-
 orwell::game::Game & Server::accessContext()
 {
 	return _game;
 }
 
 }}
-

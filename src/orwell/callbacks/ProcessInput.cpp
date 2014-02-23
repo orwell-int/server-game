@@ -1,12 +1,11 @@
 #include "orwell/callbacks/ProcessInput.hpp"
 
-#include "orwell/com/RawMessage.hpp"
-
 #include "controller.pb.h"
 #include "server-game.pb.h"
-#include "orwell/com/Sender.hpp"
 
+#include "orwell/com/Sender.hpp"
 #include "orwell/game/Game.hpp"
+#include "orwell/com/RawMessage.hpp"
 
 using namespace log4cxx;
 using namespace log4cxx::helpers;
@@ -16,6 +15,13 @@ using orwell::com::RawMessage;
 
 namespace orwell {
 namespace callbacks {
+
+ProcessInput::ProcessInput(
+		std::shared_ptr< com::Sender > ioPublisher,
+		game::Game & ioGame)
+	: InterfaceProcess(ioPublisher, ioGame)
+{
+}
 
 void ProcessInput::execute()
 {
@@ -30,7 +36,7 @@ void ProcessInput::execute()
 	LOG4CXX_DEBUG(_loggerPtr, "===End Input Message===");
 
 	RawMessage aReply(aDestination, "Input", anInputMsg.SerializeAsString());
-	_ctx->getPublisher()->send( aReply );
+	_publisher->send( aReply );
 }
 
 }}

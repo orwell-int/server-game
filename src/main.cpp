@@ -14,6 +14,7 @@ using namespace std;
 
 int main()
 {
+
 	std::string aString;
 
 	PatternLayoutPtr aPatternLayout = new PatternLayout("%d %-5p %x (%F:%L) - %m%n");
@@ -43,4 +44,3 @@ int main()
 	}
 	return 0;
 }
-

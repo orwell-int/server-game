@@ -9,14 +9,13 @@ using orwell::messages::RobotState;
 namespace orwell {
 namespace game {
 
-Robot::Robot(string const & iName) : _name(iName)
+Robot::Robot(string const & iName)
+	: _name(iName)
 {
-
 }
 
 Robot::~Robot()
 {
-
 }
 
 void Robot::setPlayerName(string const & iName)
@@ -45,4 +44,3 @@ void fillRobotStateMessage( messages::RobotState & oMessage )
 }
 
 }} // namespaces
-
