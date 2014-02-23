@@ -51,10 +51,10 @@ map<string, Player> const & Game::getPlayers()
 
 bool Game::addPlayer( string const & iName )
 {
-    bool aAddedPlayerSuccess = false;
-    if ( _players.find(iName) != _players.end() )
-    {
-        LOG4CXX_WARN(_logger, "Player name (" << iName << ") is already in the player Map.");
+	bool aAddedPlayerSuccess = false;
+	if ( _players.find(iName) != _players.end() )
+	{
+		LOG4CXX_WARN(_logger, "Player name (" << iName << ") is already in the player Map.");
 		aAddedPlayerSuccess = true;
 	}
 	else
@@ -65,6 +65,7 @@ bool Game::addPlayer( string const & iName )
 		LOG4CXX_DEBUG(_logger, "new PlayerContext added with internalId=" << iName);
 		aAddedPlayerSuccess = true;
 	}
+
 	return aAddedPlayerSuccess;
 }
 

@@ -31,11 +31,11 @@ void ProcessHello::execute()
 {
 	LOG4CXX_INFO(_loggerPtr, "ProcessHello::execute");
 
-    orwell::messages::Hello const & anHelloMsg = static_cast<orwell::messages::Hello const & >(*_msg);
-    std::string const & aClientID = getArgument("RoutingID").second;
+	orwell::messages::Hello const & anHelloMsg = static_cast<orwell::messages::Hello const & >(*_msg);
+	std::string const & aClientID = getArgument("RoutingID").second;
     
-    string aNewPlayerName = anHelloMsg.name();
-    bool aPlayerAddedSuccess = _ctx->addPlayer( aNewPlayerName );
+	string aNewPlayerName = anHelloMsg.name();
+	bool aPlayerAddedSuccess = _ctx->addPlayer( aNewPlayerName );
 	string aRobotForPlayer = _ctx->getRobotNameForPlayer( aNewPlayerName );
 	string aAvailableRobot;
 
@@ -44,17 +44,17 @@ void ProcessHello::execute()
 		aAvailableRobot = _ctx->getAvailableRobot();
 	}
 	
-    if ( ( aAvailableRobot.empty() and aRobotForPlayer.empty() ) || !aPlayerAddedSuccess )
-    {
-        LOG4CXX_WARN(_loggerPtr, "Impossible to process Hello : availableRobot=" << aAvailableRobot << "- player added with success :" << aPlayerAddedSuccess);
+	if ( ( aAvailableRobot.empty() and aRobotForPlayer.empty() ) || !aPlayerAddedSuccess )
+	{
+		LOG4CXX_WARN(_loggerPtr, "Impossible to process Hello : availableRobot=" << aAvailableRobot << "- player added with success :" << aPlayerAddedSuccess);
 
-        Goodbye aGoodbye;
-        RawMessage aReply(aClientID, "Goodbye", aGoodbye.SerializeAsString());
-        _ctx->getPublisher()->send( aReply );
-    }
-    else
-    {
-        LOG4CXX_INFO(_loggerPtr, "Player " << aNewPlayerName << " is now linked to robot " << aAvailableRobot);
+		Goodbye aGoodbye;
+		RawMessage aReply(aClientID, "Goodbye", aGoodbye.SerializeAsString());
+		_ctx->getPublisher()->send( aReply );
+	}
+	else
+	{
+		LOG4CXX_INFO(_loggerPtr, "Player " << aNewPlayerName << " is now linked to robot " << aAvailableRobot);
 
 		if (aRobotForPlayer.empty())
 		{
@@ -62,12 +62,12 @@ void ProcessHello::execute()
 			_ctx->accessRobot(aAvailableRobot).setPlayerName( aNewPlayerName );
 		}
 
-        Welcome aWelcome;
-        aWelcome.set_robot( aRobotForPlayer.empty() ? aAvailableRobot : aRobotForPlayer );
-        aWelcome.set_team( orwell::messages::RED ); //currently stupidly hardoded
-        RawMessage aReply(aClientID, "Welcome", aWelcome.SerializeAsString());
-        _ctx->getPublisher()->send( aReply );
-    }
+		Welcome aWelcome;
+		aWelcome.set_robot( aRobotForPlayer.empty() ? aAvailableRobot : aRobotForPlayer );
+		aWelcome.set_team( orwell::messages::RED ); //currently stupidly hardoded
+		RawMessage aReply(aClientID, "Welcome", aWelcome.SerializeAsString());
+		_ctx->getPublisher()->send( aReply );
+	}
 }
 
 }
