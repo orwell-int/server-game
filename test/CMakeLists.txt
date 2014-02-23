@@ -2,15 +2,6 @@
 
 message(CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR})
 
-include_directories(
-	${CMAKE_SOURCE_DIR}/include
-	${CMAKE_SOURCE_DIR}/include/orwell
-	${CMAKE_SOURCE_DIR}/include/orwell/callbacks
-	${CMAKE_SOURCE_DIR}/include/orwell/com
-	${CMAKE_SOURCE_DIR}/include/orwell/game
-	${CMAKE_BINARY_DIR}/messages
-	)
-
 # Get together all the source files and all the headers
 file(GLOB SOURCES Common.cpp)
 file(GLOB EXPORTABLEHEADERS *.hpp *.h)
@@ -37,6 +28,19 @@ enable_testing()
 #add_executable(test_registerRobot "register_robot.cpp")
 #target_link_libraries(test_registerRobot orwell_com orwell_tasks)
 #add_test(test_registerRobot ${CMAKE_CURRENT_BINARY_DIR}/test_registerRobot)
+
+include_directories(
+	${ZMQ_INCLUDE_DIRS}
+	${LOG4CXX_INCLUDE_DIR}
+	${PROTOBUF_INCLUDE_DIRS}
+	${Boost_INCLUDE_DIRS}
+	${CMAKE_SOURCE_DIR}/include
+	${CMAKE_SOURCE_DIR}/include/orwell
+	${CMAKE_SOURCE_DIR}/include/orwell/callbacks
+	${CMAKE_SOURCE_DIR}/include/orwell/com
+	${CMAKE_SOURCE_DIR}/include/orwell/game
+	${CMAKE_BINARY_DIR}/messages
+	)
 
 add_executable(test_input "input_to_robot.cpp")
 target_link_libraries(test_input 

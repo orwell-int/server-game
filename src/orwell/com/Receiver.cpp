@@ -90,6 +90,8 @@ bool Receiver::receive(RawMessage & oMessage)
         oMessage._routingId = aDest;
         oMessage._payload = aPayload;
         LOG4CXX_DEBUG(aLogger, "Received "<< aZmqMessage.size() << " bytes : type=" << aType << "- dest=" << aDest << "-");
+        LOG4CXX_DEBUG(aLogger, "batman Received "<< aMessageData);
+        LOG4CXX_DEBUG(aLogger, "batman Received payload "<< aPayload);
 	}
     return aReceived;
 }

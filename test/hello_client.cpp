@@ -42,6 +42,7 @@ static void ExpectWelcome(
 	RawMessage aResponse ;
 	if ( not Common::ExpectMessage("Welcome", ioSubscriber, aResponse) )
 	{
+		cout <<  "error : expected Welcome" << endl;
 		g_status = -1;
 	}
 
@@ -50,6 +51,7 @@ static void ExpectWelcome(
 
 	if ( aWelcome.robot() != iExpectedRobotName )
 	{
+		cout << "error : expected another robot name : " << endl;
 		g_status = -2;
 	}
 }
@@ -77,6 +79,7 @@ static void client(log4cxx::LoggerPtr iLogger)
 	RawMessage aResponse ;
 	if ( not Common::ExpectMessage("Goodbye", aSubscriber, aResponse) )
 	{
+		LOG4CXX_ERROR(iLogger, "error : expected Goodbye");
 		g_status = -1;
 	}
 }

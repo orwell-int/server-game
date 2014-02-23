@@ -2,7 +2,6 @@
 
 #include "Game.hpp"
 
-#include "Robot.hpp"
 #include "Player.hpp"
 #include "Sender.hpp"
 
@@ -30,11 +29,11 @@ Game::~Game()
 {
 }
 
-Robot & Game::accessRobot(string const & iRobotName)
+shared_ptr<Robot> Game::accessRobot(string const & iRobotName)
 {
     return _robots.at(iRobotName);
 }
-map<string, Robot> const & Game::getRobots()
+map<string, shared_ptr<Robot> > const & Game::getRobots()
 {
     return _robots;
 }
@@ -75,8 +74,8 @@ bool Game::addRobot(string const & iName)
 	else
 	{
         // create RobotContext with that index
-        Robot aRobotCtx(iName);
-        _robots.insert( pair<string, Robot>( iName, aRobotCtx ) );
+        shared_ptr<Robot> aRobot = make_shared<Robot>(iName) ;
+        _robots.insert( pair<string, shared_ptr<Robot> >( iName, aRobot ) );
         LOG4CXX_DEBUG(_logger, "new RobotContext added with internal ID=" << iName);
 	    aAddedRobotSuccess = true;
 	}
@@ -85,21 +84,22 @@ bool Game::addRobot(string const & iName)
 
 shared_ptr<Robot> Game::getAvailableRobot()
 {
-    Robot aFoundRobot;
+	shared_ptr<Robot> aFoundRobot;
 
     //search for the first robot which is not already associated to a player
-    map<string, Robot>::iterator aIterOnRobots;
+    map<string, shared_ptr<Robot> >::iterator aIterOnRobots;
     aIterOnRobots = _robots.begin();
     while ( aIterOnRobots != _robots.end()
-            && !aIterOnRobots->second.getPlayerName().empty())
+            && !aIterOnRobots->second->getPlayerName().empty())
     {
         ++aIterOnRobots;
     }
     if (_robots.end() != aIterOnRobots)
     {
-        aFoundRobot = aIterOnRobots->first;
+        aFoundRobot = aIterOnRobots->second;
     }
-    return make_shared<Robot>(aFoundRobot);
+
+    return (aFoundRobot);
 }
 
 void Game::fillGameStateMessage( messages::GameState & oGameState)

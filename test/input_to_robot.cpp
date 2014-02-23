@@ -47,9 +47,9 @@ static void const client(log4cxx::LoggerPtr iLogger)
 
 	Input aInputMessage;
 
-	aInputMessage.mutable_move()->set_left(10.33);
-	aInputMessage.mutable_move()->set_right(11.33);
-	aInputMessage.mutable_fire()->set_weapon1(true);
+	aInputMessage.mutable_move()->set_left(1);
+	aInputMessage.mutable_move()->set_right(1);
+	aInputMessage.mutable_fire()->set_weapon1(false);
 	aInputMessage.mutable_fire()->set_weapon2(false);
 
 	LOG4CXX_INFO(iLogger, "message built (size=" << aInputMessage.ByteSize() << ")");

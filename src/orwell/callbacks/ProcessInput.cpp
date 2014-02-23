@@ -43,6 +43,7 @@ void ProcessInput::execute()
     LOG4CXX_DEBUG(_logger, "===End Input Message===");
 
     RawMessage aReply(_dest, "Input", _input.SerializeAsString());
+    LOG4CXX_DEBUG(_logger, "batman aaa " << _input.SerializeAsString());
     _publisher->send( aReply );
 }
 

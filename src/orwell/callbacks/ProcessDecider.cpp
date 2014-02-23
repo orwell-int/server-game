@@ -51,6 +51,7 @@ void ProcessDecider::Process( RawMessage const & iMessage,
     else if ( iMessage._type == string("Input") )
     {
         messages::Input aDecodedMsg = BuildProtobuf<messages::Input>( iMessage );
+        LOG4CXX_DEBUG(aLogger, "batman payload 2 " << iMessage._payload );
         ProcessInput aProcess (iMessage._routingId, aDecodedMsg, ioGame, ioPublisher);
         aProcess.execute();
     }

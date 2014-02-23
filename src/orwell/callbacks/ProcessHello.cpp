@@ -54,7 +54,7 @@ void ProcessHello::execute()
     bool aPlayerAddedSuccess = _game.addPlayer( aNewPlayerName );
     shared_ptr<game::Robot> aAvailableRobot = _game.getAvailableRobot();
 
-    if ( aAvailableRobot == NULL || !aPlayerAddedSuccess )
+    if ( not aAvailableRobot || !aPlayerAddedSuccess )
     {
         LOG4CXX_WARN(_logger, "Impossible to process Hello : availableRobot=" << aAvailableRobot << "- player added with success :" << aPlayerAddedSuccess);
 
