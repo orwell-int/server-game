@@ -1,17 +1,16 @@
-#include "ProcessHello.hpp"
+#include "orwell/callbacks/ProcessHello.hpp"
 
-#include "RawMessage.hpp"
+#include "orwell/com/RawMessage.hpp"
 
 #include "controller.pb.h"
 #include "server-game.pb.h"
 
-#include "Game.hpp"
-#include "Player.hpp"
-#include "Sender.hpp"
-#include "Robot.hpp"
+#include "orwell/game/Game.hpp"
+#include "orwell/game/Player.hpp"
+#include "orwell/game/Robot.hpp"
+#include "orwell/com/Sender.hpp"
 
 #include <unistd.h>
-#include <memory>
 
 #include <log4cxx/logger.h>
 #include <log4cxx/helpers/exception.h>
@@ -24,60 +23,50 @@ using orwell::messages::Welcome;
 using orwell::messages::Goodbye;
 using orwell::com::RawMessage;
 using std::string;
-using std::shared_ptr;
 
 namespace orwell{
 namespace callbacks{
 
-ProcessHello::ProcessHello(string const & iClientId,
-		Hello const & iHelloMsg,
-		game::Game & ioCtx,
-		std::shared_ptr< com::Sender > ioPublisher) :
-InterfaceProcess(ioCtx, ioPublisher),
-_clientId(iClientId),
-_hello(iHelloMsg),
-_logger(log4cxx::Logger::getLogger("orwell.log"))
+ProcessHello::ProcessHello(
+		std::shared_ptr< com::Sender > ioPublisher,
+		game::Game & ioGame)
+	: InterfaceProcess(ioPublisher, ioGame)
 {
-
-}
-
-ProcessHello::~ProcessHello()
-{
-
 }
 
 void ProcessHello::execute()
 {
-    LOG4CXX_INFO(_logger, "ProcessHello::execute- from player " << _hello.name());
+	LOG4CXX_INFO(_loggerPtr, "ProcessHello::execute");
 
-    string aNewPlayerName = _hello.name();
-    bool aPlayerAddedSuccess = _game.addPlayer( aNewPlayerName );
-    shared_ptr<game::Robot> aAvailableRobot = _game.getAvailableRobot();
+	orwell::messages::Hello const & anHelloMsg = static_cast<orwell::messages::Hello const & >(*_msg);
+	std::string const & aClientID = getArgument("RoutingID").second;
 
-    if ( not aAvailableRobot || !aPlayerAddedSuccess )
-    {
-        LOG4CXX_WARN(_logger, "Impossible to process Hello : availableRobot=" << aAvailableRobot << "- player added with success :" << aPlayerAddedSuccess);
+	string aNewPlayerName = anHelloMsg.name();
+	bool aPlayerAddedSuccess = _game->addPlayer( aNewPlayerName );
+	std::shared_ptr< ::orwell::game::Robot > aAvailableRobot = _game->getAvailableRobot();
 
-        Goodbye aGoodbye;
-        RawMessage aReply(_clientId, "Goodbye", aGoodbye.SerializeAsString());
-        _publisher->send( aReply );
-    }
-    else
-    {
-        LOG4CXX_INFO(_logger, "Player " << aNewPlayerName << " is now linked to robot " << aAvailableRobot);
+	if ( not aAvailableRobot.get() || not aPlayerAddedSuccess )
+	{
+		LOG4CXX_WARN(_loggerPtr, "Impossible to process Hello : availableRobot=" << aAvailableRobot->getName() << "- player added with success :" << aPlayerAddedSuccess);
 
-        _game.accessPlayer(aNewPlayerName).setRobot( aAvailableRobot->getName() );
-        aAvailableRobot->setPlayerName( aNewPlayerName );
+		Goodbye aGoodbye;
+		RawMessage aReply(aClientID, "Goodbye", aGoodbye.SerializeAsString());
+		_publisher->send( aReply );
+	}
+	else
+	{
+		LOG4CXX_INFO(_loggerPtr, "Player " << aNewPlayerName << " is now linked to robot " << aAvailableRobot);
 
-        Welcome aWelcome;
-        aWelcome.set_robot( aAvailableRobot->getName() );
-        aWelcome.set_team( orwell::messages::RED ); //currently stupidly hardoded
-        RawMessage aReply(_clientId, "Welcome", aWelcome.SerializeAsString());
-        _publisher->send( aReply );
+		_game->accessPlayer(aNewPlayerName).setRobot( aAvailableRobot->getName() );
+		aAvailableRobot->setPlayerName( aNewPlayerName );
 
-    }
+		Welcome aWelcome;
+		aWelcome.set_robot( aAvailableRobot->getName() );
+		aWelcome.set_team( orwell::messages::RED ); //currently stupidly hardoded
+		RawMessage aReply(aClientID, "Welcome", aWelcome.SerializeAsString());
+		_publisher->send( aReply );
+	}
 }
-
 
 }
 }

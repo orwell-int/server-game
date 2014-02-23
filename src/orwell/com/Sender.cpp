@@ -1,11 +1,11 @@
-#include <Sender.hpp>
+#include "orwell/com/Sender.hpp"
 
 //std
 #include <iostream>
 #include <unistd.h>
 
 //com
-#include <RawMessage.hpp>
+#include "orwell/com/RawMessage.hpp"
 
 #include <zmq.hpp>
 
@@ -24,7 +24,8 @@ Sender::Sender(
 		unsigned int const iSleep) :
 	_zmqContext(new zmq::context_t(1)),
 	_zmqSocket(new zmq::socket_t(*_zmqContext, iSocketType)),
-	_logger(log4cxx::Logger::getLogger("orwell.log"))
+	_logger(log4cxx::Logger::getLogger("orwell.log")),
+	_url(iUrl)
 {
 	int aLinger = 10; // linger 0.01 second max after being closed
 	_zmqSocket->setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
@@ -33,17 +34,15 @@ Sender::Sender(
 	{
 		_zmqSocket->bind(iUrl.c_str());
 		LOG4CXX_INFO(_logger, "Publisher binds on " << iUrl.c_str());
-		if (iSleep < 0)
-		{
-			sleep(-iSleep);
-		}
 	}
+
 	else
 	{
 		assert(ConnectionMode::CONNECT == iConnectionMode);
 		_zmqSocket->connect(iUrl.c_str());
 		LOG4CXX_INFO(_logger, "Pusher connects to " << iUrl.c_str());
 	}
+
 	if (iSleep > 0)
 	{
 		sleep(iSleep);
@@ -76,5 +75,9 @@ void Sender::send( RawMessage const & iMessage )
 
 }
 
-}} // end namespace
+std::string const & Sender::getUrl() const
+{
+	return _url;
+}
 
+}} // end namespace

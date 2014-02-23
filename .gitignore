@@ -13,5 +13,9 @@ Testing
 *.cbp
 *.layout
 *.depend
+<<<<<<< HEAD
 doc/Server-game/diagrams/
 .settings/
+=======
+osx-build
+>>>>>>> central/master

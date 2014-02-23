@@ -1,4 +1,4 @@
-#include "RawMessage.hpp"
+#include "orwell/com/RawMessage.hpp"
 
 #include <zmq.hpp>
 #include <string>
@@ -6,9 +6,9 @@
 #include "controller.pb.h"
 #include "server-game.pb.h"
 
-#include "Sender.hpp"
-#include "Receiver.hpp"
-#include "Server.hpp"
+#include "orwell/com/Sender.hpp"
+#include "orwell/com/Receiver.hpp"
+#include "orwell/Server.hpp"
 
 #include "Common.hpp"
 
@@ -28,9 +28,9 @@ using namespace std;
 
 int g_status = 0;
 
-static void ExpectWelcome( 
-		string const & iPlayerName, 
-		string const & iExpectedRobotName, 
+static void ExpectWelcome(
+		string const & iPlayerName,
+		string const & iExpectedRobotName,
 		Sender & ioPusher,
 		Receiver & ioSubscriber)
 {
@@ -66,32 +66,37 @@ static void client(log4cxx::LoggerPtr iLogger)
 	Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB, orwell::com::ConnectionMode::CONNECT);
 	usleep(6 * 1000);
 
-	ExpectWelcome( "jambon", "Gipsy Danger", aPusher, aSubscriber);
-	ExpectWelcome( "fromage", "Goldorak", aPusher, aSubscriber);
-	ExpectWelcome( "poulet", "Securitron", aPusher, aSubscriber);
+	ExpectWelcome("jambon", "Gipsy Danger", aPusher, aSubscriber);
+	ExpectWelcome("fromage", "Goldorak", aPusher, aSubscriber);
+	ExpectWelcome("poulet", "Securitron", aPusher, aSubscriber);
 
 	Hello aHelloMessage;
 	aHelloMessage.set_name("rutabagas");
 
-    RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
-    aPusher.send(aMessage);
+	LOG4CXX_INFO(iLogger, "create message");
+	RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
+	LOG4CXX_INFO(iLogger, "send message");
+	aPusher.send(aMessage);
+	LOG4CXX_INFO(iLogger, "message sent");
 
-	RawMessage aResponse ;
+	RawMessage aResponse;
 	if ( not Common::ExpectMessage("Goodbye", aSubscriber, aResponse) )
 	{
 		LOG4CXX_ERROR(iLogger, "error : expected Goodbye");
 		g_status = -1;
 	}
+	LOG4CXX_INFO(iLogger, "quit client");
 }
 
 
 static void const server(log4cxx::LoggerPtr iLogger, std::shared_ptr< orwell::tasks::Server > ioServer)
 {
 	log4cxx::NDC ndc("server");
-	for (int i = 0 ; i < 4 ; ++i )
+	for (int i = 0 ; i < 4 ; ++i)
 	{
-        ioServer->loopUntilOneMessageIsProcessed();
+		ioServer->loopUntilOneMessageIsProcessed();
 	}
+	LOG4CXX_INFO(iLogger, "quit server");
 }
 
 int main()

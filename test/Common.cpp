@@ -1,7 +1,7 @@
 #include "Common.hpp"
 
-#include "Receiver.hpp"
-#include "RawMessage.hpp"
+#include "orwell/com/Receiver.hpp"
+#include "orwell/com/RawMessage.hpp"
 #include "MissingFromTheStandard.hpp"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -18,7 +18,8 @@
 
 using namespace log4cxx;
 
-bool Common::ExpectMessage(std::string const & iType,
+bool Common::ExpectMessage(
+		std::string const & iType,
 		orwell::com::Receiver & iSubscriber,
 		orwell::com::RawMessage & oReceived,
 		unsigned int const iTimeout)
@@ -28,11 +29,11 @@ bool Common::ExpectMessage(std::string const & iType,
 	boost::posix_time::time_duration aDuration;
 	boost::posix_time::ptime aCurrentTime;
 	boost::posix_time::ptime aStartTime = boost::posix_time::second_clock::local_time();
-	while (not aReceived and (aDuration < aTrueTimeout) )
+	while (not aReceived and (aDuration < aTrueTimeout))
 	{
 		aCurrentTime = boost::posix_time::second_clock::local_time();
 		aDuration = aCurrentTime - aStartTime;
-		if ( not iSubscriber.receive(oReceived) or oReceived._type != iType)
+		if (not iSubscriber.receive(oReceived) or oReceived._type != iType)
 		{
 			usleep( 10 );
 		}
@@ -45,7 +46,9 @@ bool Common::ExpectMessage(std::string const & iType,
 	return aReceived;
 }
 
-log4cxx::LoggerPtr Common::SetupLogger(std::string const & iName, bool iDebug)
+log4cxx::LoggerPtr Common::SetupLogger(
+		std::string const & iName,
+		bool const iDebug)
 {
 	log4cxx::NDC ndc(iName);
 	PatternLayoutPtr aPatternLayout = new PatternLayout("%d %-5p %x (%F:%L) - %m%n");
@@ -53,7 +56,7 @@ log4cxx::LoggerPtr Common::SetupLogger(std::string const & iName, bool iDebug)
 	filter::LevelRangeFilterPtr aLevelFilter = new filter::LevelRangeFilter();
 	if (not iDebug)
 	{
-	 aLevelFilter->setLevelMin(Level::getInfo());
+		aLevelFilter->setLevelMin(Level::getInfo());
 
 	}
 	aConsoleAppender->addFilter(aLevelFilter);
@@ -65,4 +68,3 @@ log4cxx::LoggerPtr Common::SetupLogger(std::string const & iName, bool iDebug)
 
 	return logger;
 }
-

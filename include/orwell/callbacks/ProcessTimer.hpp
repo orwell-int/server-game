@@ -1,31 +1,20 @@
 #pragma once
 
-//tasks
-#include "InterfaceProcess.hpp"
-
-#include <string>
-#include <log4cxx/logger.h>
+#include "orwell/callbacks/InterfaceProcess.hpp"
 
 namespace orwell {
-namespace game {
-	class Game;
-}
+
 namespace callbacks {
 
 class ProcessTimer : public InterfaceProcess
 {
 public:
-    ProcessTimer( game::Game & ioCtx,
-    		std::shared_ptr< com::Sender > ioPublisher,
-    		log4cxx::LoggerPtr iLogger = log4cxx::Logger::getLogger("orwell.log"));
-    ~ProcessTimer();
+	ProcessTimer(
+			std::shared_ptr< com::Sender > ioPublisher,
+			game::Game & ioGame);
 
-    void execute();
-
-private:
-    log4cxx::LoggerPtr _logger;
+	void execute();
 
 };
 
 }} //namespaces
-

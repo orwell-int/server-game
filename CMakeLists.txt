@@ -23,7 +23,7 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g")
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
 	execute_process(
 		COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
-		if (NOT (GCC_VERSION VERSION_EQUAL 4.8))
+		if (GCC_VERSION VERSION_LESS 4.8)
 			message(FATAL_ERROR "${PROJECT_NAME} requires g++ 4.8.")
 		endif ()
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
@@ -77,10 +77,6 @@ include_directories(
 	${PROTOBUF_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
 	${CMAKE_SOURCE_DIR}/include
-	${CMAKE_SOURCE_DIR}/include/orwell
-	${CMAKE_SOURCE_DIR}/include/orwell/callbacks
-	${CMAKE_SOURCE_DIR}/include/orwell/com
-	${CMAKE_SOURCE_DIR}/include/orwell/game
 	${CMAKE_BINARY_DIR}/messages
 	)
 

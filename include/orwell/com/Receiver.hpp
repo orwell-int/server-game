@@ -4,11 +4,11 @@
 
 #include <log4cxx/logger.h>
 
-#include "ConnectionMode.hpp"
+#include "orwell/com/ConnectionMode.hpp"
 
 namespace zmq {
-	class context_t;
-	class socket_t;
+class context_t;
+class socket_t;
 }
 
 namespace orwell {
@@ -32,12 +32,14 @@ public:
 	~Receiver();
 
 	bool receive(RawMessage & oMessage);
+	std::string const & getUrl() const;
 
 private:
 
 	zmq::context_t * _zmqContext;
 	zmq::socket_t * _zmqSocket;
 	log4cxx::LoggerPtr  _logger;
+	std::string _url;
 
 };
 

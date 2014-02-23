@@ -12,20 +12,21 @@ namespace game {
 
 class Robot
 {
-	public:
-		Robot() {}
-		Robot(std::string const & iName);
-		~Robot();
+public:
+	Robot(std::string const & iName);
+	~Robot();
 
-        void setPlayerName(std::string const & iName);
-		std::string const &  getName() const;
-		std::string const &  getPlayerName() const;
+	void setPlayerName(std::string const & iName);
 
-		void fillRobotStateMessage( messages::RobotState & oMessage );
+	std::string const &  getName() const;
 
-    private:
-        std::string _name;
-        std::string _playerName;
+	std::string const &  getPlayerName() const;
+
+	void fillRobotStateMessage( messages::RobotState & oMessage );
+
+private:
+	std::string _name;
+	std::string _playerName;
 };
 
 }} //end namespace

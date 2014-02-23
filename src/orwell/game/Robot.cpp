@@ -1,4 +1,4 @@
-#include "Robot.hpp"
+#include "orwell/game/Robot.hpp"
 #include <iostream>
 
 #include "robot.pb.h"
@@ -9,29 +9,28 @@ using orwell::messages::RobotState;
 namespace orwell {
 namespace game {
 
-Robot::Robot(string const & iName) : _name(iName)
+Robot::Robot(string const & iName)
+	: _name(iName)
 {
-
 }
 
 Robot::~Robot()
 {
-
 }
 
 void Robot::setPlayerName(string const & iName)
 {
-    _playerName = iName;
+	_playerName = iName;
 }
 
 string const & Robot::getName() const
 {
-    return _name;
+	return _name;
 }
 
 string const &  Robot::getPlayerName() const
 {
-    return _playerName;
+	return _playerName;
 }
 
 void fillRobotStateMessage( messages::RobotState & oMessage )
@@ -44,8 +43,4 @@ void fillRobotStateMessage( messages::RobotState & oMessage )
 	oMessage.set_active(true);
 }
 
-
-
 }} // namespaces
-
-

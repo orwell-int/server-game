@@ -1,9 +1,10 @@
 /* This class stores most of the useful data of the server. */
 
-#include "Game.hpp"
+#include "orwell/game/Game.hpp"
 
-#include "Player.hpp"
-#include "Sender.hpp"
+#include "orwell/game/Robot.hpp"
+#include "orwell/game/Player.hpp"
+#include "orwell/com/Sender.hpp"
 
 #include <iostream>
 #include <zmq.hpp>
@@ -19,9 +20,9 @@ using std::make_shared;
 namespace orwell {
 namespace game {
 
-Game::Game() :
-		_logger( log4cxx::Logger::getLogger("orwell.log") ),
-		_isRunning( false )
+Game::Game()
+	: _logger(log4cxx::Logger::getLogger("orwell.log"))
+	, _isRunning(false)
 {
 }
 
@@ -29,84 +30,86 @@ Game::~Game()
 {
 }
 
+
 shared_ptr<Robot> Game::accessRobot(string const & iRobotName)
 {
-    return _robots.at(iRobotName);
-}
-map<string, shared_ptr<Robot> > const & Game::getRobots()
-{
-    return _robots;
-}
-Player & Game::accessPlayer( string const & iPlayerName)
-{
-    return _players.at(iPlayerName);
-}
-map<string, Player> const & Game::getPlayers()
-{
-    return _players;
+	return _robots.at(iRobotName);
 }
 
-bool Game::addPlayer( string const & iName )
+map<string, shared_ptr<Robot> > const & Game::getRobots()
 {
-    bool aAddedPLayerSuccess;
-    if ( _players.find(iName) != _players.end() )
-    {
-        LOG4CXX_WARN(_logger, "Player name (" << iName << ") is already in the player Map.");
+	return _robots;
+}
+
+Player & Game::accessPlayer( string const & iPlayerName)
+{
+	return _players.at(iPlayerName);
+}
+
+map<string, Player> const & Game::getPlayers()
+{
+	return _players;
+}
+
+bool Game::addPlayer(string const & iName)
+{
+	bool aAddedPLayerSuccess = false;
+	if (_players.find(iName) != _players.end())
+	{
+		LOG4CXX_WARN(_logger, "Player name (" << iName << ") is already in the player Map.");
 	}
 	else
 	{
-        //create playercontext and append
-        Player aPlayerContext( iName );
-        _players.insert( pair<string,Player>(iName, aPlayerContext) );
-        LOG4CXX_DEBUG(_logger, "new PlayerContext added with internalId=" << iName);
-        aAddedPLayerSuccess = true;
+		//create playercontext and append
+		Player aPlayerContext( iName );
+		_players.insert(pair<string,Player>(iName, aPlayerContext));
+		LOG4CXX_DEBUG(_logger, "new PlayerContext added with internalId=" << iName);
+		aAddedPLayerSuccess = true;
 	}
-    return aAddedPLayerSuccess;
+	return aAddedPLayerSuccess;
 }
 
 bool Game::addRobot(string const & iName)
 {
-    bool aAddedRobotSuccess;
+	bool aAddedRobotSuccess = false;
 	if (_robots.find(iName) != _robots.end())
 	{
-	    LOG4CXX_WARN(_logger, "Robot name (" << iName << ") is already in the robot Map.");
+		LOG4CXX_WARN(_logger, "Robot name (" << iName << ") is already in the robot Map.");
 	}
 	else
 	{
-        // create RobotContext with that index
-        shared_ptr<Robot> aRobot = make_shared<Robot>(iName) ;
-        _robots.insert( pair<string, shared_ptr<Robot> >( iName, aRobot ) );
-        LOG4CXX_DEBUG(_logger, "new RobotContext added with internal ID=" << iName);
-	    aAddedRobotSuccess = true;
+		// create RobotContext with that index
+		shared_ptr<Robot> aRobot = make_shared<Robot>(iName) ;
+		_robots.insert( pair<string, shared_ptr<Robot> >( iName, aRobot ) );
+		LOG4CXX_DEBUG(_logger, "new RobotContext added with internal ID=" << iName);
+		aAddedRobotSuccess = true;
 	}
-    return aAddedRobotSuccess;
+	return aAddedRobotSuccess;
 }
 
 shared_ptr<Robot> Game::getAvailableRobot()
 {
 	shared_ptr<Robot> aFoundRobot;
 
-    //search for the first robot which is not already associated to a player
-    map<string, shared_ptr<Robot> >::iterator aIterOnRobots;
-    aIterOnRobots = _robots.begin();
-    while ( aIterOnRobots != _robots.end()
-            && !aIterOnRobots->second->getPlayerName().empty())
-    {
-        ++aIterOnRobots;
-    }
-    if (_robots.end() != aIterOnRobots)
-    {
-        aFoundRobot = aIterOnRobots->second;
-    }
+	//search for the first robot which is not already associated to a player
+	map<string, shared_ptr<Robot> >::iterator aIterOnRobots;
+	aIterOnRobots = _robots.begin();
+	while ( aIterOnRobots != _robots.end()
+			&& !aIterOnRobots->second->getPlayerName().empty())
+	{
+		++aIterOnRobots;
+	}
+	if (_robots.end() != aIterOnRobots)
+	{
+		aFoundRobot = aIterOnRobots->second;
+	}
 
-    return (aFoundRobot);
+	return (aFoundRobot);
 }
 
-void Game::fillGameStateMessage( messages::GameState & oGameState)
+void Game::fillGameStateMessage(messages::GameState & oGameState)
 {
 	//todo
 }
 
-
 }} // namespaces
-

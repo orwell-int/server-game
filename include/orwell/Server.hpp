@@ -5,8 +5,9 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <log4cxx/logger.h>
+#include "orwell/callbacks/ProcessDecider.hpp"
 
-#include "Game.hpp"
+#include "orwell/game/Game.hpp"
 
 namespace orwell
 {
@@ -26,17 +27,19 @@ public:
 	Server(
 			std::string const & iPullUrl = "tcp://*:9000",
 			std::string const & iPublishUrl = "tcp://*:9001",
-	        long const iTicDuration = 500, //milliseconds
-			log4cxx::LoggerPtr iLogger = log4cxx::Logger::getLogger("orwell.log") );
+			long const iTicDuration = 500, //milliseconds
+			log4cxx::LoggerPtr iLogger = log4cxx::Logger::getLogger("orwell.log"));
 
 	~Server();
 
-    /// processMessageIfAvailable
+	/// processMessageIfAvailable
 	bool processMessageIfAvailable();
+	/// run the broadcast receiver
+	void runBroadcastReceiver();
 	/// Wait for 1 message and process it. Execute timed operations if needed.
 	void loopUntilOneMessageIsProcessed();
-    /// Loop eternaly to process all incoming messages.
-    void loop();
+	/// Loop eternaly to process all incoming messages.
+	void loop();
 
 	orwell::game::Game & accessContext();
 
@@ -44,10 +47,11 @@ private:
 	std::shared_ptr< com::Receiver > _puller;
 	std::shared_ptr< com::Sender > _publisher;
 	log4cxx::LoggerPtr _logger;
-	orwell::game::Game _Game;
+	orwell::game::Game _game;
+	orwell::callbacks::ProcessDecider _decider;
 
-    boost::posix_time::time_duration const _ticDuration;
-    boost::posix_time::ptime _previousTic;
+	boost::posix_time::time_duration const _ticDuration;
+	boost::posix_time::ptime _previousTic;
 };
 
 }

@@ -1,4 +1,4 @@
-#include "Receiver.hpp"
+#include "orwell/com/Receiver.hpp"
 
 //std
 #include <iostream>
@@ -8,7 +8,7 @@
 
 #include <sstream>
 
-#include "RawMessage.hpp"
+#include "orwell/com/RawMessage.hpp"
 
 using namespace log4cxx;
 using namespace log4cxx::helpers;
@@ -26,7 +26,8 @@ Receiver::Receiver(
 		unsigned int const iSleep) :
 	_zmqContext(new zmq::context_t(1)),
 	_zmqSocket(new zmq::socket_t(*_zmqContext, iSocketType)),
-	_logger(log4cxx::Logger::getLogger("orwell.log"))
+	_logger(log4cxx::Logger::getLogger("orwell.log")),
+	_url(iUrl)
 {
 	int aLinger = 10; // linger 0.01 second max after being closed
 	_zmqSocket->setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
@@ -69,11 +70,10 @@ bool Receiver::receive(RawMessage & oMessage)
 	string aPayload;
 	string aDest;
 
-    bool aReceived = _zmqSocket->recv(&aZmqMessage, ZMQ_NOBLOCK);
+	bool aReceived = _zmqSocket->recv(&aZmqMessage, ZMQ_NOBLOCK);
 	if ( aReceived )
 	{
 		string aMessageData = string(static_cast<char*>(aZmqMessage.data()), aZmqMessage.size());
-		//    string aMessageData = reinterpret_cast< char *>( aZmqMessage.data() );
 		size_t aEndDestFlag = aMessageData.find( " ", 0 );
 		if (string::npos != aEndDestFlag)
 		{
@@ -86,15 +86,18 @@ bool Receiver::receive(RawMessage & oMessage)
 				aPayload = aMessageData.substr( aEndTypeFlag + 1 );
 			}
 		}
-        oMessage._type = aType;
-        oMessage._routingId = aDest;
-        oMessage._payload = aPayload;
-        LOG4CXX_DEBUG(aLogger, "Received "<< aZmqMessage.size() << " bytes : type=" << aType << "- dest=" << aDest << "-");
-        LOG4CXX_DEBUG(aLogger, "batman Received "<< aMessageData);
-        LOG4CXX_DEBUG(aLogger, "batman Received payload "<< aPayload);
+
+		oMessage._type = aType;
+		oMessage._routingId = aDest;
+		oMessage._payload = aPayload;
+		LOG4CXX_DEBUG(aLogger, "Received "<< aZmqMessage.size() << " bytes : type=" << aType << "- dest=" << aDest << "-");
 	}
-    return aReceived;
+	return aReceived;
+}
+
+std::string const & Receiver::getUrl() const
+{
+	return _url;
 }
 
 }}
-
