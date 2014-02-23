@@ -77,10 +77,6 @@ include_directories(
 	${PROTOBUF_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
 	${CMAKE_SOURCE_DIR}/include
-	${CMAKE_SOURCE_DIR}/include/orwell
-	${CMAKE_SOURCE_DIR}/include/orwell/callbacks
-	${CMAKE_SOURCE_DIR}/include/orwell/com
-	${CMAKE_SOURCE_DIR}/include/orwell/game
 	${CMAKE_BINARY_DIR}/messages
 	)
 

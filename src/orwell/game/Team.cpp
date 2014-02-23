@@ -1,5 +1,5 @@
-#include "Team.hpp"
-#include "Player.hpp"
+#include "orwell/game/Team.hpp"
+#include "orwell/game/Player.hpp"
 
 #include <algorithm>
 

@@ -3,17 +3,15 @@
 #include <string>
 #include <log4cxx/logger.h>
 
-//protobuf
-#include "controller.pb.h"
-#include "InterfaceProcess.hpp"
+#include "orwell/callbacks/InterfaceProcess.hpp"
 
 namespace orwell {
 
 namespace messages {
-	class Hello;
+class Hello;
 }
 namespace game {
-	class Game;
+class Game;
 }
 
 namespace callbacks {
@@ -21,7 +19,7 @@ namespace callbacks {
 class ProcessHello : public InterfaceProcess
 {
 public:
-    void execute();
+	void execute();
 
 
 private:
