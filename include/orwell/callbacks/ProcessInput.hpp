@@ -1,22 +1,18 @@
 #pragma once
 
-//tasks
 #include "orwell/callbacks/InterfaceProcess.hpp"
 
 namespace orwell {
-
-namespace messages {
-class Input;
-}
-namespace game {
-class Game;
-}
 
 namespace callbacks {
 
 class ProcessInput : public InterfaceProcess
 {
 public:
+	ProcessInput(
+			std::shared_ptr< com::Sender > ioPublisher,
+			game::Game & ioGame);
+
 	void execute();
 
 private:

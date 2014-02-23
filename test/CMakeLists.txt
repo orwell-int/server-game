@@ -16,17 +16,18 @@ find_package(LOG4CXX_LIBRARIES REQUIRED)
 include_directories(
 	${CMAKE_SOURCE_DIR}/include
 	${CMAKE_BINARY_DIR}/messages
-    ${LOG4CXX_INCLUDE_DIR}
+	${LOG4CXX_INCLUDE_DIR}
 	)
 
 
 # Library compilation and linking
 add_library(orwell_test SHARED ${SOURCES})
-target_link_libraries(orwell_test
-		orwell_server_game
-		${ZMQ_LIBRARIES}
-		${Boost_LIBRARIES}
-		${LOG4CXX_LIBRARIES})
+target_link_libraries(
+	orwell_test
+	orwell_server_game
+	${ZMQ_LIBRARIES}
+	${Boost_LIBRARIES}
+	${LOG4CXX_LIBRARIES})
 
 # Test suite
 enable_testing()
@@ -34,6 +35,19 @@ enable_testing()
 #add_executable(test_registerRobot "register_robot.cpp")
 #target_link_libraries(test_registerRobot orwell_com orwell_tasks)
 #add_test(test_registerRobot ${CMAKE_CURRENT_BINARY_DIR}/test_registerRobot)
+
+include_directories(
+	${ZMQ_INCLUDE_DIRS}
+	${LOG4CXX_INCLUDE_DIR}
+	${PROTOBUF_INCLUDE_DIRS}
+	${Boost_INCLUDE_DIRS}
+	${CMAKE_SOURCE_DIR}/include
+	${CMAKE_SOURCE_DIR}/include/orwell
+	${CMAKE_SOURCE_DIR}/include/orwell/callbacks
+	${CMAKE_SOURCE_DIR}/include/orwell/com
+	${CMAKE_SOURCE_DIR}/include/orwell/game
+	${CMAKE_BINARY_DIR}/messages
+	)
 
 add_executable(test_input "input_to_robot.cpp")
 target_link_libraries(test_input 
@@ -49,8 +63,8 @@ add_test(test_hello ${CMAKE_CURRENT_BINARY_DIR}/test_hello)
 
 add_definitions( "-D__HYPER_BLASTER__" )
 add_executable(broadcast_test "broadcast_test.cpp")
-target_link_libraries(broadcast_test
-    orwell_server_game
-    orwell_test)
+target_link_libraries(
+	broadcast_test
+	orwell_server_game
+	orwell_test)
 add_test(broadcast_test ${CMAKE_CURRENT_BINARY_DIR}/broadcast_test)
-

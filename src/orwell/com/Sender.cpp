@@ -81,4 +81,3 @@ std::string const & Sender::getUrl() const
 }
 
 }} // end namespace
-

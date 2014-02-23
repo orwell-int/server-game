@@ -3,7 +3,6 @@
 #pragma once
 
 #include <string>
-#include <map>
 
 namespace orwell {
 namespace game {

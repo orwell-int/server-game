@@ -5,49 +5,57 @@
 namespace orwell {
 namespace callbacks {
 
-InterfaceProcess::InterfaceProcess()
+InterfaceProcess::InterfaceProcess(std::shared_ptr< com::Sender > ioPublisher)
+	: _publisher(ioPublisher)
 {
 
 }
 
-InterfaceProcess::InterfaceProcess(game::Game & ioCtx)
+InterfaceProcess::InterfaceProcess(
+		std::shared_ptr< com::Sender > ioPublisher,
+		game::Game & ioGame)
+	: InterfaceProcess(ioPublisher)
 {
-	_ctx = &ioCtx;
+	_game = &ioGame;
 }
 
 InterfaceProcess::~InterfaceProcess()
 {
-
 }
 
-void InterfaceProcess::setGameContext(game::Game &ioCtx)
+void InterfaceProcess::setGameContext(game::Game & ioGame)
 {
-	_ctx = &ioCtx;
+	_game = &ioGame;
 }
 
-void InterfaceProcess::init(google::protobuf::MessageLite *ioMsg, log4cxx::LoggerPtr ioLogger, game::Game * ioCtx)
+void InterfaceProcess::init(
+		google::protobuf::MessageLite * ioMsg,
+		log4cxx::LoggerPtr ioLogger,
+		game::Game * ioGame)
 {
 	_msg = ioMsg;
 	_loggerPtr = ioLogger;
 
-	if (ioCtx /*!= nullptr*/)
+	if (ioGame /*!= nullptr*/)
 	{
-		_ctx = ioCtx;
+		_game = ioGame;
 	}
 }
 
-void InterfaceProcess::insertArgument(const Argument &iArgument)
+void InterfaceProcess::insertArgument(const Argument & iArgument)
 {
 	_dictionary.push_back(iArgument);
 }
 
-void InterfaceProcess::insertArgument(const Key &iKey, const Value &iValue)
+void InterfaceProcess::insertArgument(
+		const Key & iKey,
+		const Value & iValue)
 {
 	Argument anArgument(iKey, iValue);
 	insertArgument(anArgument);
 }
 
-void InterfaceProcess::removeArgument(const Key &iKey)
+void InterfaceProcess::removeArgument(const Key & iKey)
 {
 	bool found(false);
 	auto anIterator = _dictionary.begin();
@@ -68,7 +76,7 @@ void InterfaceProcess::removeArgument(const Key &iKey)
 	}
 }
 
-InterfaceProcess::Argument const & InterfaceProcess::getArgument(const Key &iKey)
+InterfaceProcess::Argument const & InterfaceProcess::getArgument(const Key & iKey)
 {
 	for (Argument const & anArgument: _dictionary)
 	{
@@ -79,7 +87,7 @@ InterfaceProcess::Argument const & InterfaceProcess::getArgument(const Key &iKey
 	throw 1;
 }
 
-InterfaceProcess::Argument & InterfaceProcess::accessArgument(const Key &iKey)
+InterfaceProcess::Argument & InterfaceProcess::accessArgument(const Key & iKey)
 {
 	for (Argument & anArgument: _dictionary)
 	{

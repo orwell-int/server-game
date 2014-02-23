@@ -2,15 +2,7 @@ CMakeCache.txt
 CMakeFiles
 Makefile
 cmake_install.cmake
-install_manifest.txt
 build/
-*.un*
-*.swp
 *.clang_complete
-*.cpb
 CTestTestfile.cmake
-Testing
-*.cbp
-*.layout
-*.depend
-osx-build
+doc/Server-game/diagrams/

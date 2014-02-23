@@ -17,7 +17,9 @@ public:
 	~Robot();
 
 	void setPlayerName(std::string const & iName);
+
 	std::string const &  getName() const;
+
 	std::string const &  getPlayerName() const;
 
 	void fillRobotStateMessage( messages::RobotState & oMessage );
@@ -28,4 +30,3 @@ private:
 };
 
 }} //end namespace
-

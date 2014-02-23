@@ -18,7 +18,8 @@
 
 using namespace log4cxx;
 
-bool Common::ExpectMessage(std::string const & iType,
+bool Common::ExpectMessage(
+		std::string const & iType,
 		orwell::com::Receiver & iSubscriber,
 		orwell::com::RawMessage & oReceived,
 		unsigned int const iTimeout)
@@ -45,7 +46,9 @@ bool Common::ExpectMessage(std::string const & iType,
 	return aReceived;
 }
 
-log4cxx::LoggerPtr Common::SetupLogger(std::string const & iName, bool iDebug)
+log4cxx::LoggerPtr Common::SetupLogger(
+		std::string const & iName,
+		bool const iDebug)
 {
 	log4cxx::NDC ndc(iName);
 	PatternLayoutPtr aPatternLayout = new PatternLayout("%d %-5p %x (%F:%L) - %m%n");
@@ -65,4 +68,3 @@ log4cxx::LoggerPtr Common::SetupLogger(std::string const & iName, bool iDebug)
 
 	return logger;
 }
-

@@ -1,24 +1,18 @@
 #pragma once
 
-//tasks
 #include "orwell/callbacks/InterfaceProcess.hpp"
 
-#include <log4cxx/logger.h>
-
 namespace orwell {
-
-namespace messages {
-class RobotState;
-}
-namespace game {
-class Game;
-}
 
 namespace callbacks {
 
 class ProcessRobotState : public InterfaceProcess
 {
 public:
+	ProcessRobotState(
+			std::shared_ptr< com::Sender > ioPublisher,
+			game::Game & ioGame);
+
 	void execute();
 
 };

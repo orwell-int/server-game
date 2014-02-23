@@ -42,6 +42,7 @@ static void ExpectWelcome(
 	RawMessage aResponse ;
 	if ( not Common::ExpectMessage("Welcome", ioSubscriber, aResponse) )
 	{
+		cout <<  "error : expected Welcome" << endl;
 		g_status = -1;
 	}
 
@@ -50,6 +51,7 @@ static void ExpectWelcome(
 
 	if ( aWelcome.robot() != iExpectedRobotName )
 	{
+		cout << "error : expected another robot name : " << endl;
 		g_status = -2;
 	}
 }
@@ -64,9 +66,9 @@ static void client(log4cxx::LoggerPtr iLogger)
 	Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB, orwell::com::ConnectionMode::CONNECT);
 	usleep(6 * 1000);
 
-	ExpectWelcome( "jambon", "Gipsy Danger", aPusher, aSubscriber);
-	ExpectWelcome( "fromage", "Goldorak", aPusher, aSubscriber);
-	ExpectWelcome( "poulet", "Securitron", aPusher, aSubscriber);
+	ExpectWelcome("jambon", "Gipsy Danger", aPusher, aSubscriber);
+	ExpectWelcome("fromage", "Goldorak", aPusher, aSubscriber);
+	ExpectWelcome("poulet", "Securitron", aPusher, aSubscriber);
 
 	Hello aHelloMessage;
 	aHelloMessage.set_name("rutabagas");
@@ -77,8 +79,10 @@ static void client(log4cxx::LoggerPtr iLogger)
 	RawMessage aResponse;
 	if ( not Common::ExpectMessage("Goodbye", aSubscriber, aResponse) )
 	{
+		LOG4CXX_ERROR(iLogger, "error : expected Goodbye");
 		g_status = -1;
 	}
+	LOG4CXX_INFO(iLogger, "quit client");
 }
 
 
@@ -89,6 +93,7 @@ static void const server(log4cxx::LoggerPtr iLogger, std::shared_ptr< orwell::ta
 	{
 		ioServer->loopUntilOneMessageIsProcessed();
 	}
+	LOG4CXX_INFO(iLogger, "quit server");
 }
 
 int main()

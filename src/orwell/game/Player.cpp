@@ -32,5 +32,3 @@ string Player::getRobot()
 
 
 }} // namespaces
-
-

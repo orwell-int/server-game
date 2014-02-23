@@ -8,9 +8,9 @@ using namespace std;
 namespace orwell {
 namespace game {
 
-Team::Team(string const & iName) :
-	_name(iName),
-	_players()
+Team::Team(string const & iName)
+	: _name(iName)
+	, _players()
 {
 }
 
@@ -32,5 +32,3 @@ void Team::removePlayer( shared_ptr<Player> iPlayer)
 }
 
 }} // namespaces
-
-
