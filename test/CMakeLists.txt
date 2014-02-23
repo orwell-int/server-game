@@ -15,10 +15,6 @@ find_package(LOG4CXX_LIBRARIES REQUIRED)
 
 include_directories(
 	${CMAKE_SOURCE_DIR}/include
-	${CMAKE_SOURCE_DIR}/include/orwell
-	${CMAKE_SOURCE_DIR}/include/orwell/callbacks
-	${CMAKE_SOURCE_DIR}/include/orwell/com
-	${CMAKE_SOURCE_DIR}/include/orwell/game
 	${CMAKE_BINARY_DIR}/messages
     ${LOG4CXX_INCLUDE_DIR}
 	)

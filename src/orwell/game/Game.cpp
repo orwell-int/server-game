@@ -1,10 +1,10 @@
 /* This class stores most of the useful data of the server. */
 
-#include "Game.hpp"
+#include "orwell/game/Game.hpp"
 
-#include "Robot.hpp"
-#include "Player.hpp"
-#include "Sender.hpp"
+#include "orwell/game/Robot.hpp"
+#include "orwell/game/Player.hpp"
+#include "orwell/com/Sender.hpp"
 
 #include <iostream>
 #include <zmq.hpp>
@@ -29,24 +29,24 @@ Game::~Game()
 
 std::shared_ptr< com::Sender > Game::getPublisher()
 {
-    return _publisher;
+	return _publisher;
 }
 
 Robot & Game::accessRobot(string const & iRobotName)
 {
-    return _robots.at(iRobotName);
+	return _robots.at(iRobotName);
 }
 map<string, Robot> const & Game::getRobots()
 {
-    return _robots;
+	return _robots;
 }
 Player & Game::accessPlayer( string const & iPlayerName)
 {
-    return _players.at(iPlayerName);
+	return _players.at(iPlayerName);
 }
 map<string, Player> const & Game::getPlayers()
 {
-    return _players;
+	return _players;
 }
 
 bool Game::addPlayer( string const & iName )
@@ -70,20 +70,20 @@ bool Game::addPlayer( string const & iName )
 
 bool Game::addRobot(string const & iName)
 {
-    bool aAddedRobotSuccess = false;
+	bool aAddedRobotSuccess = false;
 	if (_robots.find(iName) != _robots.end())
 	{
-	    LOG4CXX_WARN(_logger, "Robot name (" << iName << ") is already in the robot Map.");
+		LOG4CXX_WARN(_logger, "Robot name (" << iName << ") is already in the robot Map.");
 	}
 	else
 	{
-        // create RobotContext with that index
-        Robot aRobotCtx(iName);
-        _robots.insert( pair<string, Robot>( iName, aRobotCtx ) );
-        LOG4CXX_DEBUG(_logger, "new RobotContext added with internal ID=" << iName);
-	    aAddedRobotSuccess = true;
+		// create RobotContext with that index
+		Robot aRobotCtx(iName);
+		_robots.insert( pair<string, Robot>( iName, aRobotCtx ) );
+		LOG4CXX_DEBUG(_logger, "new RobotContext added with internal ID=" << iName);
+		aAddedRobotSuccess = true;
 	}
-    return aAddedRobotSuccess;
+	return aAddedRobotSuccess;
 }
 
 string Game::getAvailableRobot() const

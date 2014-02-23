@@ -1,13 +1,13 @@
-#include "ProcessHello.hpp"
+#include "orwell/callbacks/ProcessHello.hpp"
 
-#include "RawMessage.hpp"
+#include "orwell/com/RawMessage.hpp"
 
 #include "controller.pb.h"
 #include "server-game.pb.h"
 
-#include "Game.hpp"
-#include "Player.hpp"
-#include "Sender.hpp"
+#include "orwell/game/Game.hpp"
+#include "orwell/game/Player.hpp"
+#include "orwell/com/Sender.hpp"
 
 #include <unistd.h>
 
@@ -69,7 +69,6 @@ void ProcessHello::execute()
         _ctx->getPublisher()->send( aReply );
     }
 }
-
 
 }
 }

@@ -1,4 +1,4 @@
-#include "Server.hpp"
+#include "orwell/Server.hpp"
 
 #include <log4cxx/logger.h>
 #include <log4cxx/patternlayout.h>
@@ -14,6 +14,7 @@ using namespace std;
 
 int main()
 {
+	std::string aString;
 
 	PatternLayoutPtr aPatternLayout = new PatternLayout("%d %-5p %x (%F:%L) - %m%n");
 	ConsoleAppenderPtr aConsoleAppender = new ConsoleAppender(aPatternLayout);

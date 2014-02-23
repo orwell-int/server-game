@@ -1,12 +1,12 @@
-#include <ProcessInput.hpp>
+#include "orwell/callbacks/ProcessInput.hpp"
 
-#include <RawMessage.hpp>
+#include "orwell/com/RawMessage.hpp"
 
-#include <controller.pb.h>
-#include <server-game.pb.h>
-#include "Sender.hpp"
+#include "controller.pb.h"
+#include "server-game.pb.h"
+#include "orwell/com/Sender.hpp"
 
-#include "Game.hpp"
+#include "orwell/game/Game.hpp"
 
 using namespace log4cxx;
 using namespace log4cxx::helpers;
@@ -19,18 +19,19 @@ namespace callbacks {
 
 void ProcessInput::execute()
 {
-    std::string const & aDestination = getArgument("RoutingID").second;
-    orwell::messages::Input const & anInputMsg = static_cast<orwell::messages::Input const &>(*_msg);
-    
-    LOG4CXX_INFO(_loggerPtr, "ProcessInput::execute : simple relay");
+	std::string const & aDestination = getArgument("RoutingID").second;
+	orwell::messages::Input const & anInputMsg = static_cast<orwell::messages::Input const &>(*_msg);
 
-    LOG4CXX_DEBUG(_loggerPtr, "===Input Message===");
-    LOG4CXX_DEBUG(_loggerPtr, "Move : left=" << anInputMsg.move().left() << ",right=" <<  anInputMsg.move().right() << "-");
-    LOG4CXX_DEBUG(_loggerPtr, "Fire : w1=" << anInputMsg.fire().weapon1() << ",w2=" <<  anInputMsg.fire().weapon2() << "-");
-    LOG4CXX_DEBUG(_loggerPtr, "===End Input Message===");
+	LOG4CXX_INFO(_loggerPtr, "ProcessInput::execute : simple relay");
 
-    RawMessage aReply(aDestination, "Input", anInputMsg.SerializeAsString());
-    _ctx->getPublisher()->send( aReply );
+	LOG4CXX_DEBUG(_loggerPtr, "===Input Message===");
+	LOG4CXX_DEBUG(_loggerPtr, "Move : left=" << anInputMsg.move().left() << ",right=" <<  anInputMsg.move().right() << "-");
+	LOG4CXX_DEBUG(_loggerPtr, "Fire : w1=" << anInputMsg.fire().weapon1() << ",w2=" <<  anInputMsg.fire().weapon2() << "-");
+	LOG4CXX_DEBUG(_loggerPtr, "===End Input Message===");
+
+	RawMessage aReply(aDestination, "Input", anInputMsg.SerializeAsString());
+	_ctx->getPublisher()->send( aReply );
 }
 
 }}
+
