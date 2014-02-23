@@ -29,7 +29,7 @@ namespace callbacks{
 
 void ProcessHello::execute()
 {
-    LOG4CXX_INFO(_loggerPtr, "ProcessHello::execute");
+	LOG4CXX_INFO(_loggerPtr, "ProcessHello::execute");
 
     orwell::messages::Hello const & anHelloMsg = static_cast<orwell::messages::Hello const & >(*_msg);
     std::string const & aClientID = getArgument("RoutingID").second;

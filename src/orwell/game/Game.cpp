@@ -19,7 +19,7 @@ namespace orwell {
 namespace game {
 
 Game::Game(std::shared_ptr< com::Sender > iPublisher) :
-_publisher(iPublisher), _logger(log4cxx::Logger::getLogger("orwell.log")), _isRunning(false)
+	_publisher(iPublisher), _logger(log4cxx::Logger::getLogger("orwell.log")), _isRunning(false)
 {
 }
 
@@ -59,13 +59,13 @@ bool Game::addPlayer( string const & iName )
 	}
 	else
 	{
-        //create playercontext and append
-        Player aPlayerContext( iName );
-        _players.insert( pair<string,Player>(iName, aPlayerContext) );
-        LOG4CXX_DEBUG(_logger, "new PlayerContext added with internalId=" << iName);
-        aAddedPlayerSuccess = true;
+		//create playercontext and append
+		Player aPlayerContext( iName );
+		_players.insert( pair<string,Player>(iName, aPlayerContext) );
+		LOG4CXX_DEBUG(_logger, "new PlayerContext added with internalId=" << iName);
+		aAddedPlayerSuccess = true;
 	}
-    return aAddedPlayerSuccess;
+	return aAddedPlayerSuccess;
 }
 
 bool Game::addRobot(string const & iName)
@@ -88,7 +88,7 @@ bool Game::addRobot(string const & iName)
 
 string Game::getAvailableRobot() const
 {
-    string aFoundRobot;
+	string aFoundRobot;
 
     //search for the first robot which is not already associated to a player
     map<string, Robot>::const_iterator aIterOnRobots;
