@@ -36,9 +36,15 @@ void ProcessHello::execute()
     
     string aNewPlayerName = anHelloMsg.name();
     bool aPlayerAddedSuccess = _ctx->addPlayer( aNewPlayerName );
-    string aAvailableRobot = _ctx->getAvailableRobot();
+	string aRobotForPlayer = _ctx->getRobotNameForPlayer( aNewPlayerName );
+	string aAvailableRobot;
 
-    if ( aAvailableRobot.empty() || !aPlayerAddedSuccess )
+	if ( aRobotForPlayer.empty() )
+	{
+		aAvailableRobot = _ctx->getAvailableRobot();
+	}
+	
+    if ( ( aAvailableRobot.empty() and aRobotForPlayer.empty() ) || !aPlayerAddedSuccess )
     {
         LOG4CXX_WARN(_loggerPtr, "Impossible to process Hello : availableRobot=" << aAvailableRobot << "- player added with success :" << aPlayerAddedSuccess);
 
@@ -50,11 +56,14 @@ void ProcessHello::execute()
     {
         LOG4CXX_INFO(_loggerPtr, "Player " << aNewPlayerName << " is now linked to robot " << aAvailableRobot);
 
-        _ctx->accessPlayer(aNewPlayerName).setRobot( aAvailableRobot );
-        _ctx->accessRobot(aAvailableRobot).setPlayerName( aNewPlayerName );
+		if (aRobotForPlayer.empty())
+		{
+			_ctx->accessPlayer(aNewPlayerName).setRobot( aAvailableRobot );
+			_ctx->accessRobot(aAvailableRobot).setPlayerName( aNewPlayerName );
+		}
 
         Welcome aWelcome;
-        aWelcome.set_robot( aAvailableRobot );
+        aWelcome.set_robot( aRobotForPlayer.empty() ? aAvailableRobot : aRobotForPlayer );
         aWelcome.set_team( orwell::messages::RED ); //currently stupidly hardoded
         RawMessage aReply(aClientID, "Welcome", aWelcome.SerializeAsString());
         _ctx->getPublisher()->send( aReply );

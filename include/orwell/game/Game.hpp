@@ -36,7 +36,8 @@ public:
     //add empty RobotContext
     bool addRobot(std::string const & iName);
 
-    std::string getAvailableRobot();
+    std::string getAvailableRobot() const;
+	std::string const getRobotNameForPlayer(std::string const & iPlayer) const;
 
 private:
 	std::shared_ptr< com::Sender > _publisher;

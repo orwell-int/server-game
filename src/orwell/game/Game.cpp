@@ -19,7 +19,7 @@ namespace orwell {
 namespace game {
 
 Game::Game(std::shared_ptr< com::Sender > iPublisher) :
-_publisher(iPublisher), _logger(log4cxx::Logger::getLogger("orwell.log"))
+_publisher(iPublisher), _logger(log4cxx::Logger::getLogger("orwell.log")), _isRunning(false)
 {
 }
 
@@ -51,10 +51,11 @@ map<string, Player> const & Game::getPlayers()
 
 bool Game::addPlayer( string const & iName )
 {
-    bool aAddedPLayerSuccess = false;
+    bool aAddedPlayerSuccess = false;
     if ( _players.find(iName) != _players.end() )
     {
         LOG4CXX_WARN(_logger, "Player name (" << iName << ") is already in the player Map.");
+		aAddedPlayerSuccess = true;
 	}
 	else
 	{
@@ -62,9 +63,9 @@ bool Game::addPlayer( string const & iName )
         Player aPlayerContext( iName );
         _players.insert( pair<string,Player>(iName, aPlayerContext) );
         LOG4CXX_DEBUG(_logger, "new PlayerContext added with internalId=" << iName);
-        aAddedPLayerSuccess = true;
+        aAddedPlayerSuccess = true;
 	}
-    return aAddedPLayerSuccess;
+    return aAddedPlayerSuccess;
 }
 
 bool Game::addRobot(string const & iName)
@@ -85,12 +86,12 @@ bool Game::addRobot(string const & iName)
     return aAddedRobotSuccess;
 }
 
-string Game::getAvailableRobot()
+string Game::getAvailableRobot() const
 {
     string aFoundRobot;
 
     //search for the first robot which is not already associated to a player
-    map<string, Robot>::iterator aIterOnRobots;
+    map<string, Robot>::const_iterator aIterOnRobots;
     aIterOnRobots = _robots.begin();
     while ( aIterOnRobots != _robots.end()
             && !aIterOnRobots->second.getPlayerName().empty())
@@ -101,9 +102,22 @@ string Game::getAvailableRobot()
     {
         aFoundRobot = aIterOnRobots->first;
     }
+
     return aFoundRobot;
 }
 
+string const Game::getRobotNameForPlayer(string const & iPlayer) const
+{
+	string retValue;
+	
+	for (pair<string, Robot> const & iItem : _robots)
+	{
+		if (iItem.second.getPlayerName() == iPlayer)
+			retValue = iItem.second.getName();
+	}
+	
+	return retValue;
+}
 
 
 }} // namespaces

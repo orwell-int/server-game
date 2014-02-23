@@ -31,8 +31,15 @@ int main()
 	aServer.accessContext().addRobot("Goldorak");
 	aServer.accessContext().addRobot("Securitron");
 
-	aServer.loop();
-
+	switch (fork())
+	{
+		case 0:
+			aServer.runBroadcastReceiver();
+			break;
+		default:
+			aServer.loop();
+			break;
+	}
 	return 0;
 }
 
