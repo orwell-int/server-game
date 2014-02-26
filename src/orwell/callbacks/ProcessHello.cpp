@@ -61,7 +61,8 @@ void ProcessHello::execute()
 	}
 	else
 	{
-		LOG4CXX_INFO(_loggerPtr, "Player " << aNewPlayerName << " is now linked to robot " << aAvailableRobot->getName());
+		LOG4CXX_INFO(_loggerPtr, "Player " << aNewPlayerName << " is now linked to robot " <<
+					 (aAvailableRobot.get() != nullptr? aAvailableRobot->getName() : aRobotForPlayer));
 
 		if (aRobotForPlayer.empty())
 		{
