@@ -19,6 +19,7 @@ static orwell::tasks::Server * ServerPtr;
 
 void signal_handler(int signum)
 {
+	printf("Caught signal: %d\n", signum);
 	ServerPtr->stop();
 }
 
@@ -38,14 +39,15 @@ int main()
 	logger->setLevel(log4cxx::Level::getDebug());
 
 	orwell::tasks::Server aServer("tcp://*:9000", "tcp://*:9001", 500, logger);
-	ServerPtr = &aServer;
 	aServer.accessContext().addRobot("Gipsy Danger");
 	aServer.accessContext().addRobot("Goldorak");
 	aServer.accessContext().addRobot("Securitron");
 	
+	ServerPtr = &aServer;
+
 	// Register the signal handler
 	signal(SIGINT, signal_handler);
-	signal(SIGKILL, signal_handler);
+	signal(SIGTERM, signal_handler);
 	
 	pid_t aChildProcess = fork();
 	switch (aChildProcess)
@@ -53,14 +55,22 @@ int main()
 		case 0:
 			LOG4CXX_INFO(logger, "Child started, pid: " << aChildProcess);
 			aServer.runBroadcastReceiver();
+			
+			// The child can stop here
+			return 0;
 			break;
 		default:
 			LOG4CXX_INFO(logger, "Father continued, pid: " << aChildProcess);
 			aServer.loop();
-			
-			// Propagate the signal to the child
-			kill(aChildProcess, SIGTERM);
 			break;
+	}
+	
+	// Let's wait for everything to be over.
+	int status;
+	while (waitpid(aChildProcess, &status, WNOHANG) == 0)
+	{
+		LOG4CXX_INFO(logger, "Waiting for child " << aChildProcess << " to complete..");
+		sleep(1);
 	}
 
 	return 0;

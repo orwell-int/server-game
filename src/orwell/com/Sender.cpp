@@ -51,7 +51,6 @@ Sender::Sender(
 
 Sender::~Sender()
 {
-	_zmqSocket->close();
 	delete _zmqSocket;
 	delete _zmqContext;
 }

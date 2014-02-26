@@ -56,7 +56,6 @@ Receiver::Receiver(
 
 Receiver::~Receiver()
 {
-	_zmqSocket->close();
 	delete _zmqSocket;
 	delete _zmqContext;
 }

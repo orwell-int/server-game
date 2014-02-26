@@ -61,6 +61,11 @@ void Server::runBroadcastReceiver()
 	struct sockaddr_in aClientAddress;
 	ssize_t aMessageLength;
 	char aMessageBuffer[UDP_MESSAGE_LIMIT];
+	
+	/* This is used to set a RCV Timeout on the socket */
+	struct timeval tv;
+	tv.tv_sec = 3;
+	tv.tv_usec = 1000;
 
 	/* Create the socket */
 	aBsdSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -85,7 +90,11 @@ void Server::runBroadcastReceiver()
 		perror("bind()");
 		return;
 	}
+	
+	/* Set the RCV Timeout */
+	setsockopt(aBsdSocket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 
+	_running = true;
 	while (_running)
 	{
 		aClientLength = sizeof(aClientAddress);
@@ -94,7 +103,8 @@ void Server::runBroadcastReceiver()
 		if ((aMessageLength = recvfrom(aBsdSocket, aMessageBuffer, UDP_MESSAGE_LIMIT, 0,
 				(struct sockaddr *) &aClientAddress, &aClientLength)) == -1)
 		{
-			return;
+			// Receive timeout, let's check if we should keep running..
+			continue;
 		}
 
 		// Reply with PULLER and PUBLISHER url
@@ -117,22 +127,9 @@ void Server::runBroadcastReceiver()
 				0,
 				(struct sockaddr *) &aClientAddress,
 				sizeof(aClientAddress));
-
-		/* 
-		 * Special message to properly terminate the test
-		 * It might be good to define some include guards when compiling for tests,
-		 * or a boolean variable to keep these backports opened.. 
-		 */
-
-//#ifdef __HYPER_BLASTER__
-		aMessageBuffer[aMessageLength] = '\0';
-		if (strncmp(aMessageBuffer, "1AFTW", sizeof("1AFTW") - 1) == 0)
-		{
-			break;
-		}
-//#endif
 	}
 
+	LOG4CXX_INFO(_logger, "Closing broadcast service");
 	close(aBsdSocket);
 }
 
@@ -143,7 +140,6 @@ bool Server::processMessageIfAvailable()
 	if (_puller->receive(aMessage))
 	{
 		_decider.process(aMessage);
-//		ProcessDecider::Process(aMessage, _game);
 		aProcessedMessage = true;
 	}
 	return aProcessedMessage;
@@ -154,7 +150,7 @@ void Server::loopUntilOneMessageIsProcessed()
 	bool aMessageHasBeenProcessed = false;
 	boost::posix_time::time_duration aDuration;
 	boost::posix_time::ptime aCurrentTic;
-	while (not aMessageHasBeenProcessed)
+	while (not aMessageHasBeenProcessed and _running)
 	{
 		aCurrentTic = boost::posix_time::second_clock::local_time();
 		aDuration = aCurrentTic - _previousTic;
@@ -187,12 +183,11 @@ void Server::loop()
 	{
 		loopUntilOneMessageIsProcessed();
 	}
-	
-	LOG4CXX_INFO(_logger, "Terminating server main loop");
 }
 	
 void Server::stop()
 {
+	LOG4CXX_INFO(_logger, "Terminating server main loop");
 	_running = false;
 }
 
