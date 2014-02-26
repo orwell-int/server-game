@@ -69,11 +69,6 @@ void Server::runBroadcastReceiver()
 
 	/* Create the socket */
 	aBsdSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (aBsdSocket == -1)
-	{
-		perror("socket()");
-		return;
-	}
 
 	// Just to be sure, init the two structs to zeroes.
 	bzero(&aServerAddress, sizeof(aServerAddress));
@@ -85,11 +80,7 @@ void Server::runBroadcastReceiver()
 	aServerAddress.sin_port = htons(9080);
 
 	/* Bind server socket */
-	if (bind(aBsdSocket, (struct sockaddr *) &aServerAddress, sizeof(aServerAddress)) == -1)
-	{
-		perror("bind()");
-		return;
-	}
+	bind(aBsdSocket, (struct sockaddr *) &aServerAddress, sizeof(aServerAddress));
 	
 	/* Set the RCV Timeout */
 	setsockopt(aBsdSocket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
@@ -100,8 +91,7 @@ void Server::runBroadcastReceiver()
 		aClientLength = sizeof(aClientAddress);
 
 		// Wait for message and fill the ClientAddress structure we will use to reply
-		if ((aMessageLength = recvfrom(aBsdSocket, aMessageBuffer, UDP_MESSAGE_LIMIT, 0,
-				(struct sockaddr *) &aClientAddress, &aClientLength)) == -1)
+		if (recvfrom(aBsdSocket, aMessageBuffer, UDP_MESSAGE_LIMIT, 0, (struct sockaddr *) &aClientAddress, &aClientLength) == -1)
 		{
 			// Receive timeout, let's check if we should keep running..
 			continue;
@@ -110,13 +100,13 @@ void Server::runBroadcastReceiver()
 		// Reply with PULLER and PUBLISHER url
 		// Since in UDP Discovery we are limited to 32 bytes (like ICMP_ECHO), build a binary message
 		std::ostringstream anOstream;
-		anOstream << (uint8_t) 0xA0;                              // A0 identifies the Puller (1 byte)
-		anOstream << (uint8_t) _puller->getUrl().size();          // size of puller url       (1 byte)
+		anOstream << (uint8_t) 0xA0;                              // A0 identifies the Puller ( 1 byte )
+		anOstream << (uint8_t) _puller->getUrl().size();          // size of puller url       ( 1 byte )
 		anOstream << (const char *) _puller->getUrl().c_str();    // Address of puller url    (12 bytes)
-		anOstream << (uint8_t) 0xA1;                              // A1 is the PUBLISHER      (1 byte)
-		anOstream << (uint8_t) _publisher->getUrl().size();       // size of publisher url    (1 byte)
+		anOstream << (uint8_t) 0xA1;                              // A1 is the PUBLISHER      ( 1 byte )
+		anOstream << (uint8_t) _publisher->getUrl().size();       // size of publisher url    ( 1 byte )
 		anOstream << (const char *) _publisher->getUrl().c_str(); // Address of publisher     (12 bytes)
-		anOstream << (uint8_t) 0x00;                              // End of message           (1 byte)
+		anOstream << (uint8_t) 0x00;                              // End of message           ( 1 byte )
 		// -----------------------------------------------------------------------------------------------
 		// Total                                                                               29 bytes
 
@@ -150,6 +140,8 @@ void Server::loopUntilOneMessageIsProcessed()
 	bool aMessageHasBeenProcessed = false;
 	boost::posix_time::time_duration aDuration;
 	boost::posix_time::ptime aCurrentTic;
+	_running = true;
+
 	while (not aMessageHasBeenProcessed and _running)
 	{
 		aCurrentTic = boost::posix_time::second_clock::local_time();

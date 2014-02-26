@@ -9,6 +9,8 @@
 
 #include <zmq.hpp>
 
+#include <memory>
+
 using namespace log4cxx;
 using std::string;
 using std::cout;
@@ -51,8 +53,6 @@ Sender::Sender(
 
 Sender::~Sender()
 {
-	delete _zmqSocket;
-	delete _zmqContext;
 }
 
 void Sender::send( RawMessage const & iMessage )

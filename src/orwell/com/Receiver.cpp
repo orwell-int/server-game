@@ -56,8 +56,6 @@ Receiver::Receiver(
 
 Receiver::~Receiver()
 {
-	delete _zmqSocket;
-	delete _zmqContext;
 }
 
 bool Receiver::receive(RawMessage & oMessage)

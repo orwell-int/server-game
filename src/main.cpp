@@ -16,8 +16,7 @@ using namespace log4cxx;
 using namespace std;
 
 static orwell::tasks::Server * ServerPtr;
-
-void signal_handler(int signum)
+static void signal_handler(int signum)
 {
 	printf("Caught signal: %d\n", signum);
 	ServerPtr->stop();
@@ -43,6 +42,7 @@ int main()
 	aServer.accessContext().addRobot("Goldorak");
 	aServer.accessContext().addRobot("Securitron");
 	
+	// This is needed to handle the signal
 	ServerPtr = &aServer;
 
 	// Register the signal handler
