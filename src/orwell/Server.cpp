@@ -44,9 +44,10 @@ Server::Server(
 	, _game()
 	, _decider(_game, _publisher)
 	, _ticDuration( boost::posix_time::milliseconds(iTicDuration) )
-	, _previousTic(boost::posix_time::second_clock::local_time())
-	{
-	}
+	, _previousTic(boost::posix_time::second_clock::local_time() )
+	, _running(false)
+{
+}
 
 Server::~Server()
 {
@@ -85,7 +86,7 @@ void Server::runBroadcastReceiver()
 		return;
 	}
 
-	while (true)
+	while (_running)
 	{
 		aClientLength = sizeof(aClientAddress);
 
@@ -180,10 +181,19 @@ void Server::loopUntilOneMessageIsProcessed()
 
 void Server::loop()
 {
-	while (true)
+	_running = true;
+	
+	while (_running)
 	{
 		loopUntilOneMessageIsProcessed();
 	}
+	
+	LOG4CXX_INFO(_logger, "Terminating server main loop");
+}
+	
+void Server::stop()
+{
+	_running = false;
 }
 
 orwell::game::Game & Server::accessContext()

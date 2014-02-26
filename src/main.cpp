@@ -9,12 +9,21 @@
 #include <log4cxx/filter/levelrangefilter.h>
 #include <log4cxx/ndc.h>
 
+#include <stdio.h>
+#include <signal.h>
+
 using namespace log4cxx;
 using namespace std;
 
+static orwell::tasks::Server * ServerPtr;
+
+void signal_handler(int signum)
+{
+	ServerPtr->stop();
+}
+
 int main()
 {
-
 	std::string aString;
 
 	PatternLayoutPtr aPatternLayout = new PatternLayout("%d %-5p %x (%F:%L) - %m%n");
@@ -29,18 +38,30 @@ int main()
 	logger->setLevel(log4cxx::Level::getDebug());
 
 	orwell::tasks::Server aServer("tcp://*:9000", "tcp://*:9001", 500, logger);
+	ServerPtr = &aServer;
 	aServer.accessContext().addRobot("Gipsy Danger");
 	aServer.accessContext().addRobot("Goldorak");
 	aServer.accessContext().addRobot("Securitron");
-
-	switch (fork())
+	
+	// Register the signal handler
+	signal(SIGINT, signal_handler);
+	signal(SIGKILL, signal_handler);
+	
+	pid_t aChildProcess = fork();
+	switch (aChildProcess)
 	{
 		case 0:
+			LOG4CXX_INFO(logger, "Child started, pid: " << aChildProcess);
 			aServer.runBroadcastReceiver();
 			break;
 		default:
+			LOG4CXX_INFO(logger, "Father continued, pid: " << aChildProcess);
 			aServer.loop();
+			
+			// Propagate the signal to the child
+			kill(aChildProcess, SIGTERM);
 			break;
 	}
+
 	return 0;
 }
