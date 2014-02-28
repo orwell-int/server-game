@@ -46,6 +46,7 @@ Server::Server(
 	, _ticDuration( boost::posix_time::milliseconds(iTicDuration) )
 	, _previousTic(boost::posix_time::second_clock::local_time() )
 	, _running(false)
+	, _forcedStop(false)
 {
 }
 
@@ -140,9 +141,8 @@ void Server::loopUntilOneMessageIsProcessed()
 	bool aMessageHasBeenProcessed = false;
 	boost::posix_time::time_duration aDuration;
 	boost::posix_time::ptime aCurrentTic;
-	_running = true;
 
-	while (not aMessageHasBeenProcessed and _running)
+	while (not aMessageHasBeenProcessed)
 	{
 		aCurrentTic = boost::posix_time::second_clock::local_time();
 		aDuration = aCurrentTic - _previousTic;
@@ -156,6 +156,10 @@ void Server::loopUntilOneMessageIsProcessed()
 			{
 				aMessageHasBeenProcessed = true;
 			}
+		}
+		else if (_forcedStop)
+		{
+			break;
 		}
 		else
 		{
@@ -180,6 +184,7 @@ void Server::loop()
 void Server::stop()
 {
 	LOG4CXX_INFO(_logger, "Terminating server main loop");
+	_forcedStop = true;
 	_running = false;
 }
 

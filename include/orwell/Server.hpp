@@ -56,6 +56,7 @@ private:
 	boost::posix_time::ptime _previousTic;
 	
 	bool _running;
+	bool _forcedStop;
 };
 
 }
