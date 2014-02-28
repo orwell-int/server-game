@@ -45,7 +45,7 @@ Server::Server(
 	, _decider(_game, _publisher)
 	, _ticDuration( boost::posix_time::milliseconds(iTicDuration) )
 	, _previousTic(boost::posix_time::second_clock::local_time() )
-	, _running(false)
+	, _mainLoopRunning(false)
 	, _forcedStop(false)
 {
 }
@@ -86,8 +86,8 @@ void Server::runBroadcastReceiver()
 	/* Set the RCV Timeout */
 	setsockopt(aBsdSocket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 
-	_running = true;
-	while (_running)
+	_mainLoopRunning = true;
+	while (_mainLoopRunning)
 	{
 		aClientLength = sizeof(aClientAddress);
 
@@ -173,9 +173,9 @@ void Server::loopUntilOneMessageIsProcessed()
 
 void Server::loop()
 {
-	_running = true;
+	_mainLoopRunning = true;
 	
-	while (_running)
+	while (_mainLoopRunning)
 	{
 		loopUntilOneMessageIsProcessed();
 	}
@@ -185,7 +185,7 @@ void Server::stop()
 {
 	LOG4CXX_INFO(_logger, "Terminating server main loop");
 	_forcedStop = true;
-	_running = false;
+	_mainLoopRunning = false;
 }
 
 orwell::game::Game & Server::accessContext()

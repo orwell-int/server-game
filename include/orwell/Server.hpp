@@ -55,7 +55,7 @@ private:
 	boost::posix_time::time_duration const _ticDuration;
 	boost::posix_time::ptime _previousTic;
 	
-	bool _running;
+	bool _mainLoopRunning;
 	bool _forcedStop;
 };
 
