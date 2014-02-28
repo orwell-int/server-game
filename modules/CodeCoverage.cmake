@@ -136,7 +136,7 @@ FUNCTION(SETUP_TARGET_FOR_COVERAGE _targetname _testrunner _outputname _testdir 
 	# Show info where to find the report
 	ADD_CUSTOM_COMMAND(TARGET ${_targetname} POST_BUILD
 		COMMAND ;
-		COMMENT "Open ./${_outputname}/index.html in your browser to view the coverage report."
+		COMMENT "Open ${_outputname}/index.html in your browser to view the coverage report."
 	)
 
 ENDFUNCTION() # SETUP_TARGET_FOR_COVERAGE
