@@ -12,23 +12,40 @@ project(orwell)
 # to the root of the project to have completion.
 set(CMAKE_EXPORT_COMPILE_COMMANDS, "ON")
 
-OPTION(ORWELL_COVERAGE "Enables code coverage measurements with gcov/lcov." OFF)
+set_property(GLOBAL PROPERTY P_ALL_TARGETS "")
+set_property(GLOBAL PROPERTY P_ALL_TEST_TARGETS "")
 
-IF(ORWELL_COVERAGE AND NOT IS_SUBPROJECT)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fprofile-arcs -ftest-coverage")
-	include(CodeCoverage)
-	setup_target_for_coverage(${PROJECT_NAME}_coverage ctest coverage test)
-	SET(COVERAGE_EXCLUDES
-		'/usr/*'
-		'${PROTOBUF_INCLUDE_DIR}'
-		'${ZMQ_INCLUDE_DIR}'
-		'${Boost_INCLUDE_DIR}'
-		'${CMAKE_BINARY_DIR}/*'
-		'${CMAKE_SOURCE_DIR}/tests/*'
-		'${CMAKE_SOURCE_DIR}/ThirdParty/*'
-		)
-ENDIF()
+macro(add_library _target)
+	_add_library (${_target} ${ARGN})
+	get_property(VAR_ALL_TARGETS GLOBAL PROPERTY P_ALL_TARGETS)
+	list(APPEND VAR_ALL_TARGETS ${_target})
+	list(REMOVE_DUPLICATES VAR_ALL_TARGETS)
+	#MESSAGE("add_library(${_target}) ; VAR_ALL_TARGETS = ${VAR_ALL_TARGETS}")
+	set_property(GLOBAL PROPERTY P_ALL_TARGETS "${VAR_ALL_TARGETS}")
+endmacro()
+
+macro(add_executable _target)
+	_add_executable (${_target} ${ARGN})
+	get_property(VAR_ALL_TARGETS GLOBAL PROPERTY P_ALL_TARGETS)
+	list(APPEND VAR_ALL_TARGETS ${_target})
+	list(REMOVE_DUPLICATES VAR_ALL_TARGETS)
+	#MESSAGE("add_executable(${_target}) ; VAR_ALL_TARGETS = ${VAR_ALL_TARGETS}")
+	set_property(GLOBAL PROPERTY P_ALL_TARGETS "${VAR_ALL_TARGETS}")
+endmacro()
+
+macro(add_test _target)
+	_add_test (${_target} ${ARGN})
+	get_property(VAR_ALL_TARGETS GLOBAL PROPERTY P_ALL_TARGETS)
+	list(APPEND VAR_ALL_TARGETS ${_target})
+	list(REMOVE_DUPLICATES VAR_ALL_TARGETS)
+	#MESSAGE("add_test(${_target}) ; VAR_ALL_TARGETS = ${VAR_ALL_TARGETS}")
+	set_property(GLOBAL PROPERTY P_ALL_TARGETS "${VAR_ALL_TARGETS}")
+	get_property(VAR_ALL_TEST_TARGETS GLOBAL PROPERTY P_ALL_TEST_TARGETS)
+	list(APPEND VAR_ALL_TEST_TARGETS ${_target})
+	list(REMOVE_DUPLICATES VAR_ALL_TEST_TARGETS)
+	#MESSAGE("add_test(${_target}) ; VAR_ALL_TEST_TARGETS = ${VAR_ALL_TEST_TARGETS}")
+	set_property(GLOBAL PROPERTY P_ALL_TEST_TARGETS "${VAR_ALL_TEST_TARGETS}")
+endmacro()
 
 # Initialize CXXFLAGS.
 set(CMAKE_CXX_FLAGS                "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
@@ -99,6 +116,10 @@ include_directories(
 	${CMAKE_BINARY_DIR}/messages
 	)
 
+#FUNCTION(add_orwell_executable )
+
+#ENDFUNCTION() # SETUP_TARGET_FOR_COVERAGE
+
 
 add_executable(server_main src/main.cpp)
 target_link_libraries(
@@ -109,4 +130,36 @@ target_link_libraries(
 	${Boost_LIBRARIES}
 	${LOG4CXX_LIBRARIES})
 
+OPTION(ORWELL_COVERAGE "Enables code coverage measurements with gcov/lcov." OFF)
+
+IF(ORWELL_COVERAGE)
+	MESSAGE("Code coverage considered")
+	IF(NOT IS_SUBPROJECT)
+		MESSAGE("Code coverage activated")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
+		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fprofile-arcs -ftest-coverage")
+		include(CodeCoverage)
+		SET(COVERAGE_INCLUDES
+			'${CMAKE_SOURCE_DIR}/*'
+			)
+		SET(COVERAGE_EXCLUDES
+			'${CMAKE_SOURCE_DIR}/test/*'
+			)
+		get_property(VAR_ALL_TARGETS GLOBAL PROPERTY P_ALL_TARGETS)
+		setup_target_for_coverage(
+			${PROJECT_NAME}_coverage
+			ctest
+			${CMAKE_BINARY_DIR}/test/coverage
+			test
+			${CMAKE_BINARY_DIR}
+			"${COVERAGE_INCLUDES}"
+			"${COVERAGE_EXCLUDES}"
+			"${VAR_ALL_TARGETS}"
+			)
+	ELSE()
+		MESSAGE("Code coverage NOT activated")
+	ENDIF()
+ELSE()
+	MESSAGE("Code coverage not considered")
+ENDIF()
 

@@ -71,7 +71,9 @@ target_link_libraries(
 	orwell_test)
 add_test(broadcast_test ${CMAKE_CURRENT_BINARY_DIR}/broadcast_test)
 
-ADD_CUSTOM_TARGET(${PROJECT_NAME}_run_tests
+get_property(VAR_ALL_TEST_TARGETS GLOBAL PROPERTY P_ALL_TEST_TARGETS)
+ADD_CUSTOM_TARGET(ctest
 	COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}
 	COMMAND ctest
+	DEPENDS ${VAR_ALL_TEST_TARGETS}
 )

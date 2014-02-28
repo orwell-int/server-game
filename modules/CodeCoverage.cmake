@@ -8,7 +8,6 @@
 #
 # 2014-02-28, dchilot
 # - Custom hacks for specific project.
-# - Merge with previous version to recover COVERAGE_EXCLUDES.
 #
 # USAGE:
 # 1. Copy this file into your cmake modules path.
@@ -16,13 +15,11 @@
 # 2. Add the following line to your CMakeLists.txt:
 #      INCLUDE(CodeCoverage)
 #
-# 3. SET(COVERAGE_EXCLUDES 'dir1/*' 'dir2/*')
-#
-# 4. Set compiler flags to turn off optimization and enable coverage: 
+# 3. Set compiler flags to turn off optimization and enable coverage: 
 #    SET(CMAKE_CXX_FLAGS "-g -O0 -fprofile-arcs -ftest-coverage")
 #	 SET(CMAKE_C_FLAGS "-g -O0 -fprofile-arcs -ftest-coverage")
 #  
-# 5. Use the function SETUP_TARGET_FOR_COVERAGE to create a custom make target
+# 4. Use the function SETUP_TARGET_FOR_COVERAGE to create a custom make target
 #    which runs your test executable and produces a lcov code coverage report:
 #    Example:
 #	 SETUP_TARGET_FOR_COVERAGE(
@@ -31,9 +28,11 @@
 #									# NOTE! This should always have a ZERO as exit code
 #									# otherwise the coverage generation will not complete.
 #				coverage            # Name of output directory.
+#				testdir             # Directory containing the tests to run.
+#				coverage_exculdes   # Paths to exclude from the coverage analysis.
 #				)
 #
-# 6. Build a Debug build:
+# 5. Build a Debug build:
 #	 cmake -DCMAKE_BUILD_TYPE=Debug ..
 #	 make
 #	 make my_coverage_target
@@ -87,16 +86,20 @@ IF ( NOT (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "Covera
 ENDIF() # NOT CMAKE_BUILD_TYPE STREQUAL "Debug"
 
 
-# Param _targetname     The name of new the custom make target
-# Param _testrunner     The name of the target which runs the tests.
-#						MUST return ZERO always, even on errors. 
-#						If not, no coverage report will be created!
-# Param _outputname     lcov output is generated as _outputname.info
-#                       HTML report is generated in _outputname/index.html
-# Param _testdir        Directory where the testrunner can be run.
+# Param _targetname          The name of new the custom make target
+# Param _testrunner          The name of the target which runs the tests.
+#                            MUST return ZERO always, even on errors. 
+#                            If not, no coverage report will be created!
+# Param _outputname          lcov output is generated as _outputname.info
+#                            HTML report is generated in _outputname/index.html
+# Param _testdir             Directory where the testrunner can be run.
+# Param _coverage_root_dir   Directory to extract coverage from.
+# Param _coverage_includes   Directories to extract from the global coverage data.
+# Param _coverage_excludes   Directories to exclude from the extracted coverage data.
+# Param _dependencies        List of targets to add a dependency on.
 # Optional fourth parameter is passed as arguments to _testrunner
 #   Pass them in list form, e.g.: "-j;2" for -j 2
-FUNCTION(SETUP_TARGET_FOR_COVERAGE _targetname _testrunner _outputname _testdir)
+FUNCTION(SETUP_TARGET_FOR_COVERAGE _targetname _testrunner _outputname _testdir _coverage_root_dir _coverage_includes _coverage_excludes _dependencies)
 
 	IF(NOT LCOV_PATH)
 		MESSAGE(FATAL_ERROR "lcov not found! Aborting...")
@@ -110,17 +113,20 @@ FUNCTION(SETUP_TARGET_FOR_COVERAGE _targetname _testrunner _outputname _testdir)
 	ADD_CUSTOM_TARGET(${_targetname}
 		
 		# Cleanup lcov
-		${LCOV_PATH} --directory . --zerocounters
+		${LCOV_PATH} --directory ${_coverage_root_dir} --zerocounters
 		
 		# Run tests
 		COMMAND ${_testrunner} ${ARGV3}
 		
 		# Capturing lcov counters and generating report
-		COMMAND ${LCOV_PATH} --directory . --capture --output-file ${_outputname}.info
-		COMMAND ${LCOV_PATH} --remove ${_outputname}.info ${COVERAGE_EXCLUDES} --output-file ${_outputname}.info.cleaned
+		COMMAND ${LCOV_PATH} --directory ${_coverage_root_dir} --capture --output-file ${_outputname}.info
+		COMMAND ${LCOV_PATH} --extract ${_outputname}.info ${_coverage_includes} --output-file ${_outputname}.info.cleaned.0
+		COMMAND ${LCOV_PATH} --remove ${_outputname}.info.cleaned.0 ${_coverage_excludes} --output-file ${_outputname}.info.cleaned
+		#COMMAND ${LCOV_PATH} --extract ${_outputname}.info ${_coverage_includes} --remove ${_outputname}.info ${_coverage_excludes} --output-file ${_outputname}.info.cleaned
 		COMMAND ${GENHTML_PATH} -o ${_outputname} ${_outputname}.info.cleaned
-		COMMAND ${CMAKE_COMMAND} -E remove ${_outputname}.info ${_outputname}.info.cleaned
+		COMMAND ${CMAKE_COMMAND} -E remove ${_outputname}.info ${_outputname}.info.cleaned.0 ${_outputname}.info.cleaned
 		
+		DEPENDS ${_dependencies}
 		#WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 		# Go to directory containing the test(s)
 		WORKING_DIRECTORY ${_testdir}
@@ -135,36 +141,3 @@ FUNCTION(SETUP_TARGET_FOR_COVERAGE _targetname _testrunner _outputname _testdir)
 
 ENDFUNCTION() # SETUP_TARGET_FOR_COVERAGE
 
-# Param _targetname     The name of new the custom make target
-# Param _testrunner     The name of the target which runs the tests
-# Param _outputname     cobertura output is generated as _outputname.xml
-# Optional fourth parameter is passed as arguments to _testrunner
-#   Pass them in list form, e.g.: "-j;2" for -j 2
-FUNCTION(SETUP_TARGET_FOR_COVERAGE_COBERTURA _targetname _testrunner _outputname)
-
-	IF(NOT PYTHON_EXECUTABLE)
-		MESSAGE(FATAL_ERROR "Python not found! Aborting...")
-	ENDIF() # NOT PYTHON_EXECUTABLE
-
-	IF(NOT GCOVR_PATH)
-		MESSAGE(FATAL_ERROR "gcovr not found! Aborting...")
-	ENDIF() # NOT GCOVR_PATH
-
-	ADD_CUSTOM_TARGET(${_targetname}
-
-		# Run tests
-		${_testrunner} ${ARGV3}
-
-		# Running gcovr
-		COMMAND ${GCOVR_PATH} -x -r ${CMAKE_SOURCE_DIR} -e '${CMAKE_SOURCE_DIR}/tests/'  -o ${_outputname}.xml
-		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-		COMMENT "Running gcovr to produce Cobertura code coverage report."
-	)
-
-	# Show info where to find the report
-	ADD_CUSTOM_COMMAND(TARGET ${_targetname} POST_BUILD
-		COMMAND ;
-		COMMENT "Cobertura code coverage report saved in ${_outputname}.xml."
-	)
-
-ENDFUNCTION() # SETUP_TARGET_FOR_COVERAGE_COBERTURA
