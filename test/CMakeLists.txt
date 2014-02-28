@@ -50,14 +50,16 @@ include_directories(
 	)
 
 add_executable(test_input "input_to_robot.cpp")
-target_link_libraries(test_input 
-	orwell_server_game 
+target_link_libraries(
+	test_input
+	orwell_server_game
 	orwell_test)
 add_test(test_input ${CMAKE_CURRENT_BINARY_DIR}/test_input)
 
 add_executable(test_hello "hello_client.cpp")
-target_link_libraries(test_hello 
-	orwell_server_game 
+target_link_libraries(
+	test_hello
+	orwell_server_game
 	orwell_test)
 add_test(test_hello ${CMAKE_CURRENT_BINARY_DIR}/test_hello)
 
@@ -68,3 +70,8 @@ target_link_libraries(
 	orwell_server_game
 	orwell_test)
 add_test(broadcast_test ${CMAKE_CURRENT_BINARY_DIR}/broadcast_test)
+
+ADD_CUSTOM_TARGET(${PROJECT_NAME}_run_tests
+	COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}
+	COMMAND ctest
+)
