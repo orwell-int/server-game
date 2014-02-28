@@ -33,6 +33,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <signal.h>
 
 
 using namespace log4cxx;
@@ -40,6 +41,13 @@ using namespace log4cxx;
 using namespace orwell::com;
 using namespace orwell::messages;
 using namespace std;
+
+static orwell::tasks::Server * ServerPtr;
+
+static void signal_handler(int signum)
+{
+	ServerPtr->stop();
+}
 
 struct IP4
 {
@@ -176,10 +184,8 @@ uint32_t simulateClient(log4cxx::LoggerPtr iLogger)
 
 void simulateServer(log4cxx::LoggerPtr iLogger)
 {
-	orwell::tasks::Server aServer("tcp://*:9801", "tcp://*:9991", 500, iLogger);
-
 	LOG4CXX_INFO(iLogger, "Running broadcast receiver on server");
-	aServer.runBroadcastReceiver();
+	ServerPtr->runBroadcastReceiver();
 	LOG4CXX_INFO(iLogger, "Server stopped correctly");
 }
 
@@ -187,18 +193,29 @@ int main(int argc, const char * argv [])
 {
 	int aRc(0);
 
-	auto logger = Common::SetupLogger("hello");
-	NDC ndc("broadcast");
-	switch (fork())
+	auto logger = Common::SetupLogger("broadcast");
+	ServerPtr = new orwell::tasks::Server("tcp://*:9801", "tcp://*:9991", 500, logger);
+	
+	// Handle the signal CHLD (as SIG[INT|TERM] will kill ctest also)
+	signal(SIGCHLD, signal_handler);
+
+	pid_t aChild = fork();
+	switch (aChild)
 	{
-		case 0:
-			simulateServer(logger);
-			return 0;
 		default:
+			simulateServer(logger);
+			break;
+		case 0:
 			usleep(2543);
 			aRc = simulateClient(logger);
-			usleep(2545);
+			break;
 	}
+	
+	kill(aChild, SIGCHLD);
+	
+	// Only the father should delete the ServerPtr.
+	if (not aChild)
+		delete ServerPtr;
 
 	return aRc;
 }
