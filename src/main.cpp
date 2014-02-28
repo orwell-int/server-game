@@ -18,7 +18,6 @@ using namespace std;
 static orwell::tasks::Server * ServerPtr;
 static void signal_handler(int signum)
 {
-	printf("Caught signal: %d\n", signum);
 	ServerPtr->stop();
 }
 
