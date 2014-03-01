@@ -6,6 +6,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules/")
 
 project(orwell)
 
+# Test suite
+include(CTest)
+
 # Generate compile_commands.json (http://clang.llvm.org/docs/JSONCompilationDatabase.html).
 # It is used by YCM (https://github.com/Valloric/YouCompleteMe).
 # You just need to create a symbolic link to the build directory's compile_commands.json file
@@ -166,5 +169,19 @@ IF(ORWELL_COVERAGE)
 	ENDIF()
 ELSE()
 	MESSAGE("Code coverage not considered")
+ENDIF()
+
+OPTION(ORWELL_MEMCHECK "Enables memory checking with valgrind memcheck." OFF)
+
+if (ORWELL_MEMCHECK)
+	find_program(
+		VALGRIND_BIN
+		valgrind
+		)
+	MESSAGE("VALGRIND_BIN = ${VALGRIND_BIN}")
+	IF ("VALGRIND_BIN-NOTFOUND" STREQUAL "${VALGRIND_BIN}")
+		MESSAGE(FATAL_ERROR "Binary valgrind not found (please install it or use cmake without defining ORWELL_MEMCHECK")
+	ENDIF()
+	SET(MEMORYCHECK_COMMAND ${VALGRIND_BIN})
 ENDIF()
 

@@ -29,9 +29,6 @@ target_link_libraries(
 	${Boost_LIBRARIES}
 	${LOG4CXX_LIBRARIES})
 
-# Test suite
-enable_testing()
-
 #add_executable(test_registerRobot "register_robot.cpp")
 #target_link_libraries(test_registerRobot orwell_com orwell_tasks)
 #add_test(test_registerRobot ${CMAKE_CURRENT_BINARY_DIR}/test_registerRobot)
@@ -77,3 +74,9 @@ ADD_CUSTOM_TARGET(ctest
 	COMMAND ctest
 	DEPENDS ${VAR_ALL_TEST_TARGETS}
 )
+
+# this might be a hack but it works
+CONFIGURE_FILE(
+	${CMAKE_ROOT}/Modules/DartConfiguration.tcl.in
+	${CMAKE_CURRENT_BINARY_DIR}/DartConfiguration.tcl
+	)
