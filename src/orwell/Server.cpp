@@ -44,9 +44,11 @@ Server::Server(
 	, _game()
 	, _decider(_game, _publisher)
 	, _ticDuration( boost::posix_time::milliseconds(iTicDuration) )
-	, _previousTic(boost::posix_time::second_clock::local_time())
-	{
-	}
+	, _previousTic(boost::posix_time::second_clock::local_time() )
+	, _mainLoopRunning(false)
+	, _forcedStop(false)
+{
+}
 
 Server::~Server()
 {
@@ -60,14 +62,14 @@ void Server::runBroadcastReceiver()
 	struct sockaddr_in aClientAddress;
 	ssize_t aMessageLength;
 	char aMessageBuffer[UDP_MESSAGE_LIMIT];
+	
+	/* This is used to set a RCV Timeout on the socket */
+	struct timeval tv;
+	tv.tv_sec = 3;
+	tv.tv_usec = 1000;
 
 	/* Create the socket */
 	aBsdSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (aBsdSocket == -1)
-	{
-		perror("socket()");
-		return;
-	}
 
 	// Just to be sure, init the two structs to zeroes.
 	bzero(&aServerAddress, sizeof(aServerAddress));
@@ -79,33 +81,33 @@ void Server::runBroadcastReceiver()
 	aServerAddress.sin_port = htons(9080);
 
 	/* Bind server socket */
-	if (bind(aBsdSocket, (struct sockaddr *) &aServerAddress, sizeof(aServerAddress)) == -1)
-	{
-		perror("bind()");
-		return;
-	}
+	bind(aBsdSocket, (struct sockaddr *) &aServerAddress, sizeof(aServerAddress));
+	
+	/* Set the RCV Timeout */
+	setsockopt(aBsdSocket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 
-	while (true)
+	_mainLoopRunning = true;
+	while (_mainLoopRunning)
 	{
 		aClientLength = sizeof(aClientAddress);
 
 		// Wait for message and fill the ClientAddress structure we will use to reply
-		if ((aMessageLength = recvfrom(aBsdSocket, aMessageBuffer, UDP_MESSAGE_LIMIT, 0,
-				(struct sockaddr *) &aClientAddress, &aClientLength)) == -1)
+		if (recvfrom(aBsdSocket, aMessageBuffer, UDP_MESSAGE_LIMIT, 0, (struct sockaddr *) &aClientAddress, &aClientLength) == -1)
 		{
-			return;
+			// Receive timeout, let's check if we should keep running..
+			continue;
 		}
 
 		// Reply with PULLER and PUBLISHER url
 		// Since in UDP Discovery we are limited to 32 bytes (like ICMP_ECHO), build a binary message
 		std::ostringstream anOstream;
-		anOstream << (uint8_t) 0xA0;                              // A0 identifies the Puller (1 byte)
-		anOstream << (uint8_t) _puller->getUrl().size();          // size of puller url       (1 byte)
+		anOstream << (uint8_t) 0xA0;                              // A0 identifies the Puller ( 1 byte )
+		anOstream << (uint8_t) _puller->getUrl().size();          // size of puller url       ( 1 byte )
 		anOstream << (const char *) _puller->getUrl().c_str();    // Address of puller url    (12 bytes)
-		anOstream << (uint8_t) 0xA1;                              // A1 is the PUBLISHER      (1 byte)
-		anOstream << (uint8_t) _publisher->getUrl().size();       // size of publisher url    (1 byte)
+		anOstream << (uint8_t) 0xA1;                              // A1 is the PUBLISHER      ( 1 byte )
+		anOstream << (uint8_t) _publisher->getUrl().size();       // size of publisher url    ( 1 byte )
 		anOstream << (const char *) _publisher->getUrl().c_str(); // Address of publisher     (12 bytes)
-		anOstream << (uint8_t) 0x00;                              // End of message           (1 byte)
+		anOstream << (uint8_t) 0x00;                              // End of message           ( 1 byte )
 		// -----------------------------------------------------------------------------------------------
 		// Total                                                                               29 bytes
 
@@ -116,22 +118,9 @@ void Server::runBroadcastReceiver()
 				0,
 				(struct sockaddr *) &aClientAddress,
 				sizeof(aClientAddress));
-
-		/* 
-		 * Special message to properly terminate the test
-		 * It might be good to define some include guards when compiling for tests,
-		 * or a boolean variable to keep these backports opened.. 
-		 */
-
-//#ifdef __HYPER_BLASTER__
-		aMessageBuffer[aMessageLength] = '\0';
-		if (strncmp(aMessageBuffer, "1AFTW", sizeof("1AFTW") - 1) == 0)
-		{
-			break;
-		}
-//#endif
 	}
 
+	LOG4CXX_INFO(_logger, "Closing broadcast service");
 	close(aBsdSocket);
 }
 
@@ -142,7 +131,6 @@ bool Server::processMessageIfAvailable()
 	if (_puller->receive(aMessage))
 	{
 		_decider.process(aMessage);
-//		ProcessDecider::Process(aMessage, _game);
 		aProcessedMessage = true;
 	}
 	return aProcessedMessage;
@@ -153,6 +141,7 @@ void Server::loopUntilOneMessageIsProcessed()
 	bool aMessageHasBeenProcessed = false;
 	boost::posix_time::time_duration aDuration;
 	boost::posix_time::ptime aCurrentTic;
+
 	while (not aMessageHasBeenProcessed)
 	{
 		aCurrentTic = boost::posix_time::second_clock::local_time();
@@ -168,6 +157,10 @@ void Server::loopUntilOneMessageIsProcessed()
 				aMessageHasBeenProcessed = true;
 			}
 		}
+		else if (_forcedStop)
+		{
+			break;
+		}
 		else
 		{
 			ProcessTimer aProcessTimer(_publisher, _game);
@@ -180,10 +173,19 @@ void Server::loopUntilOneMessageIsProcessed()
 
 void Server::loop()
 {
-	while (true)
+	_mainLoopRunning = true;
+	
+	while (_mainLoopRunning)
 	{
 		loopUntilOneMessageIsProcessed();
 	}
+}
+	
+void Server::stop()
+{
+	LOG4CXX_INFO(_logger, "Terminating server main loop");
+	_forcedStop = true;
+	_mainLoopRunning = false;
 }
 
 orwell::game::Game & Server::accessContext()

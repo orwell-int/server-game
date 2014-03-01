@@ -40,6 +40,8 @@ public:
 	void loopUntilOneMessageIsProcessed();
 	/// Loop eternaly to process all incoming messages.
 	void loop();
+	/// Correctly stop the server
+	void stop();
 
 	orwell::game::Game & accessContext();
 
@@ -52,6 +54,9 @@ private:
 
 	boost::posix_time::time_duration const _ticDuration;
 	boost::posix_time::ptime _previousTic;
+	
+	bool _mainLoopRunning;
+	bool _forcedStop;
 };
 
 }
