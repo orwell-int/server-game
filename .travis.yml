@@ -5,7 +5,6 @@ compiler:
 
 before_install:
     - sudo apt-get install libzmq3-dev libprotobuf-dev protobuf-compiler cmake libboost-all-dev liblog4cxx10-dev
-    - mkdir -p ./messages && git submodule update --init
 
 script:
     - mkdir -p ./build
