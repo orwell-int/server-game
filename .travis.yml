@@ -10,11 +10,18 @@ before_install:
     - sudo apt-get update -qq
     - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
     - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+    - sudo apt-get install python2.7 -y
+    - sudo easy_install gcovr
 
 script:
     - mkdir -p ./build
     - cd ./build && cmake .. && make
+    - cd ./test && ctest
+    - cd ../..
+    - mkdir -p build_coverage
+    - cd build_coverage
+    - cmake .. -DORWELL_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug
+    - make orwell_coverage
 
 after_success:
-    - cd ./test && ctest
-
+    - gcovr . -r .. -p | sed "/Missing/{s/\(.*\)Missing/\1/p;h;s/^/\n/;:lineloop;N;:charloop;s/\(.*\)\n.\n\(.\).*/\1\2/;t exitcharloop;s/\n.\(.\+\)\n\(.\)/\2\n\1\n/;t charloop;:exitcharloop;s/\n.*//;p;s/.*//;G;b lineloop}" -n
