@@ -12,6 +12,41 @@ project(orwell)
 # to the root of the project to have completion.
 set(CMAKE_EXPORT_COMPILE_COMMANDS, "ON")
 
+set_property(GLOBAL PROPERTY P_ALL_TARGETS "")
+set_property(GLOBAL PROPERTY P_ALL_TEST_TARGETS "")
+
+macro(add_library _target)
+	_add_library (${_target} ${ARGN})
+	get_property(VAR_ALL_TARGETS GLOBAL PROPERTY P_ALL_TARGETS)
+	list(APPEND VAR_ALL_TARGETS ${_target})
+	list(REMOVE_DUPLICATES VAR_ALL_TARGETS)
+	#MESSAGE("add_library(${_target}) ; VAR_ALL_TARGETS = ${VAR_ALL_TARGETS}")
+	set_property(GLOBAL PROPERTY P_ALL_TARGETS "${VAR_ALL_TARGETS}")
+endmacro()
+
+macro(add_executable _target)
+	_add_executable (${_target} ${ARGN})
+	get_property(VAR_ALL_TARGETS GLOBAL PROPERTY P_ALL_TARGETS)
+	list(APPEND VAR_ALL_TARGETS ${_target})
+	list(REMOVE_DUPLICATES VAR_ALL_TARGETS)
+	#MESSAGE("add_executable(${_target}) ; VAR_ALL_TARGETS = ${VAR_ALL_TARGETS}")
+	set_property(GLOBAL PROPERTY P_ALL_TARGETS "${VAR_ALL_TARGETS}")
+endmacro()
+
+macro(add_test _target)
+	_add_test (${_target} ${ARGN})
+	get_property(VAR_ALL_TARGETS GLOBAL PROPERTY P_ALL_TARGETS)
+	list(APPEND VAR_ALL_TARGETS ${_target})
+	list(REMOVE_DUPLICATES VAR_ALL_TARGETS)
+	#MESSAGE("add_test(${_target}) ; VAR_ALL_TARGETS = ${VAR_ALL_TARGETS}")
+	set_property(GLOBAL PROPERTY P_ALL_TARGETS "${VAR_ALL_TARGETS}")
+	get_property(VAR_ALL_TEST_TARGETS GLOBAL PROPERTY P_ALL_TEST_TARGETS)
+	list(APPEND VAR_ALL_TEST_TARGETS ${_target})
+	list(REMOVE_DUPLICATES VAR_ALL_TEST_TARGETS)
+	#MESSAGE("add_test(${_target}) ; VAR_ALL_TEST_TARGETS = ${VAR_ALL_TEST_TARGETS}")
+	set_property(GLOBAL PROPERTY P_ALL_TEST_TARGETS "${VAR_ALL_TEST_TARGETS}")
+endmacro()
+
 # Initialize CXXFLAGS.
 set(CMAKE_CXX_FLAGS                "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
 set(CMAKE_CXX_FLAGS_DEBUG          "-O0 -g")
@@ -27,9 +62,9 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
 			message(FATAL_ERROR "${PROJECT_NAME} requires g++ 4.8.")
 		endif ()
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-		message(WARNING "You're compiling with Clang, not with g++")
+	message(WARNING "You're compiling with Clang, not with g++")
 else ()
-		message(FATAL_ERROR "Your C++ compiler does not support C++11.")
+	message(FATAL_ERROR "Your C++ compiler does not support C++11.")
 endif ()
 
 # Messages
@@ -59,12 +94,13 @@ find_package(LOG4CXX_LIBRARIES REQUIRED)
 
 # Library compilation and linking
 add_library(orwell_server_game SHARED ${SOURCES})
-target_link_libraries(orwell_server_game
-        orwell_messages
-		${ZMQ_LIBRARIES}
-		${PROTOBUF_LIBRARIES}
-      	${Boost_LIBRARIES}
-		${LOG4CXX_LIBRARIES})
+target_link_libraries(
+	orwell_server_game
+	orwell_messages
+	${ZMQ_LIBRARIES}
+	${PROTOBUF_LIBRARIES}
+	${Boost_LIBRARIES}
+	${LOG4CXX_LIBRARIES})
 
 # Where to install stuff, protobuf messages generated H included
 install(TARGETS orwell_server_game LIBRARY DESTINATION lib)
@@ -80,13 +116,50 @@ include_directories(
 	${CMAKE_BINARY_DIR}/messages
 	)
 
+#FUNCTION(add_orwell_executable )
+
+#ENDFUNCTION() # SETUP_TARGET_FOR_COVERAGE
+
 
 add_executable(server_main src/main.cpp)
-target_link_libraries(server_main 
+target_link_libraries(
+	server_main
 	orwell_server_game
 	${ZMQ_LIBRARIES}
 	${PROTOBUF_LIBRARIES}
-    ${Boost_LIBRARIES}
+	${Boost_LIBRARIES}
 	${LOG4CXX_LIBRARIES})
 
+OPTION(ORWELL_COVERAGE "Enables code coverage measurements with gcov/lcov." OFF)
+
+IF(ORWELL_COVERAGE)
+	MESSAGE("Code coverage considered")
+	IF(NOT IS_SUBPROJECT)
+		MESSAGE("Code coverage activated")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
+		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fprofile-arcs -ftest-coverage")
+		include(CodeCoverage)
+		SET(COVERAGE_INCLUDES
+			'${CMAKE_SOURCE_DIR}/*'
+			)
+		SET(COVERAGE_EXCLUDES
+			'${CMAKE_SOURCE_DIR}/test/*'
+			)
+		get_property(VAR_ALL_TARGETS GLOBAL PROPERTY P_ALL_TARGETS)
+		setup_target_for_coverage(
+			${PROJECT_NAME}_coverage
+			ctest
+			${CMAKE_BINARY_DIR}/test/coverage
+			test
+			${CMAKE_BINARY_DIR}
+			"${COVERAGE_INCLUDES}"
+			"${COVERAGE_EXCLUDES}"
+			"${VAR_ALL_TARGETS}"
+			)
+	ELSE()
+		MESSAGE("Code coverage NOT activated")
+	ENDIF()
+ELSE()
+	MESSAGE("Code coverage not considered")
+ENDIF()
 
