@@ -36,6 +36,8 @@ static void ExpectWelcome(
 {
 	Hello aHelloMessage;
 	aHelloMessage.set_name( iPlayerName );
+	aHelloMessage.set_port( 80 );
+	aHelloMessage.set_ip( "localhost" );
 	RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
 	ioPusher.send(aMessage);
 
@@ -72,6 +74,8 @@ static void client(log4cxx::LoggerPtr iLogger)
 
 	Hello aHelloMessage;
 	aHelloMessage.set_name("rutabagas");
+	aHelloMessage.set_port( 80 );
+	aHelloMessage.set_ip( "localhost" );
 
 	RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
 	aPusher.send(aMessage);
