@@ -1,0 +1,15 @@
+language: c++
+compiler:
+	- clang
+	- gcc
+
+before_install:
+	- sudo apt-get install libzmq-dev libprotobuf-dev protobuf-compiler cmake libboost-all-dev
+
+script:
+	- mkdir -p ./build
+	- cd ./build && cmake .. && make
+
+after_success:
+	- cd ./test && ctest
+
