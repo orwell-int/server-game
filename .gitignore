@@ -6,3 +6,4 @@ build/
 *.clang_complete
 CTestTestfile.cmake
 doc/Server-game/diagrams/
+*.un~
