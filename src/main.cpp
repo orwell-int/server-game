@@ -9,6 +9,8 @@
 #include <log4cxx/filter/levelrangefilter.h>
 #include <log4cxx/ndc.h>
 
+#include <sys/wait.h>
+#include <sys/types.h>
 #include <stdio.h>
 #include <signal.h>
 
