@@ -13,8 +13,9 @@ before_install:
     - sudo apt-get install python2.7 lcov -y
     - sudo easy_install gcovr
     - which $CXX
-    - alias gcov=$(basename "$(which "$CXX")")/gcov
+    - alias gcov=$(basename "$(which "$CXX")")/gcov-4.8
     - which gcov
+    - gcov -v
 
 script:
     - mkdir -p ./build
