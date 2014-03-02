@@ -12,7 +12,7 @@ before_install:
     - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
     - sudo apt-get install python2.7 lcov -y
     - sudo easy_install gcovr
-    - sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-4.8
+    - sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-4.8 1
     - gcov -v
 
 script:
