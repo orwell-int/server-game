@@ -12,14 +12,7 @@ before_install:
     - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
     - sudo apt-get install python2.7 lcov -y
     - sudo easy_install gcovr
-    - which $CXX
-    - ls "$(dirname "$(which "$CXX")")"
-    - alias gcov=$(dirname "$(which "$CXX")")/gcov-4.8
-    - alias gcov
-    - which gcov
-    - gcov -v
-    - sudo rm /usr/bin/gcov
-    - sudo ln -s /usr/bin/gcov{-4.8,}
+    - sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-4.8
     - gcov -v
 
 script:
@@ -31,7 +24,7 @@ script:
     - mkdir -p build_coverage
     - cd build_coverage
     - cmake .. -DORWELL_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug
-    - make orwell_coverage
+    - make orwell_coverage || find -name "*.gc*"
 
 after_success:
     - gcovr . -r .. -p | sed "/Missing/{s/\(.*\)Missing/\1/p;h;s/^/\n/;:lineloop;N;:charloop;s/\(.*\)\n.\n\(.\).*/\1\2/;t exitcharloop;s/\n.\(.\+\)\n\(.\)/\2\n\1\n/;t charloop;:exitcharloop;s/\n.*//;p;s/.*//;G;b lineloop}" -n
