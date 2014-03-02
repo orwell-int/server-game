@@ -15,10 +15,15 @@ before_install:
     - which $CXX
     - ls "$(dirname "$(which "$CXX")")"
     - alias gcov=$(dirname "$(which "$CXX")")/gcov-4.8
+    - alias gcov
     - which gcov
+    - gcov -v
+    - rm /usr/bin/gcov
+    - ln -s /usr/bin/gcov{-4.8,}
     - gcov -v
 
 script:
+    - gcov -v | grep "4.8"
     - mkdir -p ./build
     - cd ./build && cmake .. && make
     - cd ./test && ctest
