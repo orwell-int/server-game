@@ -10,11 +10,25 @@ before_install:
     - sudo apt-get update -qq
     - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
     - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+    - sudo apt-get install -qq python2.7 lcov -y
+    - sudo easy_install gcovr
+    - sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-4.8 1
+    # use lcov 1.10 to get rid of out of memory issue
+    - mkdir -p .deps && cd .deps
+    - wget -nc --no-check-certificate http://downloads.sourceforge.net/ltp/lcov-1.10.tar.gz
+    - tar xzf lcov-1.10.tar.gz
+    - cd lcov-1.10 && make && sudo make install
+    - cd ../..
 
 script:
+    - gcov -v | grep "4.8"
+    - lcov --version | grep "1.10"
     - mkdir -p ./build
     - cd ./build && cmake .. && make
+    - cd ./test && ctest
+    - cd ../.. && mkdir -p build_coverage && cd build_coverage
+    - cmake .. -DORWELL_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug
+    - make orwell_coverage
 
 after_success:
-    - cd ./test && ctest
-
+    - gcovr . -r .. -p | sed "/Missing/{s/\(.*\)Missing/\1/p;h;s/^/\n/;:lineloop;N;:charloop;s/\(.*\)\n.\n\(.\).*/\1\2/;t exitcharloop;s/\n.\(.\+\)\n\(.\)/\2\n\1\n/;t charloop;:exitcharloop;s/\n.*//;p;s/.*//;G;b lineloop}" -n
