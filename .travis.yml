@@ -18,8 +18,8 @@ before_install:
     - alias gcov
     - which gcov
     - gcov -v
-    - rm /usr/bin/gcov
-    - ln -s /usr/bin/gcov{-4.8,}
+    - sudo rm /usr/bin/gcov
+    - sudo ln -s /usr/bin/gcov{-4.8,}
     - gcov -v
 
 script:
