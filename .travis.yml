@@ -13,10 +13,17 @@ before_install:
     - sudo apt-get install python2.7 lcov -y
     - sudo easy_install gcovr
     - sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-4.8 1
-    - gcov -v
+    # use lcov 1.10 to get rid of out of memory issue
+    - cd /tmp
+    - wget -nc --no-check-certificate http://downloads.sourceforge.net/ltp/lcov-1.10.tar.gz
+    - tar xzf lcov-1.10.tar.gz
+    - cd lcov-1.10
+    - make
+    - sudo make install
 
 script:
     - gcov -v | grep "4.8"
+    - lcov --version | grep "1.10"
     - mkdir -p ./build
     - cd ./build && cmake .. && make
     - cd ./test && ctest
