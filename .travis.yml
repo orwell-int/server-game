@@ -14,13 +14,13 @@ before_install:
     - sudo easy_install gcovr
     - sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-4.8 1
     # use lcov 1.10 to get rid of out of memory issue
-    - cd /tmp
+    - mkdir .deps && cd .deps
     - wget -nc --no-check-certificate http://downloads.sourceforge.net/ltp/lcov-1.10.tar.gz
     - tar xzf lcov-1.10.tar.gz
     - cd lcov-1.10
     - make
     - sudo make install
-    - cd -
+    - cd ../..
 
 script:
     - gcov -v | grep "4.8"
