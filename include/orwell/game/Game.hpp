@@ -2,7 +2,6 @@
 
 #include <map>
 #include <memory>
-#include <log4cxx/logger.h>
 
 #include "orwell/game/Player.hpp"
 #include "orwell/game/Team.hpp"
@@ -44,8 +43,6 @@ public:
 	void fillGameStateMessage( messages::GameState & oGameState);
 
 private:
-	log4cxx::LoggerPtr _logger;
-
 	// Is the game started and running or not ?
 	bool _isRunning;
 	// Each connected robot has a robotContext in this map. The key is the robot name.

@@ -122,11 +122,6 @@ include_directories(
 	${CMAKE_BINARY_DIR}/messages
 	)
 
-#FUNCTION(add_orwell_executable )
-
-#ENDFUNCTION() # SETUP_TARGET_FOR_COVERAGE
-
-
 add_executable(server_main src/main.cpp)
 target_link_libraries(
 	server_main
@@ -171,17 +166,11 @@ ELSE()
 	MESSAGE("Code coverage not considered")
 ENDIF()
 
-OPTION(ORWELL_MEMCHECK "Enables memory checking with valgrind memcheck." OFF)
+SET(DART_TESTING_TIMEOUT "9")
+SET(MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --show-reachable=yes")
 
-if (ORWELL_MEMCHECK)
-	find_program(
-		VALGRIND_BIN
-		valgrind
-		)
-	MESSAGE("VALGRIND_BIN = ${VALGRIND_BIN}")
-	IF ("VALGRIND_BIN-NOTFOUND" STREQUAL "${VALGRIND_BIN}")
-		MESSAGE(FATAL_ERROR "Binary valgrind not found (please install it or use cmake without defining ORWELL_MEMCHECK")
-	ENDIF()
-	SET(MEMORYCHECK_COMMAND ${VALGRIND_BIN})
-ENDIF()
-
+# this might be a hack but it works
+CONFIGURE_FILE(
+	${CMAKE_ROOT}/Modules/DartConfiguration.tcl.in
+	${CMAKE_CURRENT_BINARY_DIR}/DartConfiguration.tcl
+	)

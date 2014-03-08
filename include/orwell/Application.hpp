@@ -2,17 +2,13 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <memory>
-#include <log4cxx/logger.h>
-#include <log4cxx/fileappender.h>
-#include <log4cxx/consoleappender.h>
 
-#define LOGFILE "orwelllog.txt"
-#define LOGGER  "orwell.log"
-
-namespace orwell { namespace tasks {
+namespace orwell {
 class Server;
-}}
+class BroadcastServer;
+}
 
 class Application
 {
@@ -36,11 +32,10 @@ private:
 	bool initServer();
 	std::vector<std::string> & tokenizeRobots(std::string const & iRobotsString);
 	
-	// Common logger
-	log4cxx::LoggerPtr m_logger;
-	
 	// Instance of the server running
-	orwell::tasks::Server * m_server;
+	orwell::Server * m_server;
+	// Broadcast server for UDP discovery
+	orwell::BroadcastServer * m_broadcastServer;
 	
 	// Configurations retrieved either from rc file or from command line
 	// Command line has the priority over the rc file

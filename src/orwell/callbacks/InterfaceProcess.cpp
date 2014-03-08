@@ -5,8 +5,11 @@
 namespace orwell {
 namespace callbacks {
 
-InterfaceProcess::InterfaceProcess(std::shared_ptr< com::Sender > ioPublisher)
+InterfaceProcess::InterfaceProcess(
+		std::shared_ptr< com::Sender > ioPublisher)
 	: _publisher(ioPublisher)
+	, _msg(nullptr)
+	, _game(nullptr)
 {
 
 }
@@ -30,11 +33,9 @@ void InterfaceProcess::setGameContext(game::Game & ioGame)
 
 void InterfaceProcess::init(
 		google::protobuf::MessageLite * ioMsg,
-		log4cxx::LoggerPtr ioLogger,
 		game::Game * ioGame)
 {
 	_msg = ioMsg;
-	_loggerPtr = ioLogger;
 
 	if (ioGame /*!= nullptr*/)
 	{

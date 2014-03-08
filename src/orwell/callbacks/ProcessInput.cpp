@@ -3,12 +3,10 @@
 #include "controller.pb.h"
 #include "server-game.pb.h"
 
+#include "orwell/support/GlobalLogger.hpp"
 #include "orwell/com/Sender.hpp"
 #include "orwell/game/Game.hpp"
 #include "orwell/com/RawMessage.hpp"
-
-using namespace log4cxx;
-using namespace log4cxx::helpers;
 
 using orwell::messages::Input;
 using orwell::com::RawMessage;
@@ -28,12 +26,12 @@ void ProcessInput::execute()
 	std::string const & aDestination = getArgument("RoutingID").second;
 	orwell::messages::Input const & anInputMsg = static_cast<orwell::messages::Input const &>(*_msg);
 
-	LOG4CXX_INFO(_loggerPtr, "ProcessInput::execute : simple relay");
+	ORWELL_LOG_INFO("ProcessInput::execute : simple relay");
 
-	LOG4CXX_DEBUG(_loggerPtr, "===Input Message===");
-	LOG4CXX_DEBUG(_loggerPtr, "Move : left=" << anInputMsg.move().left() << ",right=" <<  anInputMsg.move().right() << "-");
-	LOG4CXX_DEBUG(_loggerPtr, "Fire : w1=" << anInputMsg.fire().weapon1() << ",w2=" <<  anInputMsg.fire().weapon2() << "-");
-	LOG4CXX_DEBUG(_loggerPtr, "===End Input Message===");
+	ORWELL_LOG_DEBUG("===Input Message===");
+	ORWELL_LOG_DEBUG("Move : left=" << anInputMsg.move().left() << ",right=" <<  anInputMsg.move().right() << "-");
+	ORWELL_LOG_DEBUG("Fire : w1=" << anInputMsg.fire().weapon1() << ",w2=" <<  anInputMsg.fire().weapon2() << "-");
+	ORWELL_LOG_DEBUG("===End Input Message===");
 
 	RawMessage aReply(aDestination, "Input", anInputMsg.SerializeAsString());
 	_publisher->send( aReply );

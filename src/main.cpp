@@ -1,13 +1,7 @@
 #include "orwell/Server.hpp"
+#include "orwell/BroadcastServer.hpp"
 
-#include <log4cxx/logger.h>
-#include <log4cxx/patternlayout.h>
-#include <log4cxx/consoleappender.h>
-#include <log4cxx/fileappender.h>
-#include <log4cxx/basicconfigurator.h>
-#include <log4cxx/helpers/exception.h>
-#include <log4cxx/filter/levelrangefilter.h>
-#include <log4cxx/ndc.h>
+#include <zmq.hpp>
 
 #include <sys/wait.h>
 #include <sys/types.h>
@@ -15,9 +9,7 @@
 #include <signal.h>
 
 #include "orwell/Application.hpp"
-
-using namespace log4cxx;
-using namespace std;
+#include "orwell/support/GlobalLogger.hpp"
 
 static void signal_handler(int /*signum*/)
 {
@@ -27,6 +19,7 @@ static void signal_handler(int /*signum*/)
 
 int main(int argc, char *argv[])
 {
+	orwell::support::GlobalLogger("server_web", "orwell.log", true);
 	// Register the signal handler
 	signal(SIGINT, signal_handler);
 	signal(SIGTERM, signal_handler);
@@ -37,5 +30,7 @@ int main(int argc, char *argv[])
 	// Clean the application before leaving
 	Application::GetInstance().clean();
 
+	orwell::support::GlobalLogger::Clear();
 	return 0;
 }
+

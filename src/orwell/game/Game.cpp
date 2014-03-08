@@ -2,6 +2,7 @@
 
 #include "orwell/game/Game.hpp"
 
+#include "orwell/support/GlobalLogger.hpp"
 #include "orwell/game/Robot.hpp"
 #include "orwell/game/Player.hpp"
 #include "orwell/com/Sender.hpp"
@@ -21,8 +22,7 @@ namespace orwell {
 namespace game {
 
 Game::Game()
-	: _logger(log4cxx::Logger::getLogger("orwell.log"))
-	, _isRunning(false)
+	: _isRunning(false)
 {
 }
 
@@ -56,7 +56,7 @@ bool Game::addPlayer(string const & iName)
 	bool aAddedPlayerSuccess = false;
 	if (_players.find(iName) != _players.end())
 	{
-		LOG4CXX_WARN(_logger, "Player name (" << iName << ") is already in the player Map.");
+		ORWELL_LOG_WARN("Player name (" << iName << ") is already in the player Map.");
 		aAddedPlayerSuccess = true;
 	}
 	else
@@ -64,7 +64,7 @@ bool Game::addPlayer(string const & iName)
 		//create playercontext and append
 		Player aPlayerContext( iName );
 		_players.insert(pair<string,Player>(iName, aPlayerContext));
-		LOG4CXX_DEBUG(_logger, "new PlayerContext added with internalId=" << iName);
+		ORWELL_LOG_DEBUG("new PlayerContext added with internalId=" << iName);
 		aAddedPlayerSuccess = true;
 	}
 
@@ -76,14 +76,14 @@ bool Game::addRobot(string const & iName)
 	bool aAddedRobotSuccess = false;
 	if (_robots.find(iName) != _robots.end())
 	{
-		LOG4CXX_WARN(_logger, "Robot name (" << iName << ") is already in the robot Map.");
+		ORWELL_LOG_WARN("Robot name (" << iName << ") is already in the robot Map.");
 	}
 	else
 	{
 		// create RobotContext with that index
 		shared_ptr<Robot> aRobot = make_shared<Robot>(iName) ;
 		_robots.insert( pair<string, shared_ptr<Robot> >( iName, aRobot ) );
-		LOG4CXX_DEBUG(_logger, "new RobotContext added with internal ID=" << iName);
+		ORWELL_LOG_DEBUG("new RobotContext added with internal ID=" << iName);
 		aAddedRobotSuccess = true;
 	}
 	return aAddedRobotSuccess;
@@ -131,3 +131,4 @@ void Game::fillGameStateMessage(messages::GameState & oGameState)
 }
 
 }} // namespaces
+

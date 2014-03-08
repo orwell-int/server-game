@@ -5,15 +5,13 @@
 #include "controller.pb.h"
 #include "server-game.pb.h"
 
+#include "orwell/support/GlobalLogger.hpp"
 #include "orwell/game/Game.hpp"
 #include "orwell/game/Player.hpp"
 #include "orwell/game/Robot.hpp"
 #include "orwell/com/Sender.hpp"
 
 #include <unistd.h>
-
-#include <log4cxx/logger.h>
-#include <log4cxx/helpers/exception.h>
 
 using namespace log4cxx;
 using namespace log4cxx::helpers;
@@ -36,7 +34,7 @@ ProcessHello::ProcessHello(
 
 void ProcessHello::execute()
 {
-	LOG4CXX_INFO(_loggerPtr, "ProcessHello::execute");
+	ORWELL_LOG_INFO("ProcessHello::execute");
 
 	orwell::messages::Hello const & anHelloMsg = static_cast<orwell::messages::Hello const & >(*_msg);
 	std::string const & aClientID = getArgument("RoutingID").second;
@@ -53,7 +51,7 @@ void ProcessHello::execute()
 	
 	if ((aAvailableRobot == nullptr and aRobotForPlayer.empty()) or not aPlayerAddedSuccess)
 	{
-		LOG4CXX_WARN(_loggerPtr, "Impossible to process Hello : availableRobot=" << aAvailableRobot.get() << "- player added with success :" << aPlayerAddedSuccess);
+		ORWELL_LOG_WARN("Impossible to process Hello : availableRobot=" << aAvailableRobot.get() << "- player added with success :" << aPlayerAddedSuccess);
 
 		Goodbye aGoodbye;
 		RawMessage aReply(aClientID, "Goodbye", aGoodbye.SerializeAsString());
@@ -61,7 +59,7 @@ void ProcessHello::execute()
 	}
 	else
 	{
-		LOG4CXX_INFO(_loggerPtr, "Player " << aNewPlayerName << " is now linked to robot " <<
+		ORWELL_LOG_INFO("Player " << aNewPlayerName << " is now linked to robot " <<
 					 (aAvailableRobot.get() != nullptr? aAvailableRobot->getName() : aRobotForPlayer));
 
 		if (aRobotForPlayer.empty())

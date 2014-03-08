@@ -2,8 +2,6 @@
 
 #include <string>
 
-#include <log4cxx/logger.h>
-
 #include "orwell/com/ConnectionMode.hpp"
 
 namespace zmq {
@@ -36,6 +34,7 @@ public:
 			std::string const & iUrl,
 			unsigned int const iSocketType,
 			ConnectionMode::ConnectionMode const iConnectionMode,
+			zmq::context_t & ioZmqContext,
 			unsigned int const iSleep = 0);
 	~Sender();
 
@@ -47,7 +46,6 @@ private:
 
 	zmq::context_t * _zmqContext;
 	zmq::socket_t * _zmqSocket;
-	log4cxx::LoggerPtr _logger;
 	std::string _url;
 };
 

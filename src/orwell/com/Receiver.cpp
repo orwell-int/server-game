@@ -8,26 +8,24 @@
 
 #include <sstream>
 
+#include "orwell/support/GlobalLogger.hpp"
 #include "orwell/com/RawMessage.hpp"
 
-using namespace log4cxx;
-using namespace log4cxx::helpers;
 using std::string;
 using std::cout;
 using std::endl;
 
-namespace orwell{
-namespace com{
+namespace orwell {
+namespace com {
 
 Receiver::Receiver(
 		std::string const & iUrl,
 		unsigned int const iSocketType,
 		ConnectionMode::ConnectionMode const iConnectionMode,
-		unsigned int const iSleep) :
-	_zmqContext(new zmq::context_t(1)),
-	_zmqSocket(new zmq::socket_t(*_zmqContext, iSocketType)),
-	_logger(log4cxx::Logger::getLogger("orwell.log")),
-	_url(iUrl)
+		zmq::context_t & ioZmqContext,
+		unsigned int const iSleep)
+	: _zmqSocket(new zmq::socket_t(ioZmqContext, iSocketType))
+	, _url(iUrl)
 {
 	int aLinger = 10; // linger 0.01 second max after being closed
 	_zmqSocket->setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
@@ -40,13 +38,13 @@ Receiver::Receiver(
 	if (ConnectionMode::BIND == iConnectionMode)
 	{
 		_zmqSocket->bind(iUrl.c_str());
-		LOG4CXX_INFO(_logger, "Puller binds on " << iUrl.c_str());
+		ORWELL_LOG_INFO("Puller binds on " << iUrl.c_str());
 	}
 	else
 	{
 		assert(ConnectionMode::CONNECT == iConnectionMode);
 		_zmqSocket->connect(iUrl.c_str());
-		LOG4CXX_INFO(_logger, "Subscriber connects to " << iUrl.c_str() << " - it subscribes to everything");
+		ORWELL_LOG_INFO("Subscriber connects to " << iUrl.c_str() << " - it subscribes to everything");
 	}
 	if (iSleep > 0)
 	{
@@ -56,12 +54,11 @@ Receiver::Receiver(
 
 Receiver::~Receiver()
 {
+	delete(_zmqSocket);
 }
 
 bool Receiver::receive(RawMessage & oMessage)
 {
-	log4cxx::LoggerPtr aLogger(log4cxx::Logger::getLogger("orwell.log"));
-
 	zmq::message_t aZmqMessage;
 	string aType;
 	string aPayload;
@@ -87,7 +84,7 @@ bool Receiver::receive(RawMessage & oMessage)
 		oMessage._type = aType;
 		oMessage._routingId = aDest;
 		oMessage._payload = aPayload;
-		LOG4CXX_DEBUG(aLogger, "Received "<< aZmqMessage.size() << " bytes : type=" << aType << "- dest=" << aDest << "-");
+		ORWELL_LOG_DEBUG("Received "<< aZmqMessage.size() << " bytes : type=" << aType << "- dest=" << aDest << "-");
 	}
 	return aReceived;
 }
@@ -98,3 +95,4 @@ std::string const & Receiver::getUrl() const
 }
 
 }}
+

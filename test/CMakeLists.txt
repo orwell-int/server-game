@@ -75,6 +75,9 @@ ADD_CUSTOM_TARGET(ctest
 	DEPENDS ${VAR_ALL_TEST_TARGETS}
 )
 
+SET(DART_TESTING_TIMEOUT "7")
+SET(MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --show-reachable=yes")
+
 # this might be a hack but it works
 CONFIGURE_FILE(
 	${CMAKE_ROOT}/Modules/DartConfiguration.tcl.in

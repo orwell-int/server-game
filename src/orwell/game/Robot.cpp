@@ -44,3 +44,4 @@ void fillRobotStateMessage( messages::RobotState & oMessage )
 }
 
 }} // namespaces
+

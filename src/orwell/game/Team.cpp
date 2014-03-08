@@ -32,3 +32,4 @@ void Team::removePlayer( shared_ptr<Player> iPlayer)
 }
 
 }} // namespaces
+

@@ -8,19 +8,17 @@
 
 #include "orwell/com/RawMessage.hpp"
 
-#include <zmq.hpp>
-
 #include "controller.pb.h"
 #include "server-game.pb.h"
 
+#include "orwell/support/GlobalLogger.hpp"
 #include "orwell/com/Sender.hpp"
 #include "orwell/com/Receiver.hpp"
-#include "orwell/Server.hpp"
+#include "orwell/BroadcastServer.hpp"
+#include "orwell/support/GlobalLogger.hpp"
 
 #include "Common.hpp"
 
-#include <log4cxx/logger.h>
-#include <log4cxx/helpers/exception.h>
 #include <log4cxx/ndc.h>
 
 #include <string>
@@ -42,10 +40,11 @@ using namespace orwell::com;
 using namespace orwell::messages;
 using namespace std;
 
-static orwell::tasks::Server * ServerPtr;
+static orwell::BroadcastServer * ServerPtr;
 
 static void signal_handler(int signum)
 {
+	ORWELL_LOG_INFO("signal_handler received " << signum);
 	ServerPtr->stop();
 }
 
@@ -98,8 +97,9 @@ bool get_ip4(IP4 & oIp4)
 	return true;
 }
 
-uint32_t simulateClient(log4cxx::LoggerPtr iLogger)
+uint32_t simulateClient()
 {
+	log4cxx::NDC ndc("client");
 	int aSocket;
 	ssize_t aMessageLength;
 	struct sockaddr_in aDestination;
@@ -121,14 +121,14 @@ uint32_t simulateClient(log4cxx::LoggerPtr iLogger)
 	IP4 address;
 	if (not get_ip4(address))
 	{
-		LOG4CXX_ERROR(iLogger, "Couldn't retrieve local address");
+		ORWELL_LOG_ERROR("Couldn't retrieve local address");
 		return 255;
 	}
 	address.b4 = 255;
 
 	if (address)
 	{
-		LOG4CXX_INFO(iLogger, "IP: " << address);
+		ORWELL_LOG_INFO("IP: " << address);
 	}
 
 	// Build the destination object
@@ -142,22 +142,22 @@ uint32_t simulateClient(log4cxx::LoggerPtr iLogger)
 	setsockopt(aSocket, IPPROTO_IP, IP_MULTICAST_IF, &aDestination, sizeof(aDestination));
 
 	// Allow the socket to send broadcast messages
-	if ( (setsockopt(aSocket, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(int))) == -1)
+	if ((setsockopt(aSocket, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(int))) == -1)
 	{
-		LOG4CXX_ERROR(iLogger, "Not allowed to send broadcast");
+		ORWELL_LOG_ERROR("Not allowed to send broadcast");
 		return 255;
 	}
 
 	if (sendto(aSocket, aMessageToSend, aMessageLength, 0, (struct sockaddr *) &aDestination, sizeof(aDestination)) != aMessageLength)
 	{
-		LOG4CXX_ERROR(iLogger, "Did not send the right number of bytes..");
+		ORWELL_LOG_ERROR("Did not send the right number of bytes..");
 		return 255;
 	}
 
 	aDestinationLength = sizeof(aDestination);
 	if (recvfrom(aSocket, aReply, sizeof(aReply), 0, (struct sockaddr *) &aDestination, &aDestinationLength) == -1)
 	{
-		LOG4CXX_ERROR(iLogger, "Did not receive a message...");
+		ORWELL_LOG_ERROR("Did not receive a message...");
 		return 255;
 	}
 
@@ -175,48 +175,56 @@ uint32_t simulateClient(log4cxx::LoggerPtr iLogger)
 	sprintf(aBufferForLogger, "0x%X %d (%s) 0x%X %d (%s)\n",
 			aFirstSeparator, aFirstSize, aFirstUrl.c_str(), aSecondSeparator, aSecondSize, aSecondUrl.c_str());
 
-	LOG4CXX_INFO(iLogger, aBufferForLogger);
+	ORWELL_LOG_INFO(aBufferForLogger);
 
 	close(aSocket);
 
 	return (aFirstSeparator == 0xA0 and aSecondSeparator == 0xA1) ? 0 : 1;
 }
 
-void simulateServer(log4cxx::LoggerPtr iLogger)
+void simulateServer()
 {
-	LOG4CXX_INFO(iLogger, "Running broadcast receiver on server");
+	log4cxx::NDC ndc("server");
+	ORWELL_LOG_INFO("Running broadcast receiver on server");
 	ServerPtr->runBroadcastReceiver();
-	LOG4CXX_INFO(iLogger, "Server stopped correctly");
+	ORWELL_LOG_INFO("Server stopped correctly");
 }
 
 int main(int argc, const char * argv [])
 {
+	orwell::support::GlobalLogger("broadcast", "broadcast_test.log");
+	ORWELL_LOG_INFO("\nmain");
+	log4cxx::NDC ndc("broadcast");
 	int aRc(0);
 
-	auto logger = Common::SetupLogger("broadcast");
-	ServerPtr = new orwell::tasks::Server("tcp://*:9801", "tcp://*:9991", 500, logger);
+	std::string const aPullerUrl("tcp://*:9800");
+	std::string const aPublisherUrl("tcp://*:9991");
 	
-	// Handle the signal CHLD (as SIG[INT|TERM] will kill ctest also)
+	// we want to stop the server when we receive SIGCHLD
+	// this will be received when the child exits
 	signal(SIGCHLD, signal_handler);
 
-	pid_t aChild = fork();
-	switch (aChild)
+	pid_t aPid = fork();
+	switch (aPid)
 	{
-		default:
-			simulateServer(logger);
-			break;
 		case 0:
+			// child
 			usleep(2543);
-			aRc = simulateClient(logger);
+			aRc = simulateClient();
+			ORWELL_LOG_INFO("Return from child");
+			break;
+		default:
+			// parent
+			ServerPtr = new orwell::BroadcastServer(aPullerUrl, aPublisherUrl);
+			simulateServer();
+			ORWELL_LOG_INFO("Delete server in parent");
+			delete ServerPtr;
+
+			ORWELL_LOG_INFO("Return from parent");
 			break;
 	}
 	
-	kill(aChild, SIGCHLD);
-	
-	// Only the father should delete the ServerPtr.
-	if (not aChild)
-		delete ServerPtr;
-
+	orwell::support::GlobalLogger::Clear();
 	return aRc;
 }
 
