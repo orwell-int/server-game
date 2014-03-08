@@ -44,7 +44,6 @@ public:
 
 private:
 
-	zmq::context_t * _zmqContext;
 	zmq::socket_t * _zmqSocket;
 	std::string _url;
 };
