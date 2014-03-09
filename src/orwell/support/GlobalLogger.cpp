@@ -61,6 +61,7 @@ log4cxx::LoggerPtr GlobalLogger::GetActiveLogger()
 void GlobalLogger::Clear()
 {
 	GlobalLogger::m_Loggers.clear();
+	GlobalLogger::_ActiveLogger = 0;
 }
 
 }
