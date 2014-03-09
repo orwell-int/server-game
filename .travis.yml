@@ -1,9 +1,10 @@
 language: c++
 compiler:
+    - clang
     - gcc
 
 before_install:
-    - sudo apt-get install -qq libzmq3-dev libprotobuf-dev protobuf-compiler cmake libboost-all-dev liblog4cxx10-dev
+    - sudo apt-get install -qq libzmq3-dev libprotobuf-dev protobuf-compiler cmake libboost-all-dev liblog4cxx10-dev valgrind
     - wget https://raw.github.com/zeromq/cppzmq/master/zmq.hpp -O ./include/zmq.hpp
     - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     - sudo apt-get update -qq
@@ -31,6 +32,9 @@ script:
 
 after_success:
     - gcovr . -r .. -p | sed "/Missing/{s/\(.*\)Missing/\1/p;h;s/^/\n/;:lineloop;N;:charloop;s/\(.*\)\n.\n\(.\).*/\1\2/;t exitcharloop;s/\n.\(.\+\)\n\(.\)/\2\n\1\n/;t charloop;:exitcharloop;s/\n.*//;p;s/.*//;G;b lineloop}" -n
+    - cd ../build
+    - make ExperimentalMemCheck
+    - sed -n -e '/LEAK SUMMARY:/,+8p' -e '/^Test\|Test\(ing\)\?: /p' Testing/Temporary/LastDynamicAnalysis_*.log
 
 notifications:
   recipients:
