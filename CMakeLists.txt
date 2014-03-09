@@ -82,7 +82,7 @@ file(GLOB_RECURSE SOURCES src/*.cpp src/*.cc)
 file(GLOB_RECURSE EXPORTABLEHEADERS include/*.hpp include/*.h)
 
 # Required libraries
-find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system program_options)
 find_package(Protobuf REQUIRED)
 find_package(ZMQ REQUIRED)
 find_package(LOG4CXX_LIBRARIES REQUIRED)
