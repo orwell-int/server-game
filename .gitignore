@@ -8,3 +8,4 @@ CTestTestfile.cmake
 doc/Server-game/diagrams/
 *.un~
 *.swp
+*.pyc
