@@ -27,6 +27,7 @@ static void signal_handler(int signum)
 
 int main(int argc, char *argv[])
 {
+	/*
 	PatternLayoutPtr aPatternLayout = new PatternLayout("%d %-5p %x (%F:%L) - %m%n");
 	ConsoleAppenderPtr aConsoleAppender = new ConsoleAppender(aPatternLayout);
 	filter::LevelRangeFilterPtr aLevelFilter = new filter::LevelRangeFilter();
@@ -36,6 +37,7 @@ int main(int argc, char *argv[])
 	
 	BasicConfigurator::configure(aFileAppender);
 	BasicConfigurator::configure(aConsoleAppender);
+	*/
 	
 	Application & anOrwellApplication = Application::GetInstance();
 	anOrwellApplication.run(argc, argv);

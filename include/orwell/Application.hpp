@@ -2,6 +2,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 #include <log4cxx/logger.h>
 #include <log4cxx/fileappender.h>
 #include <log4cxx/consoleappender.h>
@@ -28,7 +29,6 @@ private:
 	
 	// Initialization functions
 	bool initApplication(int argc, char *argv[]);
-	bool initConfiguration();
 	bool initLogger();
 	bool initServer();
 	
@@ -36,7 +36,7 @@ private:
 	log4cxx::LoggerPtr m_logger;
 	
 	// Instance of the server running
-	orwell::tasks::Server * m_server;
+	std::shared_ptr<orwell::tasks::Server>  m_server;
 	
 	// Configurations retrieved either from rc file or from command line
 	// Command line has the priority over the rc file
@@ -45,5 +45,6 @@ private:
 	uint32_t m_agentPort;
 	uint32_t m_ticInterval;
 	std::string m_rcFilePath;
+	bool m_consoleDebugLogs;
 
 };
