@@ -34,5 +34,8 @@ int main(int argc, char *argv[])
 	// Run the application
 	Application::GetInstance().run(argc, argv);
 
+	// Clean the application before leaving
+	//Application::GetInstance().clean();
+
 	return 0;
 }

@@ -22,6 +22,8 @@ public:
 
 	void run(int argc, char *argv[]);
 	bool stop();
+
+	void clean();
 private:
 	Application() {};
 	Application(Application const & iRight);
@@ -36,7 +38,7 @@ private:
 	log4cxx::LoggerPtr m_logger;
 	
 	// Instance of the server running
-	std::shared_ptr<orwell::tasks::Server>  m_server;
+	orwell::tasks::Server * m_server;
 	
 	// Configurations retrieved either from rc file or from command line
 	// Command line has the priority over the rc file

@@ -35,35 +35,36 @@ Application & Application::GetInstance()
 
 void Application::run(int argc, char **argv)
 {
-	initApplication(argc, argv);
-
-	initLogger();
-	initServer();
-	
-	
-	// Broadcast receiver and main loop are run in separated threads
-	pid_t aChildProcess = fork();
-
-	switch (aChildProcess)
+	/***************************************
+	*  Run the server only if all is set  *
+	***************************************/
+	if (initApplication(argc, argv) and initLogger() and initServer())
 	{
-		case 0:
-			LOG4CXX_INFO(m_logger, "Child started, pid: " << aChildProcess);
-			m_server->runBroadcastReceiver();
 
-			// The child will stop here	
-			return;
-		default:
-			LOG4CXX_INFO(m_logger, "Father continued, pid: " << aChildProcess);
-			m_server->loop();
-			break;
-	}
+		// Broadcast receiver and main loop are run in separated threads
+		pid_t aChildProcess = fork();
 
-	// Here the father will be waiting for the server to be over
-	int status;
-	while(waitpid(aChildProcess, &status, WNOHANG) == 0) 
-	{
-		LOG4CXX_DEBUG(m_logger, "Waiting for process " << aChildProcess << " to be over");
-		sleep(1);
+		switch (aChildProcess)
+		{
+			case 0:
+				LOG4CXX_INFO(m_logger, "Child started");
+				m_server->runBroadcastReceiver();
+				return;
+			default:
+				LOG4CXX_INFO(m_logger, "Father started, child's pid: " << aChildProcess);
+				m_server->loop();
+				break;
+		}
+
+		LOG4CXX_INFO(m_logger, "Father continued");
+
+		// Here the father will be waiting for the child to be over
+		int aStatus;
+		while(waitpid(aChildProcess, &aStatus, WNOHANG) == 0) 
+		{
+			LOG4CXX_INFO(m_logger, "Waiting for process: " << aChildProcess << " to be over");
+			sleep(1);
+		}
 	}
 }
 
@@ -71,6 +72,13 @@ bool Application::stop()
 {
 	m_server->stop();
 	return true;
+}
+
+void Application::clean()
+{
+	if (m_server != nullptr) {
+		delete m_server;
+	}
 }
 
 bool Application::initLogger()
@@ -109,7 +117,7 @@ bool Application::initServer()
 	std::string aPublisherAddress = "tcp://*:" + boost::lexical_cast<std::string>(m_publisherPort);
 	std::string aPullerAddress = "tcp://*:" + boost::lexical_cast<std::string>(m_pullerPort);
 
-	m_server = make_shared<orwell::tasks::Server>(aPullerAddress, aPublisherAddress, 500, m_logger);
+	m_server = new orwell::tasks::Server(aPullerAddress, aPublisherAddress, 500, m_logger);
 	return true;
 }
 
@@ -117,6 +125,8 @@ bool Application::initApplication(int argc, char **argv)
 {
 	// Parse the command line arguments
 	options_description aDescription("Allowed options");
+	options_description aDescriptionForIniFile("Allowed options in INI file");
+
 	aDescription.add_options()
 	    ("help,h", "produce help message")
 	    ("publisher-port,P", value<uint32_t>()->default_value(9000), "Publisher port")
@@ -126,6 +136,11 @@ bool Application::initApplication(int argc, char **argv)
     	("tic-interval,T", value<uint32_t>()->default_value(500), "Interval in tics between GameState messages")
     	("debug-log,d", "Print debug logs on the console")
     	("orwellrc,r", value<std::string>(), "Load configuration from rc file");
+
+	aDescriptionForIniFile.add_options()
+			("server.puller-port", value<uint32_t>()->default_value(9000))
+			("server.publisher-port", value<uint32_t>()->default_value(9001))
+			("server.tic-interval", value<uint32_t>()->default_value(500));
 	
 	variables_map aVariablesMap;
 	store(parse_command_line(argc, argv, aDescription), aVariablesMap);
@@ -136,8 +151,9 @@ bool Application::initApplication(int argc, char **argv)
 	{
 		m_rcFilePath = aVariablesMap["orwellrc"].as<std::string>();
 	}
+
 	std::ifstream settings_file( m_rcFilePath, std::ifstream::in );
-	store(parse_config_file( settings_file , aDescription ), aVariablesMap );
+	store(parse_config_file( settings_file , aDescriptionForIniFile ), aVariablesMap );
 	settings_file.close();
 	notify(aVariablesMap);
 
@@ -178,6 +194,13 @@ bool Application::initApplication(int argc, char **argv)
 		m_consoleDebugLogs = true;
 	}
 
+
+	if (m_publisherPort == 0 or m_pullerPort == 0)
+	{
+		std::cout << "Missing ports informations" << std::endl;
+		std::cout << aDescription << std::endl;
+		return false;
+	}
 	
 	return true;
 }
