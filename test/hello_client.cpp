@@ -71,18 +71,7 @@ static void client(log4cxx::LoggerPtr iLogger)
 	ExpectWelcome("jambon", "Gipsy Danger", aPusher, aSubscriber);
 
 	//this tests the case where the same player name tries to retrieve a robot 2 times
-	Hello aHelloMessage1;
-	aHelloMessage1.set_name("jambon");
-
-	RawMessage aMessage1("randomid", "Hello", aHelloMessage1.SerializeAsString());
-	aPusher.send(aMessage1);
-
-	RawMessage aResponse1;
-	if ( not Common::ExpectMessage("Goodbye", aSubscriber, aResponse1) )
-	{
-		LOG4CXX_ERROR(iLogger, "error : expected Goodbye");
-		g_status = -1;
-	}
+	ExpectWelcome("jambon", "Gipsy Danger", aPusher, aSubscriber);
 
 	ExpectWelcome("fromage", "Goldorak", aPusher, aSubscriber);
 	ExpectWelcome("poulet", "Securitron", aPusher, aSubscriber);
