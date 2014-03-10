@@ -69,23 +69,40 @@ static void client(log4cxx::LoggerPtr iLogger)
 	usleep(6 * 1000);
 
 	ExpectWelcome("jambon", "Gipsy Danger", aPusher, aSubscriber);
-	ExpectWelcome("fromage", "Goldorak", aPusher, aSubscriber);
-	ExpectWelcome("poulet", "Securitron", aPusher, aSubscriber);
 
-	Hello aHelloMessage;
-	aHelloMessage.set_name("rutabagas");
-	aHelloMessage.set_port( 80 );
-	aHelloMessage.set_ip( "localhost" );
+	//this tests the case where the same player name tries to retrieve a robot 2 times
+	Hello aHelloMessage1;
+	aHelloMessage1.set_name("jambon");
 
-	RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
-	aPusher.send(aMessage);
+	RawMessage aMessage1("randomid", "Hello", aHelloMessage1.SerializeAsString());
+	aPusher.send(aMessage1);
 
-	RawMessage aResponse;
-	if ( not Common::ExpectMessage("Goodbye", aSubscriber, aResponse) )
+	RawMessage aResponse1;
+	if ( not Common::ExpectMessage("Goodbye", aSubscriber, aResponse1) )
 	{
 		LOG4CXX_ERROR(iLogger, "error : expected Goodbye");
 		g_status = -1;
 	}
+
+	ExpectWelcome("fromage", "Goldorak", aPusher, aSubscriber);
+	ExpectWelcome("poulet", "Securitron", aPusher, aSubscriber);
+
+	// this tests the case where there is no longer any available robot
+	Hello aHelloMessage2;
+	aHelloMessage2.set_name("rutabagas");
+	aHelloMessage2.set_port( 80 );
+	aHelloMessage2.set_ip( "localhost" );
+
+	RawMessage aMessage2("randomid", "Hello", aHelloMessage2.SerializeAsString());
+	aPusher.send(aMessage2);
+
+	RawMessage aResponse2;
+	if ( not Common::ExpectMessage("Goodbye", aSubscriber, aResponse2) )
+	{
+		LOG4CXX_ERROR(iLogger, "error : expected Goodbye");
+		g_status = -1;
+	}
+
 	LOG4CXX_INFO(iLogger, "quit client");
 }
 
@@ -93,7 +110,7 @@ static void client(log4cxx::LoggerPtr iLogger)
 static void const server(log4cxx::LoggerPtr iLogger, std::shared_ptr< orwell::tasks::Server > ioServer)
 {
 	log4cxx::NDC ndc("server");
-	for (int i = 0 ; i < 4 ; ++i)
+	for (int i = 0 ; i < 5 ; ++i)
 	{
 		ioServer->loopUntilOneMessageIsProcessed();
 	}
