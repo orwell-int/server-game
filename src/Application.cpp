@@ -16,6 +16,11 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <stdio.h>
+#include <signal.h>
+
 using namespace orwell;
 using namespace boost::program_options;
 using namespace boost::property_tree;
@@ -35,8 +40,31 @@ void Application::run(int argc, char **argv)
 	initLogger();
 	initServer();
 	
-	m_server->runBroadcastReceiver();
-	m_server->loop();
+	
+	// Broadcast receiver and main loop are run in separated threads
+	pid_t aChildProcess = fork();
+
+	switch (aChildProcess)
+	{
+		case 0:
+			LOG4CXX_INFO(m_logger, "Child started, pid: " << aChildProcess);
+			m_server->runBroadcastReceiver();
+
+			// The child will stop here	
+			return;
+		default:
+			LOG4CXX_INFO(m_logger, "Father continued, pid: " << aChildProcess);
+			m_server->loop();
+			break;
+	}
+
+	// Here the father will be waiting for the server to be over
+	int status;
+	while(waitpid(aChildProcess, &status, WNOHANG) == 0) 
+	{
+		LOG4CXX_DEBUG(m_logger, "Waiting for process " << aChildProcess << " to be over");
+		sleep(1);
+	}
 }
 
 bool Application::stop()
