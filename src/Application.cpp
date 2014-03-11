@@ -38,7 +38,7 @@ void Application::run(int argc, char **argv)
 	/***************************************
 	*  Run the server only if all is set  *
 	***************************************/
-	if (initApplication(argc, argv) and initLogger() and initServer())
+	if (initApplication(argc, argv) and initLogger() and initServer() and initConfigurationFile())
 	{
 
 		// Broadcast receiver and main loop are run in separated threads
@@ -123,7 +123,75 @@ bool Application::initServer()
 
 bool Application::initConfigurationFile()
 {
+	// If the user didn't specify any .ini file, let's just go
+	if (m_rcFilePath.empty()) {
+		return true;
+	}
+	
+	ptree aPtree;
+	ini_parser::read_ini(m_rcFilePath, aPtree);
+	
+	// First of all get the server related things (if not provided already)
+	if (m_publisherPort == 0)
+	{
+		m_publisherPort = aPtree.get<uint32_t>("server.publisher-port");
+	}
+	
+	if (m_pullerPort == 0)
+	{
+		m_pullerPort = aPtree.get<uint32_t>("server.puller-port");
+	}
+	
+	if (m_ticInterval == 0)
+	{
+		m_ticInterval = aPtree.get<uint32_t>("server.tic-interval");
+	}
+	
+	// Now get the optional things regarding the game itself
+	boost::optional<std::string> aGameRobots = aPtree.get_optional<std::string>("game.robots");
+	boost::optional<std::string> aGameType = aPtree.get_optional<std::string>("game.gametype");
+	boost::optional<std::string> aGameName = aPtree.get_optional<std::string>("game.gamename");
+	
+	// If we have some robots, we need to retrieve them from the ini file itself and add them in the Server's context
+	if (aGameRobots)
+	{
+		tokenizeRobots(aGameRobots.get());
+		
+		for (std::string const & iRobot : m_robotsList)
+		{
+			std::string aRobotName = aPtree.get<std::string>(iRobot + ".name");
+			LOG4CXX_INFO(m_logger, "Pushing robot " << aRobotName);
+			m_server->accessContext().addRobot(aRobotName);
+		}
+	}
+	
 	return true;
+}
+
+std::vector<std::string> & Application::tokenizeRobots(std::string const & iRobotsString)
+{
+	std::string aToken;
+	std::for_each(iRobotsString.begin(), iRobotsString.end(), [&](char iChar) {
+		if (iChar != '|' and iChar != ' ')
+		{
+			aToken += iChar;
+		}
+		else
+		{
+			if (not aToken.empty())
+			{
+				m_robotsList.push_back(aToken);
+				aToken.clear();
+			}
+		}
+	});
+	
+	if (not aToken.empty())
+	{
+		m_robotsList.push_back(aToken);
+	}
+	
+	return m_robotsList;
 }
 
 bool Application::initApplication(int argc, char **argv)

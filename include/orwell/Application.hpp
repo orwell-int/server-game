@@ -34,6 +34,7 @@ private:
 	bool initConfigurationFile();
 	bool initLogger();
 	bool initServer();
+	std::vector<std::string> & tokenizeRobots(std::string const & iRobotsString);
 	
 	// Common logger
 	log4cxx::LoggerPtr m_logger;
@@ -48,6 +49,7 @@ private:
 	uint32_t m_agentPort;
 	uint32_t m_ticInterval;
 	std::string m_rcFilePath;
+	std::vector<std::string> m_robotsList;
 	bool m_consoleDebugLogs;
 
 };
