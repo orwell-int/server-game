@@ -10,3 +10,5 @@ doc/Server-game/diagrams/
 *.un~
 *.swp
 *.pyc
+compile_commands.json
+patch_ycm.diff
