@@ -121,11 +121,15 @@ bool Application::initServer()
 	return true;
 }
 
+bool Application::initConfigurationFile()
+{
+	return true;
+}
+
 bool Application::initApplication(int argc, char **argv)
 {
 	// Parse the command line arguments
 	options_description aDescription("Allowed options");
-	options_description aDescriptionForIniFile("Allowed options in INI file");
 
 	aDescription.add_options()
 	    ("help,h", "produce help message")
@@ -137,11 +141,6 @@ bool Application::initApplication(int argc, char **argv)
     	("debug-log,d", "Print debug logs on the console")
     	("orwellrc,r", value<std::string>(), "Load configuration from rc file");
 
-	aDescriptionForIniFile.add_options()
-			("server.puller-port", value<uint32_t>()->default_value(9000))
-			("server.publisher-port", value<uint32_t>()->default_value(9001))
-			("server.tic-interval", value<uint32_t>()->default_value(500));
-	
 	variables_map aVariablesMap;
 	store(parse_command_line(argc, argv, aDescription), aVariablesMap);
 	notify(aVariablesMap);
@@ -151,11 +150,6 @@ bool Application::initApplication(int argc, char **argv)
 	{
 		m_rcFilePath = aVariablesMap["orwellrc"].as<std::string>();
 	}
-
-	std::ifstream settings_file( m_rcFilePath, std::ifstream::in );
-	store(parse_config_file( settings_file , aDescriptionForIniFile ), aVariablesMap );
-	settings_file.close();
-	notify(aVariablesMap);
 
 	if (aVariablesMap.count("help"))
 	{

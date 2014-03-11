@@ -31,6 +31,7 @@ private:
 	
 	// Initialization functions
 	bool initApplication(int argc, char *argv[]);
+	bool initConfigurationFile();
 	bool initLogger();
 	bool initServer();
 	
