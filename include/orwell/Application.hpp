@@ -25,7 +25,7 @@ public:
 
 	void clean();
 private:
-	Application() {};
+	Application();
 	Application(Application const & iRight);
 	Application & operator=(Application const & iRight);
 	

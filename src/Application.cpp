@@ -33,6 +33,11 @@ Application & Application::GetInstance()
 	return m_application;
 }
 
+Application::Application() : m_server(nullptr)
+{
+	
+}
+
 void Application::run(int argc, char **argv)
 {
 	/***************************************
@@ -99,9 +104,6 @@ bool Application::initLogger()
 	FileAppenderPtr aFileApender = new FileAppender( aPatternLayout, "orwelllog.txt");
 	BasicConfigurator::configure(aFileApender);
 
-	//log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("orwell.log"));
-	//logger->setLevel(log4cxx::Level::getDebug());
-
 	m_logger = log4cxx::Logger::getLogger("orwell.log");
 	m_logger->setLevel(log4cxx::Level::getDebug());
 	
@@ -134,17 +136,23 @@ bool Application::initConfigurationFile()
 	// First of all get the server related things (if not provided already)
 	if (m_publisherPort == 0)
 	{
-		m_publisherPort = aPtree.get<uint32_t>("server.publisher-port");
+		boost::optional<uint32_t> aPublisherPort = aPtree.get_optional<uint32_t>("server.publisher-port");
+		m_publisherPort = aPublisherPort? aPublisherPort.get() : 0;
+		LOG4CXX_DEBUG(m_logger, "Using Publisher Port: " << m_publisherPort);
 	}
 	
 	if (m_pullerPort == 0)
 	{
-		m_pullerPort = aPtree.get<uint32_t>("server.puller-port");
+		boost::optional<uint32_t> aPullerPort = aPtree.get_optional<uint32_t>("server.puller-port");
+		m_pullerPort = aPullerPort? aPullerPort.get() : 0;
+		LOG4CXX_DEBUG(m_logger, "Using Puller Port: " << m_pullerPort);
 	}
 	
 	if (m_ticInterval == 0)
 	{
-		m_ticInterval = aPtree.get<uint32_t>("server.tic-interval");
+		boost::optional<uint32_t> aTicInterval = aPtree.get_optional<uint32_t>("server.tic-interval");
+		m_ticInterval = aTicInterval? aTicInterval.get() : 0;
+		LOG4CXX_DEBUG(m_logger, "Using Tic Interval: " << m_ticInterval);
 	}
 	
 	// Now get the optional things regarding the game itself
@@ -160,7 +168,7 @@ bool Application::initConfigurationFile()
 		for (std::string const & iRobot : m_robotsList)
 		{
 			std::string aRobotName = aPtree.get<std::string>(iRobot + ".name");
-			LOG4CXX_INFO(m_logger, "Pushing robot " << aRobotName);
+			LOG4CXX_INFO(m_logger, "Pushing robot: " << aRobotName);
 			m_server->accessContext().addRobot(aRobotName);
 		}
 	}
@@ -171,6 +179,11 @@ bool Application::initConfigurationFile()
 std::vector<std::string> & Application::tokenizeRobots(std::string const & iRobotsString)
 {
 	std::string aToken;
+	
+	/* 
+	 * This is kind of a hack: I know there are some boost libraries doing the
+	 * tokenization but I really wanted to use a lambda function here..
+	 */
 	std::for_each(iRobotsString.begin(), iRobotsString.end(), [&](char iChar) {
 		if (iChar != '|' and iChar != ' ')
 		{
@@ -197,23 +210,23 @@ std::vector<std::string> & Application::tokenizeRobots(std::string const & iRobo
 bool Application::initApplication(int argc, char **argv)
 {
 	// Parse the command line arguments
-	options_description aDescription("Allowed options");
+	options_description aDescription("Usage: " + std::string(argv[0]) + " [PpAvTdrh]");
 
+	// ??? : Do we want to have default values or not? Feel free to add them when integrating.
 	aDescription.add_options()
-	    ("help,h", "produce help message")
-	    ("publisher-port,P", value<uint32_t>()->default_value(9000), "Publisher port")
-	    ("puller-port,p", value<uint32_t>()->default_value(9001), "Puller port")
-	    ("agent-port,A", value<uint32_t>(), "Agent Port")
-	    ("version,v", "Print version number and exits")
-    	("tic-interval,T", value<uint32_t>()->default_value(500), "Interval in tics between GameState messages")
-    	("debug-log,d", "Print debug logs on the console")
-    	("orwellrc,r", value<std::string>(), "Load configuration from rc file");
+	    ("help,h",                                 "Produce help message and exits")
+	    ("publisher-port,P", value<uint32_t>(),    "Publisher port")
+	    ("puller-port,p",    value<uint32_t>(),    "Puller port")
+	    ("agent-port,A",     value<uint32_t>(),    "Agent Port")
+		("orwellrc,r",       value<std::string>(), "Load configuration from rc file")
+		("tic-interval,T",   value<uint32_t>(),    "Interval in tics between GameState messages")
+	    ("version,v",                              "Print version number and exits")
+		("debug-log,d",                            "Print debug logs on the console");
 
 	variables_map aVariablesMap;
 	store(parse_command_line(argc, argv, aDescription), aVariablesMap);
 	notify(aVariablesMap);
 	
-	m_rcFilePath = "orwell-config.ini";
 	if (aVariablesMap.count("orwellrc"))
 	{
 		m_rcFilePath = aVariablesMap["orwellrc"].as<std::string>();
@@ -259,7 +272,7 @@ bool Application::initApplication(int argc, char **argv)
 
 	if (m_publisherPort == 0 or m_pullerPort == 0)
 	{
-		std::cout << "Missing ports informations" << std::endl;
+		std::cerr << "Missing ports informations" << std::endl;
 		std::cout << aDescription << std::endl;
 		return false;
 	}
