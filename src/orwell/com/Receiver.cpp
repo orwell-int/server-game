@@ -12,8 +12,6 @@
 #include "orwell/com/RawMessage.hpp"
 
 using std::string;
-using std::cout;
-using std::endl;
 
 namespace orwell {
 namespace com {

@@ -19,7 +19,7 @@ static void signal_handler(int /*signum*/)
 
 int main(int argc, char *argv[])
 {
-	orwell::support::GlobalLogger("server_web", "orwell.log", true);
+	orwell::support::GlobalLogger::Create("server_web", "orwell.log", true);
 	// Register the signal handler
 	signal(SIGINT, signal_handler);
 	signal(SIGTERM, signal_handler);

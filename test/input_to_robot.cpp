@@ -70,7 +70,7 @@ static void const server(std::shared_ptr< orwell::Server > ioServer)
 
 int main()
 {
-	orwell::support::GlobalLogger("input", "test_input.log");
+	orwell::support::GlobalLogger::Create("input", "test_input.log");
 	log4cxx::NDC ndc("input");
 	std::shared_ptr< orwell::Server > aServer =
 		std::make_shared< orwell::Server >("tcp://*:9000", "tcp://*:9001", 500);

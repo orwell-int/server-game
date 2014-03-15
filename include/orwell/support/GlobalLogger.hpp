@@ -5,6 +5,8 @@
 
 #include <log4cxx/logger.h>
 
+#include <iostream>
+
 namespace orwell
 {
 namespace support
@@ -19,23 +21,19 @@ public :
 	///  Nane of the file used to write the logs to.
 	/// \param iDebug
 	///  Activate all logs if true (only INFO and above allowed otherwise).
-	GlobalLogger(
+	static void Create(
 			std::string const & iName,
 			std::string const & iOutput,
 			bool const iDebug = false);
-
-	/// Throw if the name of the logger is not valid.
-	/// \param iName
-	///  Name of the logger (provided in a #GlobalLogger constructor.
-	static void SwitchToLogger(std::string const & iName);
 
 	static log4cxx::LoggerPtr GetActiveLogger();
 
 	static void Clear();
 
 private :
-	static std::map< std::string, log4cxx::LoggerPtr > m_Loggers;
-	static log4cxx::LoggerPtr _ActiveLogger;
+	static log4cxx::LoggerPtr m_ActiveLogger;
+	struct Pimpl;
+	static Pimpl * m_Garbage;
 };
 
 #define ORWELL_LOG_TRACE(content) LOG4CXX_TRACE(::orwell::support::GlobalLogger::GetActiveLogger(), content)

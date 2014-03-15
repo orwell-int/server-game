@@ -192,7 +192,7 @@ void simulateServer()
 
 int main(int argc, const char * argv [])
 {
-	orwell::support::GlobalLogger("broadcast", "broadcast_test.log");
+	orwell::support::GlobalLogger::Create("broadcast", "broadcast_test.log");
 	ORWELL_LOG_INFO("\nmain");
 	log4cxx::NDC ndc("broadcast");
 	int aRc(0);
@@ -221,10 +221,10 @@ int main(int argc, const char * argv [])
 			delete ServerPtr;
 
 			ORWELL_LOG_INFO("Return from parent");
+			orwell::support::GlobalLogger::Clear();
 			break;
 	}
 	
-	orwell::support::GlobalLogger::Clear();
 	return aRc;
 }
 

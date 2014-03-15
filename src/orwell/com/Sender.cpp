@@ -11,10 +11,7 @@
 
 #include <memory>
 
-using namespace log4cxx;
 using std::string;
-using std::cout;
-using std::endl;
 
 namespace orwell {
 namespace com {

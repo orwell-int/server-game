@@ -60,6 +60,7 @@ static void ExpectWelcome(
 static void client()
 {
 	log4cxx::NDC ndc("client");
+	ORWELL_LOG_INFO("client ...");
 	zmq::context_t aContext(1);
 	usleep(6 * 1000);
 	ORWELL_LOG_INFO("create pusher");
@@ -98,8 +99,10 @@ static void client()
 static void const server(std::shared_ptr< orwell::Server > ioServer)
 {
 	log4cxx::NDC ndc("server");
+	ORWELL_LOG_INFO("server ...");
 	for (int i = 0 ; i < 5 ; ++i)
 	{
+		ORWELL_LOG_INFO("server loop " << i);
 		ioServer->loopUntilOneMessageIsProcessed();
 	}
 	ORWELL_LOG_INFO("quit server");
@@ -107,7 +110,7 @@ static void const server(std::shared_ptr< orwell::Server > ioServer)
 
 int main()
 {
-	orwell::support::GlobalLogger("hello", "test_hello.log");
+	orwell::support::GlobalLogger::Create("hello", "test_hello.log");
 	log4cxx::NDC ndc("hello");
 	std::shared_ptr< orwell::Server > aServer =
 		std::make_shared< orwell::Server >("tcp://*:9000", "tcp://*:9001", 500);
@@ -115,6 +118,7 @@ int main()
 	aServer->accessContext().addRobot("Gipsy Danger");
 	aServer->accessContext().addRobot("Goldorak");
 	aServer->accessContext().addRobot("Securitron");
+	ORWELL_LOG_INFO("robot added 3");
 	std::thread aServerThread(server, aServer);
 	std::thread aClientThread(client);
 	aClientThread.join();

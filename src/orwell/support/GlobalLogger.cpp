@@ -9,6 +9,8 @@
 #include <log4cxx/filter/levelrangefilter.h>
 #include <log4cxx/ndc.h>
 
+#include <iostream>
+
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
@@ -17,51 +19,88 @@ namespace orwell
 namespace support
 {
 
-log4cxx::LoggerPtr GlobalLogger::_ActiveLogger(nullptr);
-std::map< std::string, log4cxx::LoggerPtr > GlobalLogger::m_Loggers;
+struct GlobalLogger::Pimpl
+{
+	Pimpl(
+		std::string const & iOutput,
+		bool const iDebug);
 
-GlobalLogger::GlobalLogger(
+	~Pimpl();
+
+	PatternLayoutPtr m_patternLayout;
+	ConsoleAppenderPtr m_consoleAppender;
+	filter::LevelRangeFilterPtr m_levelFilter;
+	FileAppenderPtr m_fileApender;
+};
+
+GlobalLogger::Pimpl::Pimpl(
+		std::string const & iOutput,
+		bool const iDebug)
+{
+	m_patternLayout = new PatternLayout("%d %-5p %x (%F:%L) - %m%n");
+	m_consoleAppender = new ConsoleAppender(m_patternLayout);
+	m_levelFilter = new filter::LevelRangeFilter();
+	if (not iDebug)
+	{
+		m_levelFilter->setLevelMin(Level::getInfo());
+
+	}
+	m_consoleAppender->addFilter(m_levelFilter);
+	FileAppenderPtr m_fileApender = new FileAppender(m_patternLayout, iOutput);
+	//std::cout << "Pimpl() 6" << std::endl;
+	BasicConfigurator::configure(m_fileApender);
+	BasicConfigurator::configure(m_consoleAppender);
+}
+
+GlobalLogger::Pimpl::~Pimpl()
+{
+	//std::cout << "~Pimpl()" << std::endl;
+	m_consoleAppender->clearFilters();
+	m_fileApender = nullptr;
+	m_levelFilter = nullptr;
+	m_consoleAppender = nullptr;
+	m_patternLayout = nullptr;
+	//std::cout << "~Pimpl() return" << std::endl;
+}
+
+log4cxx::LoggerPtr GlobalLogger::m_ActiveLogger(nullptr);
+GlobalLogger::Pimpl * GlobalLogger::m_Garbage(nullptr);
+
+
+void GlobalLogger::Create(
 		std::string const & iName,
 		std::string const & iOutput,
 		bool const iDebug)
 {
+	//std::cout << "GlobalLogger::Create()" << std::endl;
+	if (nullptr != GlobalLogger::m_Garbage)
+	{
+		delete GlobalLogger::m_Garbage;
+	}
+	GlobalLogger::m_Garbage = new GlobalLogger::Pimpl(iOutput, iDebug);
 	//log4cxx::NDC ndc(iName);
-	PatternLayoutPtr aPatternLayout = new PatternLayout("%d %-5p %x (%F:%L) - %m%n");
-	ConsoleAppenderPtr aConsoleAppender = new ConsoleAppender(aPatternLayout);
-	filter::LevelRangeFilterPtr aLevelFilter = new filter::LevelRangeFilter();
-	if (not iDebug)
+	if (nullptr != GlobalLogger::m_ActiveLogger)
 	{
-		aLevelFilter->setLevelMin(Level::getInfo());
-
+		delete GlobalLogger::m_ActiveLogger;
 	}
-	aConsoleAppender->addFilter(aLevelFilter);
-	FileAppenderPtr aFileApender = new FileAppender(aPatternLayout, iOutput);
-	BasicConfigurator::configure(aFileApender);
-	BasicConfigurator::configure(aConsoleAppender);
-	log4cxx::LoggerPtr aLogger(log4cxx::Logger::getLogger(iName));
-	aLogger->setLevel(log4cxx::Level::getDebug());
-
-	GlobalLogger::m_Loggers[iName] = aLogger;
-	if (nullptr == GlobalLogger::_ActiveLogger)
-	{
-		GlobalLogger::_ActiveLogger = aLogger;
-	}
-}
-
-void GlobalLogger::SwitchToLogger(std::string const & iName)
-{
-	GlobalLogger::_ActiveLogger = GlobalLogger::m_Loggers[iName];
+	GlobalLogger::m_ActiveLogger = log4cxx::Logger::getLogger(iName);
+	GlobalLogger::m_ActiveLogger->setLevel(log4cxx::Level::getDebug());
 }
 
 log4cxx::LoggerPtr GlobalLogger::GetActiveLogger()
 {
-	return GlobalLogger::_ActiveLogger;
+	return GlobalLogger::m_ActiveLogger;
 }
 
 void GlobalLogger::Clear()
 {
-	GlobalLogger::m_Loggers.clear();
-	GlobalLogger::_ActiveLogger = 0;
+	//std::cout << "Clear()" << std::endl;
+	//std::cout << "Clear() delete garbage" << std::endl;
+	delete GlobalLogger::m_Garbage;
+	//std::cout << "Clear() garbage deleted" << std::endl;
+	GlobalLogger::m_Garbage = nullptr;
+	GlobalLogger::m_ActiveLogger = nullptr;
+	//std::cout << "Clear() active logger deleted" << std::endl;
 }
 
 }
