@@ -6,4 +6,9 @@ build/
 *.clang_complete
 CTestTestfile.cmake
 doc/Server-game/diagrams/
+*.pyc
 *.un~
+*.swp
+*.pyc
+compile_commands.json
+patch_ycm.diff

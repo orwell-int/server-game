@@ -80,9 +80,10 @@ message(CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR})
 # Get together all the source files and all the headers
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.cc)
 file(GLOB_RECURSE EXPORTABLEHEADERS include/*.hpp include/*.h)
+file(GLOB CONFIG *.ini)
 
 # Required libraries
-find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system program_options)
 find_package(Protobuf REQUIRED)
 find_package(ZMQ REQUIRED)
 find_package(LOG4CXX_LIBRARIES REQUIRED)
@@ -106,6 +107,8 @@ target_link_libraries(
 install(TARGETS orwell_server_game LIBRARY DESTINATION lib)
 install(FILES ${EXPORTABLEHEADERS} DESTINATION include)
 install(FILES ${PROTO_HDRS} DESTINATION include)
+#install(FILES "orwell-config.ini" DESTINATION .)
+add_custom_command(TARGET orwell_server_game COMMAND ${CMAKE_COMMAND} -E copy ${CONFIG} ${CMAKE_BINARY_DIR})
 
 include_directories(
 	${ZMQ_INCLUDE_DIRS}
@@ -129,6 +132,7 @@ target_link_libraries(
 	${PROTOBUF_LIBRARIES}
 	${Boost_LIBRARIES}
 	${LOG4CXX_LIBRARIES})
+
 
 OPTION(ORWELL_COVERAGE "Enables code coverage measurements with gcov/lcov." OFF)
 

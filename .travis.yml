@@ -1,6 +1,5 @@
 language: c++
 compiler:
-    - clang
     - gcc
 
 before_install:
@@ -32,3 +31,10 @@ script:
 
 after_success:
     - gcovr . -r .. -p | sed "/Missing/{s/\(.*\)Missing/\1/p;h;s/^/\n/;:lineloop;N;:charloop;s/\(.*\)\n.\n\(.\).*/\1\2/;t exitcharloop;s/\n.\(.\+\)\n\(.\)/\2\n\1\n/;t charloop;:exitcharloop;s/\n.*//;p;s/.*//;G;b lineloop}" -n
+
+notifications:
+  recipients:
+    - massimo.gengarelli@gmail.com
+  email:
+    on_success: change
+    on_failure: always
