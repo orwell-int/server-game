@@ -240,7 +240,9 @@ bool Application::initApplication(int argc, char **argv)
 	
 	if (aVariablesMap.count("version"))
 	{
-		std::cout << "Version fake" << std::endl;
+		std::cout << argv[0] << " " << VERSION << " - codename '" << CODENAME << "'" << std::endl;
+		std::cout << "Compiled " << __DATE__ << " at " << __TIME__ << std::endl;
+		std::cout << "Compiler used: " << __VERSION__ << std::endl;
 		return false;
 	}
 	
