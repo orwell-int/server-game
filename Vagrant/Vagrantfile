@@ -9,12 +9,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
 	# Configure ports for Orwell
   config.vm.network "forwarded_port", guest: 9000, host: 9000
-	config.vm.network "forwarded_port", guest: 9001, host: 9001
-	config.vm.network "forwarded_port", guest: 9090, host: 9090
+  config.vm.network "forwarded_port", guest: 9001, host: 9001
+  config.vm.network "forwarded_port", guest: 9090, host: 9090
 
   config.vm.synced_folder "../", "/home/vagrant/server-game"
 
-	config.vm.provision "chef_solo" do |chef|
-		chef.add_recipe "server-game"
-	end
+  config.vm.provision "chef_solo" do |chef|
+    chef.add_recipe "server-game"
+  end
 end
