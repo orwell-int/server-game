@@ -6,6 +6,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules/")
 
 project(orwell)
 
+# Test suite
+include(CTest)
+
 # Generate compile_commands.json (http://clang.llvm.org/docs/JSONCompilationDatabase.html).
 # It is used by YCM (https://github.com/Valloric/YouCompleteMe).
 # You just need to create a symbolic link to the build directory's compile_commands.json file
@@ -119,11 +122,6 @@ include_directories(
 	${CMAKE_BINARY_DIR}/messages
 	)
 
-#FUNCTION(add_orwell_executable )
-
-#ENDFUNCTION() # SETUP_TARGET_FOR_COVERAGE
-
-
 add_executable(server_main src/main.cpp)
 target_link_libraries(
 	server_main
@@ -168,3 +166,11 @@ ELSE()
 	MESSAGE("Code coverage not considered")
 ENDIF()
 
+SET(DART_TESTING_TIMEOUT "9")
+SET(MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --show-reachable=yes")
+
+# this might be a hack but it works
+CONFIGURE_FILE(
+	${CMAKE_ROOT}/Modules/DartConfiguration.tcl.in
+	${CMAKE_CURRENT_BINARY_DIR}/DartConfiguration.tcl
+	)

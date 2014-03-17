@@ -1,13 +1,14 @@
 language: c++
 compiler:
+    - clang
     - gcc
 
 before_install:
-    - sudo apt-get install -qq libzmq3-dev libprotobuf-dev protobuf-compiler cmake libboost-all-dev liblog4cxx10-dev
+    - sudo apt-get install -qq libzmq3-dev libprotobuf-dev protobuf-compiler cmake libboost-all-dev liblog4cxx10-dev valgrind
     - wget https://raw.github.com/zeromq/cppzmq/master/zmq.hpp -O ./include/zmq.hpp
     - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     - sudo apt-get update -qq
-    - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
+    - sudo apt-get install -qq g++-4.8
     - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
     - sudo apt-get install -qq python2.7 lcov -y
     - sudo easy_install gcovr
@@ -24,13 +25,16 @@ script:
     - lcov --version | grep "1.10"
     - mkdir -p ./build
     - cd ./build && cmake .. && make
-    - cd ./test && ctest
-    - cd ../.. && mkdir -p build_coverage && cd build_coverage
-    - cmake .. -DORWELL_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug
-    - make orwell_coverage
+    - cd ./test && ctest && cd ..
+    - if [ "$CXX" = "g++-4.8" ] ; then cd .. && mkdir -p build_coverage && cd build_coverage ; fi
+    - if [ "$CXX" = "g++-4.8" ] ; then cmake .. -DORWELL_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug ; fi
+    - if [ "$CXX" = "g++-4.8" ] ; then make orwell_coverage ; fi
 
 after_success:
-    - gcovr . -r .. -p | sed "/Missing/{s/\(.*\)Missing/\1/p;h;s/^/\n/;:lineloop;N;:charloop;s/\(.*\)\n.\n\(.\).*/\1\2/;t exitcharloop;s/\n.\(.\+\)\n\(.\)/\2\n\1\n/;t charloop;:exitcharloop;s/\n.*//;p;s/.*//;G;b lineloop}" -n
+    - if [ "$CXX" = "g++-4.8" ] ; then gcovr . -r .. -p | sed "/Missing/{s/\(.*\)Missing/\1/p;h;s/^/\n/;:lineloop;N;:charloop;s/\(.*\)\n.\n\(.\).*/\1\2/;t exitcharloop;s/\n.\(.\+\)\n\(.\)/\2\n\1\n/;t charloop;:exitcharloop;s/\n.*//;p;s/.*//;G;b lineloop}" -n ; fi
+    - cd ../build
+    - make ExperimentalMemCheck
+    - sed -n -e '/LEAK SUMMARY:/,+8p' -e '/^Test\|Testing:[ ]\|Test:[ ]/p' Testing/Temporary/LastDynamicAnalysis_*.log
 
 notifications:
   recipients:

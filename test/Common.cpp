@@ -46,25 +46,3 @@ bool Common::ExpectMessage(
 	return aReceived;
 }
 
-log4cxx::LoggerPtr Common::SetupLogger(
-		std::string const & iName,
-		bool const iDebug)
-{
-	log4cxx::NDC ndc(iName);
-	PatternLayoutPtr aPatternLayout = new PatternLayout("%d %-5p %x (%F:%L) - %m%n");
-	ConsoleAppenderPtr aConsoleAppender = new ConsoleAppender(aPatternLayout);
-	filter::LevelRangeFilterPtr aLevelFilter = new filter::LevelRangeFilter();
-	if (not iDebug)
-	{
-		aLevelFilter->setLevelMin(Level::getInfo());
-
-	}
-	aConsoleAppender->addFilter(aLevelFilter);
-	FileAppenderPtr aFileApender = new FileAppender(aPatternLayout, "orwelllog.txt");
-	BasicConfigurator::configure(aFileApender);
-	BasicConfigurator::configure(aConsoleAppender);
-	log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("orwell.log"));
-	logger->setLevel(log4cxx::Level::getDebug());
-
-	return logger;
-}

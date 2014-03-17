@@ -6,6 +6,7 @@
 
 #include "controller.pb.h"
 
+#include "orwell/support/GlobalLogger.hpp"
 #include "orwell/com/Sender.hpp"
 #include "orwell/com/Receiver.hpp"
 #include "orwell/Server.hpp"
@@ -15,13 +16,6 @@
 
 #include <cassert>
 
-#include <log4cxx/logger.h>
-#include <log4cxx/patternlayout.h>
-#include <log4cxx/consoleappender.h>
-#include <log4cxx/fileappender.h>
-#include <log4cxx/basicconfigurator.h>
-#include <log4cxx/helpers/exception.h>
-#include <log4cxx/filter/levelrangefilter.h>
 #include <log4cxx/ndc.h>
 
 
@@ -37,12 +31,13 @@ using std::string;
 
 int g_status = 0;
 
-static void const client(log4cxx::LoggerPtr iLogger)
+static void const client()
 {
 	log4cxx::NDC ndc("client");
+	zmq::context_t aContext(1);
 	usleep(6 * 1000);
-	Sender aPusher("tcp://127.0.0.1:9000", ZMQ_PUSH, orwell::com::ConnectionMode::CONNECT);
-	Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB, orwell::com::ConnectionMode::CONNECT);
+	Sender aPusher("tcp://127.0.0.1:9000", ZMQ_PUSH, orwell::com::ConnectionMode::CONNECT, aContext);
+	Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB, orwell::com::ConnectionMode::CONNECT, aContext);
 	usleep(6 * 1000);
 
 	Input aInputMessage;
@@ -52,9 +47,9 @@ static void const client(log4cxx::LoggerPtr iLogger)
 	aInputMessage.mutable_fire()->set_weapon1(false);
 	aInputMessage.mutable_fire()->set_weapon2(false);
 
-	LOG4CXX_INFO(iLogger, "message built (size=" << aInputMessage.ByteSize() << ")");
-	LOG4CXX_INFO(iLogger, "message built : left" << aInputMessage.move().left() << "-right" << aInputMessage.move().right());
-	LOG4CXX_INFO(iLogger, "message built : w1:" << aInputMessage.fire().weapon1() << "-w2:" << aInputMessage.fire().weapon2());
+	ORWELL_LOG_INFO("message built (size=" << aInputMessage.ByteSize() << ")");
+	ORWELL_LOG_INFO("message built : left" << aInputMessage.move().left() << "-right" << aInputMessage.move().right());
+	ORWELL_LOG_INFO("message built : w1:" << aInputMessage.fire().weapon1() << "-w2:" << aInputMessage.fire().weapon2());
 
 	string aType = "Input";
 	RawMessage aMessage("TANK_0", "Input", aInputMessage.SerializeAsString());
@@ -67,9 +62,7 @@ static void const client(log4cxx::LoggerPtr iLogger)
 }
 
 
-static void const server(
-		log4cxx::LoggerPtr iLogger,
-		std::shared_ptr< orwell::tasks::Server > ioServer)
+static void const server(std::shared_ptr< orwell::Server > ioServer)
 {
 	log4cxx::NDC ndc("server");
 	ioServer->loopUntilOneMessageIsProcessed();
@@ -77,16 +70,19 @@ static void const server(
 
 int main()
 {
-	log4cxx::LoggerPtr logger = Common::SetupLogger("Input");
+	orwell::support::GlobalLogger::Create("input", "test_input.log");
 	log4cxx::NDC ndc("input");
-	std::shared_ptr< orwell::tasks::Server > aServer = std::make_shared< orwell::tasks::Server >("tcp://*:9000", "tcp://*:9001", 500, logger);
-	LOG4CXX_INFO(logger, "server created");
+	std::shared_ptr< orwell::Server > aServer =
+		std::make_shared< orwell::Server >("tcp://*:9000", "tcp://*:9001", 500);
+	ORWELL_LOG_INFO("server created");
 	aServer->accessContext().addRobot("Gipsy Danger");
 	aServer->accessContext().addRobot("Goldorak");
 	aServer->accessContext().addRobot("Securitron");
-	std::thread aServerThread(server, logger, aServer);
-	std::thread aClientThread(client, logger);
+	std::thread aServerThread(server, aServer);
+	std::thread aClientThread(client);
 	aClientThread.join();
 	aServerThread.join();
+	orwell::support::GlobalLogger::Clear();
 	return g_status;
 }
+

@@ -1,16 +1,8 @@
 
 #include "orwell/Application.hpp"
 #include "orwell/Server.hpp"
-
-#include <log4cxx/logger.h>
-#include <log4cxx/patternlayout.h>
-#include <log4cxx/consoleappender.h>
-#include <log4cxx/fileappender.h>
-#include <log4cxx/basicconfigurator.h>
-#include <log4cxx/helpers/exception.h>
-#include <log4cxx/filter/levelrangefilter.h>
-#include <log4cxx/ndc.h>
-
+#include "orwell/BroadcastServer.hpp"
+#include "orwell/support/GlobalLogger.hpp"
 
 #include <boost/program_options.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -33,7 +25,9 @@ Application & Application::GetInstance()
 	return m_application;
 }
 
-Application::Application() : m_server(nullptr)
+Application::Application()
+	: m_server(nullptr)
+	, m_broadcastServer(nullptr)
 {
 	
 }
@@ -43,7 +37,7 @@ void Application::run(int argc, char **argv)
 	/***************************************
 	*  Run the server only if all is set  *
 	***************************************/
-	if (initApplication(argc, argv) and initLogger() and initServer() and initConfigurationFile())
+	if (initApplication(argc, argv) and initServer() and initConfigurationFile())
 	{
 
 		// Broadcast receiver and main loop are run in separated threads
@@ -52,22 +46,22 @@ void Application::run(int argc, char **argv)
 		switch (aChildProcess)
 		{
 			case 0:
-				LOG4CXX_INFO(m_logger, "Child started");
-				m_server->runBroadcastReceiver();
+				ORWELL_LOG_INFO("Child started");
+				m_broadcastServer->runBroadcastReceiver();
 				return;
 			default:
-				LOG4CXX_INFO(m_logger, "Father started, child's pid: " << aChildProcess);
+				ORWELL_LOG_INFO("Father started, child's pid: " << aChildProcess);
 				m_server->loop();
 				break;
 		}
 
-		LOG4CXX_INFO(m_logger, "Father continued");
+		ORWELL_LOG_INFO("Father continued");
 
 		// Here the father will be waiting for the child to be over
 		int aStatus;
 		while(waitpid(aChildProcess, &aStatus, WNOHANG) == 0) 
 		{
-			LOG4CXX_INFO(m_logger, "Waiting for process: " << aChildProcess << " to be over");
+			ORWELL_LOG_INFO("Waiting for process: " << aChildProcess << " to be over");
 			sleep(1);
 		}
 	}
@@ -76,50 +70,33 @@ void Application::run(int argc, char **argv)
 bool Application::stop()
 {
 	m_server->stop();
+	m_broadcastServer->stop();
 	return true;
 }
 
 void Application::clean()
 {
-	if (m_server != nullptr) {
-		delete m_server;
-	}
-}
-
-bool Application::initLogger()
-{
-	PatternLayoutPtr aPatternLayout = new PatternLayout("%d %-5p %x (%F:%L) - %m%n");
-
-	//Console Log
-	ConsoleAppenderPtr aConsoleAppender = new ConsoleAppender(aPatternLayout);
-	if ( not m_consoleDebugLogs )
+	if (m_server != nullptr)
 	{
-		filter::LevelRangeFilterPtr aLevelFilter = new filter::LevelRangeFilter();
-		aLevelFilter->setLevelMin(Level::getInfo());
-		aConsoleAppender->addFilter(aLevelFilter);
+		delete m_server;
+		m_server = nullptr;
 	}
-	BasicConfigurator::configure(aConsoleAppender);
-
-	//File log
-	FileAppenderPtr aFileApender = new FileAppender( aPatternLayout, "orwelllog.txt");
-	BasicConfigurator::configure(aFileApender);
-
-	m_logger = log4cxx::Logger::getLogger("orwell.log");
-	m_logger->setLevel(log4cxx::Level::getDebug());
-	
-	LOG4CXX_DEBUG(m_logger, "Inited logger");
-	
-	return true;
+	if (m_broadcastServer != nullptr)
+	{
+		delete m_broadcastServer;
+		m_broadcastServer = nullptr;
+	}
 }
 
 bool Application::initServer()
 {
-	LOG4CXX_DEBUG(m_logger, "Initialize server : publisher tcp://*:" << m_publisherPort << " puller tcp://*:" << m_pullerPort);
+	ORWELL_LOG_INFO("Initialize server : publisher tcp://*:" << m_publisherPort << " puller tcp://*:" << m_pullerPort);
 
 	std::string aPublisherAddress = "tcp://*:" + boost::lexical_cast<std::string>(m_publisherPort);
 	std::string aPullerAddress = "tcp://*:" + boost::lexical_cast<std::string>(m_pullerPort);
 
-	m_server = new orwell::tasks::Server(aPullerAddress, aPublisherAddress, 500, m_logger);
+	m_server = new orwell::Server(aPullerAddress, aPublisherAddress, 500);
+	m_broadcastServer = new orwell::BroadcastServer(aPullerAddress, aPublisherAddress);
 	return true;
 }
 
@@ -138,21 +115,21 @@ bool Application::initConfigurationFile()
 	{
 		boost::optional<uint32_t> aPublisherPort = aPtree.get_optional<uint32_t>("server.publisher-port");
 		m_publisherPort = aPublisherPort? aPublisherPort.get() : 0;
-		LOG4CXX_DEBUG(m_logger, "Using Publisher Port: " << m_publisherPort);
+		ORWELL_LOG_DEBUG("Using Publisher Port: " << m_publisherPort);
 	}
 	
 	if (m_pullerPort == 0)
 	{
 		boost::optional<uint32_t> aPullerPort = aPtree.get_optional<uint32_t>("server.puller-port");
 		m_pullerPort = aPullerPort? aPullerPort.get() : 0;
-		LOG4CXX_DEBUG(m_logger, "Using Puller Port: " << m_pullerPort);
+		ORWELL_LOG_DEBUG("Using Puller Port: " << m_pullerPort);
 	}
 	
 	if (m_ticInterval == 0)
 	{
 		boost::optional<uint32_t> aTicInterval = aPtree.get_optional<uint32_t>("server.tic-interval");
 		m_ticInterval = aTicInterval? aTicInterval.get() : 0;
-		LOG4CXX_DEBUG(m_logger, "Using Tic Interval: " << m_ticInterval);
+		ORWELL_LOG_DEBUG("Using Tic Interval: " << m_ticInterval);
 	}
 	
 	// Now get the optional things regarding the game itself
@@ -168,7 +145,7 @@ bool Application::initConfigurationFile()
 		for (std::string const & iRobot : m_robotsList)
 		{
 			std::string aRobotName = aPtree.get<std::string>(iRobot + ".name");
-			LOG4CXX_INFO(m_logger, "Pushing robot: " << aRobotName);
+			ORWELL_LOG_INFO("Pushing robot: " << aRobotName);
 			m_server->accessContext().addRobot(aRobotName);
 		}
 	}

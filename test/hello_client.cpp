@@ -6,14 +6,13 @@
 #include "controller.pb.h"
 #include "server-game.pb.h"
 
+#include "orwell/support/GlobalLogger.hpp"
 #include "orwell/com/Sender.hpp"
 #include "orwell/com/Receiver.hpp"
 #include "orwell/Server.hpp"
 
 #include "Common.hpp"
 
-#include <log4cxx/logger.h>
-#include <log4cxx/helpers/exception.h>
 #include <log4cxx/ndc.h>
 
 #include <unistd.h>
@@ -58,14 +57,16 @@ static void ExpectWelcome(
 	}
 }
 
-static void client(log4cxx::LoggerPtr iLogger)
+static void client()
 {
 	log4cxx::NDC ndc("client");
+	ORWELL_LOG_INFO("client ...");
+	zmq::context_t aContext(1);
 	usleep(6 * 1000);
-	LOG4CXX_INFO(iLogger, "create pusher");
-	Sender aPusher("tcp://127.0.0.1:9000", ZMQ_PUSH, orwell::com::ConnectionMode::CONNECT);
-	LOG4CXX_INFO(iLogger, "create subscriber");
-	Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB, orwell::com::ConnectionMode::CONNECT);
+	ORWELL_LOG_INFO("create pusher");
+	Sender aPusher("tcp://127.0.0.1:9000", ZMQ_PUSH, orwell::com::ConnectionMode::CONNECT, aContext);
+	ORWELL_LOG_INFO("create subscriber");
+	Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB, orwell::com::ConnectionMode::CONNECT, aContext);
 	usleep(6 * 1000);
 
 	ExpectWelcome("jambon", "Gipsy Danger", aPusher, aSubscriber);
@@ -88,37 +89,41 @@ static void client(log4cxx::LoggerPtr iLogger)
 	RawMessage aResponse2;
 	if ( not Common::ExpectMessage("Goodbye", aSubscriber, aResponse2) )
 	{
-		LOG4CXX_ERROR(iLogger, "error : expected Goodbye");
+		ORWELL_LOG_ERROR("error : expected Goodbye");
 		g_status = -1;
 	}
-
-	LOG4CXX_INFO(iLogger, "quit client");
+	ORWELL_LOG_INFO("quit client");
 }
 
 
-static void const server(log4cxx::LoggerPtr iLogger, std::shared_ptr< orwell::tasks::Server > ioServer)
+static void const server(std::shared_ptr< orwell::Server > ioServer)
 {
 	log4cxx::NDC ndc("server");
+	ORWELL_LOG_INFO("server ...");
 	for (int i = 0 ; i < 5 ; ++i)
 	{
+		ORWELL_LOG_INFO("server loop " << i);
 		ioServer->loopUntilOneMessageIsProcessed();
 	}
-	LOG4CXX_INFO(iLogger, "quit server");
+	ORWELL_LOG_INFO("quit server");
 }
 
 int main()
 {
-	auto logger = Common::SetupLogger("hello");
+	orwell::support::GlobalLogger::Create("hello", "test_hello.log");
 	log4cxx::NDC ndc("hello");
-	std::shared_ptr< orwell::tasks::Server > aServer = std::make_shared< orwell::tasks::Server >("tcp://*:9000", "tcp://*:9001", 500, logger);
-	LOG4CXX_INFO(logger, "server created");
+	std::shared_ptr< orwell::Server > aServer =
+		std::make_shared< orwell::Server >("tcp://*:9000", "tcp://*:9001", 500);
+	ORWELL_LOG_INFO("server created");
 	aServer->accessContext().addRobot("Gipsy Danger");
 	aServer->accessContext().addRobot("Goldorak");
 	aServer->accessContext().addRobot("Securitron");
-	std::thread aServerThread(server, logger, aServer);
-	std::thread aClientThread(client, logger);
+	ORWELL_LOG_INFO("robot added 3");
+	std::thread aServerThread(server, aServer);
+	std::thread aClientThread(client);
 	aClientThread.join();
 	aServerThread.join();
+	orwell::support::GlobalLogger::Clear();
 	return g_status;
 }
 

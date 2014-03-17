@@ -5,9 +5,10 @@
  */
 
 #include <memory>
+#include <vector>
+#include <string>
+
 #include "orwell/com/Sender.hpp"
-//#include <google/protobuf/message_lite.h>
-#include <log4cxx/logger.h>
 
 namespace google
 {
@@ -31,7 +32,9 @@ class InterfaceProcess
 	typedef std::vector<Argument> DictionaryOfArguments;
 
 public:
-	InterfaceProcess(std::shared_ptr< com::Sender > ioPublisher);
+	InterfaceProcess(
+			std::shared_ptr< com::Sender > ioPublisher);
+
 	InterfaceProcess(
 			std::shared_ptr< com::Sender > ioPublisher,
 			game::Game & ioGame);
@@ -41,7 +44,6 @@ public:
 
 	void init(
 			google::protobuf::MessageLite * ioMsg,
-			log4cxx::LoggerPtr ioLogger,
 			game::Game * ioGame = nullptr);
 
 	void setGameContext(game::Game & ioGame);
@@ -60,7 +62,6 @@ protected:
     std::shared_ptr< com::Sender > _publisher;
 
 	google::protobuf::MessageLite * _msg;
-	log4cxx::LoggerPtr _loggerPtr;
 
 	game::Game * _game;
 

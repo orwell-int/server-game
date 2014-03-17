@@ -8,8 +8,8 @@
 
 #include <string>
 #include <iostream>
-#include <log4cxx/logger.h>
 
+#include "orwell/support/GlobalLogger.hpp"
 #include "orwell/com/RawMessage.hpp"
 #include "orwell/game/Game.hpp"
 #include "orwell/callbacks/ProcessHello.hpp"
@@ -26,14 +26,13 @@ namespace orwell {
 namespace callbacks {
 
 template <typename MessageType>
-static MessageType BuildProtobuf(RawMessage const & iMessage)
+static MessageType BuildProtobuf(
+		RawMessage const & iMessage)
 {
-	log4cxx::LoggerPtr aLogger = log4cxx::Logger::getLogger("orwell.log");
-
 	MessageType aMessage;
 	bool aSuccess = aMessage.ParsePartialFromString( iMessage._payload );
-	LOG4CXX_DEBUG(aLogger, "BuildProtobuf success : " << aSuccess << "-" );
-	LOG4CXX_DEBUG(aLogger, "Resulting protobuf : size=" << aMessage.ByteSize() << "-" );
+	ORWELL_LOG_DEBUG("BuildProtobuf success : " << aSuccess << "-" );
+	ORWELL_LOG_DEBUG("Resulting protobuf : size=" << aMessage.ByteSize() << "-" );
 	return aMessage;
 }
 
@@ -52,7 +51,6 @@ ProcessDecider::~ProcessDecider()
 
 void ProcessDecider::process(com::RawMessage const & iMessage)
 {
-	log4cxx::LoggerPtr aLogger = log4cxx::Logger::getLogger("orwell.log");
 	std::unique_ptr<InterfaceProcess> & aProcess = _map[iMessage._type];
 	::google::protobuf::MessageLite * aMsg = nullptr;
 
@@ -67,22 +65,21 @@ void ProcessDecider::process(com::RawMessage const & iMessage)
 	}
 	else if (iMessage._type == "RobotState")
 	{
-		aMsg = new messages::RobotState(BuildProtobuf<messages::RobotState>(iMessage));   
+		aMsg = new messages::RobotState(BuildProtobuf<messages::RobotState>(iMessage));
 	}
 
 	if (aMsg != nullptr && aProcess != nullptr)
 	{
 		aProcess->insertArgument("RoutingID", iMessage._routingId);
 		aProcess->insertArgument("Type", iMessage._type);
-		//aProcess->setGameContext(ioGame);
-		aProcess->init(aMsg, aLogger);
+		aProcess->init(aMsg);
 		aProcess->execute();
 
 		delete aMsg;
 	}
 	else
 	{
-		LOG4CXX_INFO(aLogger, "unkown message type : " << iMessage._type << "-");
+		ORWELL_LOG_INFO("unkown message type : " << iMessage._type << "-");
 	}
 }
 
