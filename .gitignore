@@ -12,3 +12,4 @@ doc/Server-game/diagrams/
 *.pyc
 compile_commands.json
 patch_ycm.diff
+.vagrant/

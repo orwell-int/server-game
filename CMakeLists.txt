@@ -122,6 +122,7 @@ include_directories(
 	${CMAKE_BINARY_DIR}/messages
 	)
 
+add_definitions(-DVERSION="0.0.1" -DCODENAME="V1Proto")
 add_executable(server_main src/main.cpp)
 target_link_libraries(
 	server_main
