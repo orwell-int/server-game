@@ -28,17 +28,28 @@ Application & Application::GetInstance()
 Application::Application()
 	: m_server(nullptr)
 	, m_broadcastServer(nullptr)
+	, m_pullerPort(0)
+	, m_publisherPort(0)
+	, m_agentPort(0)
+	, m_ticInterval(0)
+	, m_consoleDebugLogs(false)
+	, m_dryRun(false)
 {
-	
+
 }
 
-void Application::run(int argc, char **argv)
+void Application::run(int argc, char * argv[])
 {
 	/***************************************
 	*  Run the server only if all is set  *
 	***************************************/
 	if (initApplication(argc, argv) and initServer() and initConfigurationFile())
 	{
+		if (m_dryRun)
+		{
+			ORWELL_LOG_INFO("Exit without starting (dry-run).");
+			return;
+		}
 
 		// Broadcast receiver and main loop are run in separated threads
 		pid_t aChildProcess = fork();
@@ -59,7 +70,7 @@ void Application::run(int argc, char **argv)
 
 		// Here the father will be waiting for the child to be over
 		int aStatus;
-		while(waitpid(aChildProcess, &aStatus, WNOHANG) == 0) 
+		while (waitpid(aChildProcess, &aStatus, WNOHANG) == 0)
 		{
 			ORWELL_LOG_INFO("Waiting for process: " << aChildProcess << " to be over");
 			sleep(1);
@@ -95,7 +106,7 @@ bool Application::initServer()
 	std::string aPublisherAddress = "tcp://*:" + boost::lexical_cast<std::string>(m_publisherPort);
 	std::string aPullerAddress = "tcp://*:" + boost::lexical_cast<std::string>(m_pullerPort);
 
-	m_server = new orwell::Server(aPullerAddress, aPublisherAddress, 500);
+	m_server = new orwell::Server(aPullerAddress, aPublisherAddress, m_ticInterval);
 	m_broadcastServer = new orwell::BroadcastServer(aPullerAddress, aPublisherAddress);
 	return true;
 }
@@ -103,7 +114,8 @@ bool Application::initServer()
 bool Application::initConfigurationFile()
 {
 	// If the user didn't specify any .ini file, let's just go
-	if (m_rcFilePath.empty()) {
+	if (m_rcFilePath.empty())
+	{
 		return true;
 	}
 	
@@ -113,21 +125,21 @@ bool Application::initConfigurationFile()
 	// First of all get the server related things (if not provided already)
 	if (m_publisherPort == 0)
 	{
-		boost::optional<uint32_t> aPublisherPort = aPtree.get_optional<uint32_t>("server.publisher-port");
+		boost::optional<uint16_t> aPublisherPort = aPtree.get_optional<uint16_t>("server.publisher-port");
 		m_publisherPort = aPublisherPort? aPublisherPort.get() : 0;
 		ORWELL_LOG_DEBUG("Using Publisher Port: " << m_publisherPort);
 	}
 	
 	if (m_pullerPort == 0)
 	{
-		boost::optional<uint32_t> aPullerPort = aPtree.get_optional<uint32_t>("server.puller-port");
+		boost::optional<uint16_t> aPullerPort = aPtree.get_optional<uint16_t>("server.puller-port");
 		m_pullerPort = aPullerPort? aPullerPort.get() : 0;
 		ORWELL_LOG_DEBUG("Using Puller Port: " << m_pullerPort);
 	}
 	
 	if (m_ticInterval == 0)
 	{
-		boost::optional<uint32_t> aTicInterval = aPtree.get_optional<uint32_t>("server.tic-interval");
+		boost::optional<uint16_t> aTicInterval = aPtree.get_optional<uint16_t>("server.tic-interval");
 		m_ticInterval = aTicInterval? aTicInterval.get() : 0;
 		ORWELL_LOG_DEBUG("Using Tic Interval: " << m_ticInterval);
 	}
@@ -184,21 +196,22 @@ std::vector<std::string> & Application::tokenizeRobots(std::string const & iRobo
 	return m_robotsList;
 }
 
-bool Application::initApplication(int argc, char **argv)
+bool Application::initApplication(int argc, char * argv[])
 {
 	// Parse the command line arguments
-	options_description aDescription("Usage: " + std::string(argv[0]) + " [PpAvTdrh]");
+	options_description aDescription("Usage: " + std::string(argv[0]) + " [PpAvTdrhn]");
 
 	// ??? : Do we want to have default values or not? Feel free to add them when integrating.
 	aDescription.add_options()
-	    ("help,h",                                 "Produce help message and exits")
-	    ("publisher-port,P", value<uint32_t>(),    "Publisher port")
-	    ("puller-port,p",    value<uint32_t>(),    "Puller port")
-	    ("agent-port,A",     value<uint32_t>(),    "Agent Port")
+		("help,h",                                 "Produce help message and exits")
+		("publisher-port,P", value<uint16_t>(),    "Publisher port")
+		("puller-port,p",    value<uint16_t>(),    "Puller port")
+		("agent-port,A",     value<uint16_t>(),    "Agent Port")
 		("orwellrc,r",       value<std::string>(), "Load configuration from rc file")
 		("tic-interval,T",   value<uint32_t>(),    "Interval in tics between GameState messages")
-	    ("version,v",                              "Print version number and exits")
-		("debug-log,d",                            "Print debug logs on the console");
+		("version,v",                              "Print version number and exits")
+		("debug-log,d",                            "Print debug logs on the console")
+		("dry-run,n",                              "Do not start the server.");
 
 	variables_map aVariablesMap;
 	store(parse_command_line(argc, argv, aDescription), aVariablesMap);
@@ -225,17 +238,17 @@ bool Application::initApplication(int argc, char **argv)
 	
 	if (aVariablesMap.count("publisher-port"))
 	{
-		m_publisherPort = aVariablesMap["publisher-port"].as<uint32_t>();
+		m_publisherPort = aVariablesMap["publisher-port"].as<uint16_t>();
 	}
 	
 	if (aVariablesMap.count("puller-port"))
 	{
-		m_pullerPort = aVariablesMap["puller-port"].as<uint32_t>();
+		m_pullerPort = aVariablesMap["puller-port"].as<uint16_t>();
 	}
 	
 	if (aVariablesMap.count("agent-port"))
 	{
-		m_agentPort = aVariablesMap["agent-port"].as<uint32_t>();
+		m_agentPort = aVariablesMap["agent-port"].as<uint16_t>();
 	}
 	
 	if (aVariablesMap.count("tic-interval"))
@@ -247,7 +260,27 @@ bool Application::initApplication(int argc, char **argv)
 	{
 		m_consoleDebugLogs = true;
 	}
-
+	ORWELL_LOG_DEBUG("m_pullerPort = " << m_pullerPort);
+	ORWELL_LOG_DEBUG("m_publisherPort = " << m_publisherPort);
+	ORWELL_LOG_DEBUG("m_agentPort = " << m_agentPort);
+	if (m_publisherPort == m_pullerPort)
+	{
+		std::cerr << "Publisher and puller ports have the same value ("
+			<< m_pullerPort <<  ") which is not allowed." << std::endl;
+		return false;
+	}
+	if (m_publisherPort == m_agentPort)
+	{
+		std::cerr << "Publisher and agent ports have the same value ("
+			<< m_agentPort <<  ") which is not allowed." << std::endl;
+		return false;
+	}
+	if (m_pullerPort == m_agentPort)
+	{
+		std::cerr << "Puller and agent ports have the same value ("
+			<< m_agentPort <<  ") which is not allowed." << std::endl;
+		return false;
+	}
 
 	if (m_publisherPort == 0 or m_pullerPort == 0)
 	{
@@ -255,7 +288,7 @@ bool Application::initApplication(int argc, char **argv)
 		std::cout << aDescription << std::endl;
 		return false;
 	}
-	
+
 	return true;
 }
 
