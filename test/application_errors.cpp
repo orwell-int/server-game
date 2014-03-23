@@ -96,6 +96,7 @@ std::ostream & operator<<(
 #define ARG_DEBUG_LOG "-d"
 #define ARG_DRY_RUN "-n"
 
+
 static void BuildArgument(
 		char const * const iName,
 		Arguments & ioArguments)
@@ -241,50 +242,59 @@ bool Application::call_initServer()
 }
 
 
-static void test_initApplication(
-		bool const expected,
-		Arguments arguments)
+namespace test
 {
-	ORWELL_LOG_DEBUG("arguments:" << arguments);
-	Application application;
-	bool result = application.call_initApplication(arguments.m_argc, arguments.m_argv);
-	assert(expected == result);
+enum Status
+{
+	kFail,
+	kPass,
+};
 }
 
 
+static void test_initApplication(
+		test::Status const iTestStatus,
+		Arguments iArguments)
+{
+	ORWELL_LOG_DEBUG("arguments:" << iArguments);
+	Application application;
+	bool result = application.call_initApplication(iArguments.m_argc, iArguments.m_argv);
+	assert(iTestStatus == result);
+}
+
 static void test_nothing()
 {
-	test_initApplication(false, GetArugments());
+	test_initApplication(test::kFail, GetArugments());
 }
 
 static void test_wrong_port_range_publisher_1()
 {
-	test_initApplication(false, GetArugments(false, 0, 42, 43));
+	test_initApplication(test::kFail, GetArugments(false, 0, 42, 43));
 }
 
 static void test_wrong_port_range_publisher_2()
 {
-	test_initApplication(true, GetArugments(false, -1024, 42, 43));
+	test_initApplication(test::kPass, GetArugments(false, -1024, 42, 43));
 }
 
 static void test_wrong_port_range_publisher_3()
 {
-	test_initApplication(false, GetArugments(false, 99999, 42, 43));
+	test_initApplication(test::kFail, GetArugments(false, 99999, 42, 43));
 }
 
 static void test_same_ports_agent_publisher()
 {
-	test_initApplication(false, GetArugments(false, 41, 42, 41));
+	test_initApplication(test::kFail, GetArugments(false, 41, 42, 41));
 }
 
 static void test_same_ports_puller_publisher()
 {
-	test_initApplication(false, GetArugments(false, 41, 41, 43));
+	test_initApplication(test::kFail, GetArugments(false, 41, 41, 43));
 }
 
 static void test_same_ports_puller_agent()
 {
-	test_initApplication(false, GetArugments(false, 41, 42, 42));
+	test_initApplication(test::kFail, GetArugments(false, 41, 42, 42));
 }
 
 int main()
