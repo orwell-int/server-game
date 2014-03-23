@@ -31,7 +31,7 @@ Application::Application()
 	, m_pullerPort(0)
 	, m_publisherPort(0)
 	, m_agentPort(0)
-	, m_ticInterval(0)
+	, m_ticInterval(500)
 	, m_consoleDebugLogs(false)
 	, m_dryRun(false)
 {
