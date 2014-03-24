@@ -1,8 +1,3 @@
-#include "orwell/Server.hpp"
-#include "orwell/BroadcastServer.hpp"
-
-#include <zmq.hpp>
-
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <stdio.h>
@@ -14,21 +9,21 @@
 static void signal_handler(int /*signum*/)
 {
 	// Stop the application whan a signal is received
-	Application::GetInstance().stop();
+	orwell::Application::GetInstance().stop();
 }
 
 int main(int argc, char *argv[])
 {
-	orwell::support::GlobalLogger::Create("server_web", "orwell.log", true);
+	orwell::support::GlobalLogger::Create("server_game", "orwell.log", true);
 	// Register the signal handler
 	signal(SIGINT, signal_handler);
 	signal(SIGTERM, signal_handler);
 
 	// Run the application
-	Application::GetInstance().run(argc, argv);
+	orwell::Application::GetInstance().run(argc, argv);
 
 	// Clean the application before leaving
-	Application::GetInstance().clean();
+	orwell::Application::GetInstance().clean();
 
 	orwell::support::GlobalLogger::Clear();
 	return 0;

@@ -60,6 +60,13 @@ target_link_libraries(
 	orwell_test)
 add_test(test_hello ${CMAKE_CURRENT_BINARY_DIR}/test_hello)
 
+add_executable(test_application_errors "application_errors.cpp")
+target_link_libraries(
+	test_application_errors
+	orwell_server_game
+	orwell_test)
+add_test(test_application_errors ${CMAKE_CURRENT_BINARY_DIR}/test_application_errors)
+
 add_definitions( "-D__HYPER_BLASTER__" )
 add_executable(broadcast_test "broadcast_test.cpp")
 target_link_libraries(
