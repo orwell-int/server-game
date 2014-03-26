@@ -18,7 +18,7 @@ public:
 			std::string const & iType,
 			orwell::com::Receiver & iSubscriber,
 			orwell::com::RawMessage & oReceived,
-			unsigned int const iTimeout = 1500);
+			unsigned int const iTimeout = 500);
 
 };
 
