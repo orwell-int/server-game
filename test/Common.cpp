@@ -2,17 +2,10 @@
 
 #include "orwell/com/Receiver.hpp"
 #include "orwell/com/RawMessage.hpp"
+#include "orwell/support/GlobalLogger.hpp"
 #include "MissingFromTheStandard.hpp"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <log4cxx/logger.h>
-#include <log4cxx/patternlayout.h>
-#include <log4cxx/consoleappender.h>
-#include <log4cxx/fileappender.h>
-#include <log4cxx/basicconfigurator.h>
-#include <log4cxx/helpers/exception.h>
-#include <log4cxx/filter/levelrangefilter.h>
-#include <log4cxx/ndc.h>
 
 #include <unistd.h>
 
@@ -24,25 +17,40 @@ bool Common::ExpectMessage(
 		orwell::com::RawMessage & oReceived,
 		unsigned int const iTimeout)
 {
-	bool aReceived(false);
+	ORWELL_LOG_DEBUG("Wait for message of type " << iType << " for " << iTimeout);
+	bool aReceivedExpectedMessage(false);
 	boost::posix_time::time_duration aTrueTimeout = boost::posix_time::milliseconds(iTimeout);
 	boost::posix_time::time_duration aDuration;
 	boost::posix_time::ptime aCurrentTime;
 	boost::posix_time::ptime aStartTime = boost::posix_time::second_clock::local_time();
-	while (not aReceived and (aDuration < aTrueTimeout))
+	bool aReceivedAnyMessage(false);
+	while (not aReceivedExpectedMessage and (aDuration < aTrueTimeout))
 	{
 		aCurrentTime = boost::posix_time::second_clock::local_time();
 		aDuration = aCurrentTime - aStartTime;
-		if (not iSubscriber.receive(oReceived) or oReceived._type != iType)
+		aReceivedAnyMessage = iSubscriber.receive(oReceived);
+		if (not aReceivedAnyMessage or oReceived._type != iType)
 		{
+			if (aReceivedAnyMessage)
+			{
+				ORWELL_LOG_DEBUG("Discarded message of type " << iType);
+			}
 			usleep( 10 );
 		}
 		else
 		{
-			aReceived = true;
+			ORWELL_LOG_DEBUG("Accepted message of type " << iType);
+			aReceivedExpectedMessage = true;
 		}
 	}
-
-	return aReceived;
+	if (not aReceivedExpectedMessage)
+	{
+		if (aDuration >= aTrueTimeout)
+		{
+			ORWELL_LOG_DEBUG("Excpected message not received ; timeout ("
+					<< aTrueTimeout << ") exceeded: " << aDuration);
+		}
+	}
+	return aReceivedExpectedMessage;
 }
 

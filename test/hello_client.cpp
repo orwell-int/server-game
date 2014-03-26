@@ -40,20 +40,23 @@ static void ExpectWelcome(
 	RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
 	ioPusher.send(aMessage);
 
-	RawMessage aResponse ;
+	RawMessage aResponse;
 	if ( not Common::ExpectMessage("Welcome", ioSubscriber, aResponse) )
 	{
-		cout <<  "error : expected Welcome" << endl;
+		ORWELL_LOG_ERROR("Expected Welcome but received " << aResponse._type);
 		g_status = -1;
 	}
-
-	Welcome aWelcome;
-	aWelcome.ParsePartialFromString(aResponse._payload);
-
-	if ( aWelcome.robot() != iExpectedRobotName )
+	else
 	{
-		cout << "error : expected another robot name : " << endl;
-		g_status = -2;
+		Welcome aWelcome;
+		aWelcome.ParsePartialFromString(aResponse._payload);
+
+		if ( aWelcome.robot() != iExpectedRobotName )
+		{
+			ORWELL_LOG_ERROR("Expected robot name '" << iExpectedRobotName
+					<< "' but received '" << aWelcome.robot() << "'");
+			g_status = -2;
+		}
 	}
 }
 
@@ -89,7 +92,7 @@ static void client()
 	RawMessage aResponse2;
 	if ( not Common::ExpectMessage("Goodbye", aSubscriber, aResponse2) )
 	{
-		ORWELL_LOG_ERROR("error : expected Goodbye");
+		ORWELL_LOG_ERROR("Expected Goodbye but received " << aResponse2._type);
 		g_status = -1;
 	}
 	ORWELL_LOG_INFO("quit client");
