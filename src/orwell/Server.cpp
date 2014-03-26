@@ -68,6 +68,7 @@ bool Server::processMessageIfAvailable()
 	orwell::com::RawMessage aMessage;
 	if (_puller->receive(aMessage))
 	{
+		ORWELL_LOG_DEBUG("Message received in processMessageIfAvailable");
 		_decider.process(aMessage);
 		aProcessedMessage = true;
 	}
@@ -88,6 +89,7 @@ void Server::loopUntilOneMessageIsProcessed()
 		{
 			if ( not processMessageIfAvailable() )
 			{
+				// sleep 10 milliseconds
 				usleep(10 * 1000);
 			}
 			else
