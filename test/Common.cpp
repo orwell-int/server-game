@@ -23,12 +23,11 @@ bool Common::ExpectMessage(
 	boost::posix_time::time_duration aDuration;
 	boost::posix_time::ptime aCurrentTime;
 	boost::posix_time::ptime aStartTime = boost::posix_time::microsec_clock::local_time();
-	bool aReceivedAnyMessage(false);
 	while (not aReceivedExpectedMessage and (aDuration < aTrueTimeout))
 	{
 		aCurrentTime = boost::posix_time::microsec_clock::local_time();
 		aDuration = aCurrentTime - aStartTime;
-		aReceivedAnyMessage = iSubscriber.receive(oReceived);
+		bool aReceivedAnyMessage = iSubscriber.receive(oReceived);
 		if (not aReceivedAnyMessage or oReceived._type != iType)
 		{
 			if (aReceivedAnyMessage)
