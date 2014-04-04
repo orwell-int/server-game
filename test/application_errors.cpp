@@ -259,7 +259,7 @@ static void test_initApplication(
 	ORWELL_LOG_DEBUG("arguments:" << iArguments);
 	Application application;
 	bool result = application.call_initApplication(iArguments.m_argc, iArguments.m_argv);
-	assert(iTestStatus == result);
+	assert((test::kPass == iTestStatus) == result);
 }
 
 static void test_nothing()
