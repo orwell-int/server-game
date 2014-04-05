@@ -44,6 +44,7 @@ private:
 	std::string m_rcFilePath;
 	std::vector<std::string> m_robotsList;
 	bool m_consoleDebugLogs;
+	bool m_broadcast;
 	bool m_dryRun;
 
 };
