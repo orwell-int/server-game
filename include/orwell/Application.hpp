@@ -12,7 +12,7 @@ class BroadcastServer;
 class Application
 {
 public:
-	virtual ~Application() {};
+	virtual ~Application();
 	static Application & GetInstance();
 
 	void run(int argc, char * argv[]);
@@ -46,6 +46,14 @@ private:
 	bool m_consoleDebugLogs;
 	bool m_dryRun;
 
+	enum class State
+	{
+		CREATED,
+		INITIALISED,
+		RUNNING,
+		STOPPED,
+	};
+	State m_state;
 };
 }
 

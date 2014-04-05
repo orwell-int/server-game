@@ -242,59 +242,56 @@ bool Application::call_initServer()
 }
 
 
-namespace test
+enum class Status
 {
-enum Status
-{
-	kFail,
-	kPass,
+	FAIL,
+	PASS,
 };
-}
 
 
 static void test_initApplication(
-		test::Status const iTestStatus,
+		Status const iTestStatus,
 		Arguments iArguments)
 {
 	ORWELL_LOG_DEBUG("arguments:" << iArguments);
 	Application application;
 	bool result = application.call_initApplication(iArguments.m_argc, iArguments.m_argv);
-	assert(iTestStatus == result);
+	assert((Status::PASS == iTestStatus) == result);
 }
 
 static void test_nothing()
 {
-	test_initApplication(test::kFail, GetArugments());
+	test_initApplication(Status::FAIL, GetArugments());
 }
 
 static void test_wrong_port_range_publisher_1()
 {
-	test_initApplication(test::kFail, GetArugments(false, 0, 42, 43));
+	test_initApplication(Status::FAIL, GetArugments(false, 0, 42, 43));
 }
 
 static void test_wrong_port_range_publisher_2()
 {
-	test_initApplication(test::kPass, GetArugments(false, -1024, 42, 43));
+	test_initApplication(Status::PASS, GetArugments(false, -1024, 42, 43));
 }
 
 static void test_wrong_port_range_publisher_3()
 {
-	test_initApplication(test::kFail, GetArugments(false, 99999, 42, 43));
+	test_initApplication(Status::FAIL, GetArugments(false, 99999, 42, 43));
 }
 
 static void test_same_ports_agent_publisher()
 {
-	test_initApplication(test::kFail, GetArugments(false, 41, 42, 41));
+	test_initApplication(Status::FAIL, GetArugments(false, 41, 42, 41));
 }
 
 static void test_same_ports_puller_publisher()
 {
-	test_initApplication(test::kFail, GetArugments(false, 41, 41, 43));
+	test_initApplication(Status::FAIL, GetArugments(false, 41, 41, 43));
 }
 
 static void test_same_ports_puller_agent()
 {
-	test_initApplication(test::kFail, GetArugments(false, 41, 42, 42));
+	test_initApplication(Status::FAIL, GetArugments(false, 41, 42, 42));
 }
 
 int main()

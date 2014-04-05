@@ -34,22 +34,35 @@ Application::Application()
 	, m_ticInterval(500)
 	, m_consoleDebugLogs(false)
 	, m_dryRun(false)
+	, m_state(State::CREATED)
 {
 
 }
 
+Application::~Application()
+{
+	clean();
+}
+
 void Application::run(int argc, char * argv[])
 {
+	if (State::CREATED != m_state)
+	{
+		ORWELL_LOG_WARN("run can only be called when in state CREATED");
+		return;
+	}
 	/***************************************
 	*  Run the server only if all is set  *
 	***************************************/
 	if (initApplication(argc, argv) and initServer() and initConfigurationFile())
 	{
+		m_state = State::INITIALISED;
 		if (m_dryRun)
 		{
 			ORWELL_LOG_INFO("Exit without starting (dry-run).");
 			return;
 		}
+		m_state = State::RUNNING;
 
 		// Broadcast receiver and main loop are run in separated threads
 		pid_t aChildProcess = fork();
@@ -80,9 +93,19 @@ void Application::run(int argc, char * argv[])
 
 bool Application::stop()
 {
-	m_server->stop();
-	m_broadcastServer->stop();
-	return true;
+	bool aStopped = false;
+	if (State::RUNNING == m_state)
+	{
+		m_server->stop();
+		m_broadcastServer->stop();
+		aStopped = true;
+		m_state = State::STOPPED;
+	}
+	else
+	{
+		ORWELL_LOG_WARN("stop can only be called when in state RUNNING");
+	}
+	return aStopped;
 }
 
 void Application::clean()

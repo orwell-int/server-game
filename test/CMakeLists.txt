@@ -75,6 +75,13 @@ target_link_libraries(
 	orwell_test)
 add_test(broadcast_test ${CMAKE_CURRENT_BINARY_DIR}/broadcast_test)
 
+add_executable(test_agent_proxy "agent_proxy.cpp")
+target_link_libraries(
+	test_agent_proxy
+	orwell_server_game
+	orwell_test)
+add_test(test_agent_proxy ${CMAKE_CURRENT_BINARY_DIR}/test_agent_proxy)
+
 get_property(VAR_ALL_TEST_TARGETS GLOBAL PROPERTY P_ALL_TEST_TARGETS)
 ADD_CUSTOM_TARGET(ctest
 	COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}

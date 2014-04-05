@@ -19,7 +19,7 @@ namespace com {
 Receiver::Receiver(
 		std::string const & iUrl,
 		unsigned int const iSocketType,
-		ConnectionMode::ConnectionMode const iConnectionMode,
+		ConnectionMode const iConnectionMode,
 		zmq::context_t & ioZmqContext,
 		unsigned int const iSleep)
 	: _zmqSocket(new zmq::socket_t(ioZmqContext, iSocketType))
