@@ -43,9 +43,10 @@ public:
 
 
 private:
+	Sender(Sender const & iOther);
 
-	zmq::socket_t * _zmqSocket;
-	std::string _url;
+	zmq::socket_t * m_zmqSocket;
+	std::string m_url;
 };
 
 }}

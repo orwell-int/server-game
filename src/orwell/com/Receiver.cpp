@@ -22,26 +22,26 @@ Receiver::Receiver(
 		ConnectionMode const iConnectionMode,
 		zmq::context_t & ioZmqContext,
 		unsigned int const iSleep)
-	: _zmqSocket(new zmq::socket_t(ioZmqContext, iSocketType))
-	, _url(iUrl)
+	: m_zmqSocket(new zmq::socket_t(ioZmqContext, iSocketType))
+	, m_url(iUrl)
 {
 	int aLinger = 10; // linger 0.01 second max after being closed
-	_zmqSocket->setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
+	m_zmqSocket->setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
 
 	if (ZMQ_SUB == iSocketType)
 	{
 		string atag;
-		_zmqSocket->setsockopt(ZMQ_SUBSCRIBE, atag.c_str(), atag.size());
+		m_zmqSocket->setsockopt(ZMQ_SUBSCRIBE, atag.c_str(), atag.size());
 	}
 	if (ConnectionMode::BIND == iConnectionMode)
 	{
-		_zmqSocket->bind(iUrl.c_str());
+		m_zmqSocket->bind(iUrl.c_str());
 		ORWELL_LOG_INFO("Puller binds on " << iUrl.c_str());
 	}
 	else
 	{
 		assert(ConnectionMode::CONNECT == iConnectionMode);
-		_zmqSocket->connect(iUrl.c_str());
+		m_zmqSocket->connect(iUrl.c_str());
 		ORWELL_LOG_INFO("Subscriber connects to " << iUrl.c_str() << " - it subscribes to everything");
 	}
 	if (iSleep > 0)
@@ -50,9 +50,13 @@ Receiver::Receiver(
 	}
 }
 
+Receiver::Receiver(Receiver const & iOther)
+{
+}
+
 Receiver::~Receiver()
 {
-	delete(_zmqSocket);
+	delete(m_zmqSocket);
 }
 
 bool Receiver::receive(RawMessage & oMessage)
@@ -62,7 +66,7 @@ bool Receiver::receive(RawMessage & oMessage)
 	string aPayload;
 	string aDest;
 
-	bool aReceived = _zmqSocket->recv(&aZmqMessage, ZMQ_NOBLOCK);
+	bool aReceived = m_zmqSocket->recv(&aZmqMessage, ZMQ_NOBLOCK);
 	if ( aReceived )
 	{
 		string aMessageData = string(static_cast<char*>(aZmqMessage.data()), aZmqMessage.size());
@@ -89,7 +93,7 @@ bool Receiver::receive(RawMessage & oMessage)
 
 std::string const & Receiver::getUrl() const
 {
-	return _url;
+	return m_url;
 }
 
 }}
