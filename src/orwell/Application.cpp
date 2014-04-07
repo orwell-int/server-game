@@ -33,6 +33,7 @@ Application::Application()
 	, m_agentPort(0)
 	, m_ticInterval(500)
 	, m_consoleDebugLogs(false)
+	, m_broadcast(true)
 	, m_dryRun(false)
 	, m_state(State::CREATED)
 {
@@ -64,29 +65,36 @@ void Application::run(int argc, char * argv[])
 		}
 		m_state = State::RUNNING;
 
-		// Broadcast receiver and main loop are run in separated threads
-		pid_t aChildProcess = fork();
-
-		switch (aChildProcess)
+		if (m_broadcast)
 		{
-			case 0:
-				ORWELL_LOG_INFO("Child started");
-				m_broadcastServer->runBroadcastReceiver();
-				return;
-			default:
-				ORWELL_LOG_INFO("Father started, child's pid: " << aChildProcess);
-				m_server->loop();
-				break;
+			// Broadcast receiver and main loop are run in separated threads
+			pid_t aChildProcess = fork();
+
+			switch (aChildProcess)
+			{
+				case 0:
+					ORWELL_LOG_INFO("Child started");
+					m_broadcastServer->runBroadcastReceiver();
+					return;
+				default:
+					ORWELL_LOG_INFO("Father started, child's pid: " << aChildProcess);
+					m_server->loop();
+					break;
+			}
+
+			ORWELL_LOG_INFO("Father continued");
+
+			// Here the father will be waiting for the child to be over
+			int aStatus;
+			while (waitpid(aChildProcess, &aStatus, WNOHANG) == 0)
+			{
+				ORWELL_LOG_INFO("Waiting for process: " << aChildProcess << " to be over");
+				sleep(1);
+			}
 		}
-
-		ORWELL_LOG_INFO("Father continued");
-
-		// Here the father will be waiting for the child to be over
-		int aStatus;
-		while (waitpid(aChildProcess, &aStatus, WNOHANG) == 0)
+		else
 		{
-			ORWELL_LOG_INFO("Waiting for process: " << aChildProcess << " to be over");
-			sleep(1);
+			m_server->loop();
 		}
 	}
 }
@@ -97,7 +105,10 @@ bool Application::stop()
 	if (State::RUNNING == m_state)
 	{
 		m_server->stop();
-		m_broadcastServer->stop();
+		if (m_broadcast)
+		{
+			m_broadcastServer->stop();
+		}
 		aStopped = true;
 		m_state = State::STOPPED;
 	}
@@ -130,7 +141,10 @@ bool Application::initServer()
 	std::string aPullerAddress = "tcp://*:" + boost::lexical_cast<std::string>(m_pullerPort);
 
 	m_server = new orwell::Server(aPullerAddress, aPublisherAddress, m_ticInterval);
-	m_broadcastServer = new orwell::BroadcastServer(aPullerAddress, aPublisherAddress);
+	if (m_broadcast)
+	{
+		m_broadcastServer = new orwell::BroadcastServer(aPullerAddress, aPublisherAddress);
+	}
 	return true;
 }
 
@@ -234,6 +248,7 @@ bool Application::initApplication(int argc, char * argv[])
 		("tic-interval,T",   value<uint32_t>(),    "Interval in tics between GameState messages")
 		("version,v",                              "Print version number and exits")
 		("debug-log,d",                            "Print debug logs on the console")
+		("no-broadcast",                           "Do not start the broadcast.")
 		("dry-run,n",                              "Do not start the server.");
 
 	variables_map aVariablesMap;
@@ -283,6 +298,9 @@ bool Application::initApplication(int argc, char * argv[])
 	{
 		m_consoleDebugLogs = true;
 	}
+
+	m_dryRun = aVariablesMap.count("dry-run");
+	m_broadcast = not aVariablesMap.count("no-broadcast");
 	ORWELL_LOG_DEBUG("m_pullerPort = " << m_pullerPort);
 	ORWELL_LOG_DEBUG("m_publisherPort = " << m_publisherPort);
 	ORWELL_LOG_DEBUG("m_agentPort = " << m_agentPort);
