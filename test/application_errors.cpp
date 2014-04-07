@@ -94,6 +94,7 @@ std::ostream & operator<<(
 #define ARG_TIC_INTERVAL "-T"
 #define ARG_VERSION "-v"
 #define ARG_DEBUG_LOG "-d"
+#define ARG_NO_BROADCAST "--no-broadcast"
 #define ARG_DRY_RUN "-n"
 
 
@@ -139,6 +140,7 @@ static Arguments GetArugments(
 		boost::optional< int64_t > const iTicInterval = boost::none,
 		bool const iVersion = false,
 		bool const iDebugLog = false,
+		bool const iNoBroadcast = false,
 		bool const iDryRun = false)
 {
 	Arguments arguments;
@@ -174,6 +176,10 @@ static Arguments GetArugments(
 	if (iDebugLog)
 	{
 		BuildArgument(ARG_DEBUG_LOG, arguments);
+	}
+	if (iNoBroadcast)
+	{
+		BuildArgument(ARG_NO_BROADCAST, arguments);
 	}
 	if (iDryRun)
 	{
@@ -297,6 +303,21 @@ static void test_same_ports_puller_agent()
 	test_initApplication(test::kFail, GetArugments(false, 41, 42, 42));
 }
 
+static void test_most_arguments()
+{
+	test_initApplication(test::kPass, GetArugments(
+			false, // help
+			41, // publisher port
+			42, // puller port
+			43, // agent port
+			std::string("orwell.rc"), // orwellrc
+			666, // tick interval
+			false, // version
+			true, // debug log
+			true, // no broadcast
+			false)); // dry run
+}
+
 int main()
 {
 	orwell::support::GlobalLogger::Create("application_errors", "orwell.log", true);
@@ -309,6 +330,7 @@ int main()
 	test_same_ports_agent_publisher();
 	test_same_ports_puller_publisher();
 	test_same_ports_puller_agent();
+	test_most_arguments();
 
 	orwell::support::GlobalLogger::Clear();
 	return 0;
