@@ -42,6 +42,7 @@ Application::Application()
 
 Application::~Application()
 {
+	std::cout << "Application::~Application()" << std::endl;
 	clean();
 }
 
@@ -55,21 +56,26 @@ void Application::run(int argc, char * argv[])
 	/***************************************
 	*  Run the server only if all is set  *
 	***************************************/
-	if (initApplication(argc, argv) and initServer() and initConfigurationFile())
+	if (initApplication(argc, argv))
 	{
+		if (not (initServer() and initConfigurationFile()))
+		{
+			return;
+		}
 		m_state = State::INITIALISED;
 		if (m_dryRun)
 		{
 			ORWELL_LOG_INFO("Exit without starting (dry-run).");
+			m_state = State::RUNNING;
 			return;
 		}
-		m_state = State::RUNNING;
 
 		if (m_broadcast)
 		{
 			// Broadcast receiver and main loop are run in separated threads
 			pid_t aChildProcess = fork();
 
+			m_state = State::RUNNING;
 			switch (aChildProcess)
 			{
 				case 0:
@@ -121,8 +127,10 @@ bool Application::stop()
 
 void Application::clean()
 {
+	std::cout << "Application::clean()" << std::endl;
 	if (m_server != nullptr)
 	{
+		std::cout << "delete m_server" << std::endl;
 		delete m_server;
 		m_server = nullptr;
 	}
@@ -132,6 +140,16 @@ void Application::clean()
 		m_broadcastServer = nullptr;
 	}
 }
+
+orwell::Server * Application::accessServer(bool const iUnsafe)
+{
+	if (not iUnsafe)
+	{
+		assert(nullptr != m_server);
+	}
+	return m_server;
+}
+
 
 bool Application::initServer()
 {

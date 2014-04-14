@@ -10,26 +10,35 @@
 
 #include "orwell/support/GlobalLogger.hpp"
 
+#include "Common.hpp"
+
 static void test_1(orwell::Application & ioApplication)
 {
-	orwell::AgentProxy agentProxy(ioApplication);
-	assert(agentProxy.step("stop application"));
-	assert(agentProxy.step("add player Player1"));
-	assert(agentProxy.step("add robot Robot1"));
-	assert(agentProxy.step("start game"));
-	assert(agentProxy.step("stop game"));
-	assert(agentProxy.step("remove robot Robot1"));
-	assert(agentProxy.step("remove player Player1"));
+	orwell::AgentProxy aAgentProxy(ioApplication);
+	assert(aAgentProxy.step("add player Player1"));
+	assert(aAgentProxy.step("add robot Robot1"));
+	assert(aAgentProxy.step("start game"));
+	assert(aAgentProxy.step("stop game"));
+	assert(aAgentProxy.step("remove robot Robot1"));
+	assert(aAgentProxy.step("remove player Player1"));
+	assert(aAgentProxy.step("stop application"));
 }
 
 
 int main()
 {
-	orwell::support::GlobalLogger::Create("application_errors", "orwell.log", true);
-	log4cxx::NDC ndc("application_errors");
-	orwell::Application & application = orwell::Application::GetInstance();
+	orwell::support::GlobalLogger::Create("aApplication_errors", "orwell.log", true);
+	log4cxx::NDC ndc("aApplication_errors");
+	{
+		orwell::Application & aApplication = orwell::Application::GetInstance();
 
-	test_1(application);
+		Arguments aArguments = Common::GetArugments(
+				false, 9001, 9000, 9003,
+				boost::none, 500,
+				false, true, true, true);
+		aApplication.run(aArguments.m_argc, aArguments.m_argv);
+		test_1(aApplication);
+	}
 
 	orwell::support::GlobalLogger::Clear();
 	return 0;

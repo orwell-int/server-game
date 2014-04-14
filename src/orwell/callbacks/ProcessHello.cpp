@@ -64,8 +64,12 @@ void ProcessHello::execute()
 
 		if (aRobotForPlayer.empty())
 		{
-			_game->accessPlayer(aNewPlayerName).setRobot( aAvailableRobot->getName() );
-			_game->accessRobot(aAvailableRobot->getName())->setPlayerName( aNewPlayerName );
+			std::shared_ptr< game::Player > aPlayer = _game->accessPlayer(aNewPlayerName);
+			if (nullptr != aPlayer)
+			{
+				aPlayer->setRobot(aAvailableRobot);
+				aAvailableRobot->setPlayer(aPlayer);
+			}
 		}
 
 		Welcome aWelcome;

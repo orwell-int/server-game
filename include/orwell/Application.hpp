@@ -8,6 +8,7 @@
 namespace orwell {
 class Server;
 class BroadcastServer;
+class AgentProxy;
 
 class Application
 {
@@ -19,6 +20,9 @@ public:
 	bool stop();
 
 	void clean();
+protected :
+	friend class AgentProxy;
+	orwell::Server * accessServer(bool const iUnsafe = false);
 private:
 	Application();
 	Application(Application const & iRight);

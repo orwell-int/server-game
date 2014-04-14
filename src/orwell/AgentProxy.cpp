@@ -1,6 +1,7 @@
 #include "orwell/AgentProxy.hpp"
 
 #include "orwell/Application.hpp"
+#include "orwell/Server.hpp"
 
 #include "orwell/support/GlobalLogger.hpp"
 
@@ -119,18 +120,21 @@ void AgentProxy::addRobot(
 		std::string const & iRobotName)
 {
 	ORWELL_LOG_INFO("add robot " << iRobotName);
+	m_application.accessServer()->accessContext().addRobot(iRobotName);
 }
 
 void AgentProxy::removeRobot(
 		std::string const & iRobotName)
 {
 	ORWELL_LOG_INFO("remove robot " << iRobotName);
+	m_application.accessServer()->accessContext().removeRobot(iRobotName);
 }
 
 void AgentProxy::addPlayer(
 		std::string const & iPlayerName)
 {
 	ORWELL_LOG_INFO("add player " << iPlayerName);
+	m_application.accessServer()->accessContext().addPlayer(iPlayerName);
 }
 
 void AgentProxy::removePlayer(
