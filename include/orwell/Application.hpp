@@ -5,6 +5,8 @@
 #include <vector>
 #include <memory>
 
+#include <boost/optional.hpp>
+
 namespace orwell {
 class Server;
 class BroadcastServer;
@@ -12,40 +14,48 @@ class BroadcastServer;
 class Application
 {
 public:
+	struct Parameters
+	{
+		boost::optional<uint16_t> m_pullerPort;
+		boost::optional<uint16_t> m_publisherPort;
+		boost::optional<uint16_t> m_agentPort;
+		boost::optional<int64_t> m_tickInterval;
+		boost::optional<std::string> m_rcFilePath;
+		boost::optional<bool> m_dryRun;
+		std::vector<std::string> m_robotsList;
+	};
+
 	virtual ~Application() {};
 	static Application & GetInstance();
 
-	void run(int argc, char * argv[]);
+	static bool ReadParameters(int argc, char * argv[], Application::Parameters & oParam);
+	void run(Parameters const & iParam);
 	bool stop();
-
 	void clean();
+
 private:
 	Application();
 	Application(Application const & iRight);
 	Application & operator=(Application const & iRight);
 
 	// Initialization functions
-	bool initApplication(int argc, char * argv[]);
-	bool initConfigurationFile();
-	bool initServer();
-	std::vector<std::string> & tokenizeRobots(std::string const & iRobotsString);
+	bool initServer(Parameters const & iParam);
+	static std::vector<std::string> & tokenizeRobots(std::string const & iRobotsString, Parameters & ioParameters);
+
+	//Parameter parsing and validation
+	static bool ParseParametersFromCommandLine(
+			int argc, char * argv[],
+			Parameters & oParam,
+			std::string & oConfigFilePath);
+	static bool ParseParametersFromConfigFile(
+			Parameters & oParam,
+			std::string const & oConfigFilePath);
+	static bool CheckParametersConsistency(Parameters const & iParam);
 
 	// Instance of the server running
 	orwell::Server * m_server;
 	// Broadcast server for UDP discovery
 	orwell::BroadcastServer * m_broadcastServer;
-
-	// Configurations retrieved either from rc file or from command line
-	// Command line has the priority over the rc file
-	uint16_t m_pullerPort;
-	uint16_t m_publisherPort;
-	uint16_t m_agentPort;
-	uint32_t m_ticInterval;
-	std::string m_rcFilePath;
-	std::vector<std::string> m_robotsList;
-	bool m_consoleDebugLogs;
-	bool m_dryRun;
-
 };
 }
 

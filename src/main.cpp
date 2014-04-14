@@ -14,18 +14,24 @@ static void signal_handler(int /*signum*/)
 
 int main(int argc, char *argv[])
 {
-	orwell::support::GlobalLogger::Create("server_game", "orwell.log", true);
 	// Register the signal handler
 	signal(SIGINT, signal_handler);
 	signal(SIGTERM, signal_handler);
 
 	// Run the application
-	orwell::Application::GetInstance().run(argc, argv);
+	orwell::Application::Parameters aParameters;
+	//int aErrorCode; todo
+	if (orwell::Application::ReadParameters(argc, argv, aParameters))
+	{
+		//aErrorCode = orwell::Application::GetInstance().run(aParameters); todo
+		orwell::Application::GetInstance().run(aParameters);
+	}
 
 	// Clean the application before leaving
 	orwell::Application::GetInstance().clean();
 
 	orwell::support::GlobalLogger::Clear();
 	return 0;
+	//return aErrorCode; todo
 }
 
