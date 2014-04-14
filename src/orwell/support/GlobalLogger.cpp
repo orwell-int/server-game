@@ -73,18 +73,16 @@ void GlobalLogger::Create(
 		bool const iDebug)
 {
 	//std::cout << "GlobalLogger::Create()" << std::endl;
-	if (nullptr != GlobalLogger::m_Garbage)
+	if (nullptr == GlobalLogger::m_Garbage)
 	{
-		delete GlobalLogger::m_Garbage;
+		GlobalLogger::m_Garbage = new GlobalLogger::Pimpl(iOutput, iDebug);
 	}
-	GlobalLogger::m_Garbage = new GlobalLogger::Pimpl(iOutput, iDebug);
 	//log4cxx::NDC ndc(iName);
-	if (nullptr != GlobalLogger::m_ActiveLogger)
+	if (nullptr == GlobalLogger::m_ActiveLogger)
 	{
-		delete GlobalLogger::m_ActiveLogger;
+		GlobalLogger::m_ActiveLogger = log4cxx::Logger::getLogger(iName);
+		GlobalLogger::m_ActiveLogger->setLevel(log4cxx::Level::getDebug());
 	}
-	GlobalLogger::m_ActiveLogger = log4cxx::Logger::getLogger(iName);
-	GlobalLogger::m_ActiveLogger->setLevel(log4cxx::Level::getDebug());
 }
 
 log4cxx::LoggerPtr GlobalLogger::GetActiveLogger()

@@ -12,10 +12,7 @@
 
 #include <log4cxx/ndc.h>
 
-// Yes it is a hack
-#define private protected
 #include "orwell/Application.hpp"
-#undef private
 
 #include "orwell/support/GlobalLogger.hpp"
 
@@ -204,44 +201,6 @@ static ReturnType WrappExceptionsCall(
 }
 
 
-class Application : public orwell::Application
-{
-public :
-	Application();
-	bool call_initApplication(int argc, char * argv[]);
-	bool call_initConfigurationFile();
-	bool call_initServer();
-protected :
-	static bool InitApplication(int argc, char * argv[])
-	{
-		return Application::m_CurrentApplication.InitApplication(argc, argv);
-	}
-	static Application m_CurrentApplication;
-};
-
-Application::Application()
-{
-}
-
-bool Application::call_initApplication(int argc, char * argv[])
-{
-	return WrappExceptionsCall< bool >(
-			std::bind(&Application::initApplication, this, argc, argv), false);
-}
-
-bool Application::call_initConfigurationFile()
-{
-	return WrappExceptionsCall< bool >(
-			std::bind(&Application::initConfigurationFile, this), false);
-}
-
-bool Application::call_initServer()
-{
-	return WrappExceptionsCall< bool >(
-			std::bind(&Application::initServer, this), false);
-}
-
-
 namespace test
 {
 enum Status
@@ -252,49 +211,58 @@ enum Status
 }
 
 
-static void test_initApplication(
+static void test_ReadParameters(
 		test::Status const iTestStatus,
 		Arguments iArguments)
 {
 	ORWELL_LOG_DEBUG("arguments:" << iArguments);
-	Application application;
-	bool result = application.call_initApplication(iArguments.m_argc, iArguments.m_argv);
+	orwell::Application::Parameters aParameters;
+	bool result = orwell::Application::ReadParameters(
+			iArguments.m_argc, iArguments.m_argv, aParameters);
 	assert(iTestStatus == result);
 }
 
 static void test_nothing()
 {
-	test_initApplication(test::kFail, GetArugments());
+	ORWELL_LOG_DEBUG("test_nothing");
+	// we get default arguments
+	test_ReadParameters(test::kPass, GetArugments());
 }
 
 static void test_wrong_port_range_publisher_1()
 {
-	test_initApplication(test::kFail, GetArugments(false, 0, 42, 43));
+	ORWELL_LOG_DEBUG("test_wrong_port_range_publisher_1");
+	test_ReadParameters(test::kFail, GetArugments(false, 0, 42, 43));
 }
 
 static void test_wrong_port_range_publisher_2()
 {
-	test_initApplication(test::kPass, GetArugments(false, -1024, 42, 43));
+	ORWELL_LOG_DEBUG("test_wrong_port_range_publisher_2");
+	test_ReadParameters(test::kPass, GetArugments(false, -1024, 42, 43));
 }
 
 static void test_wrong_port_range_publisher_3()
 {
-	test_initApplication(test::kFail, GetArugments(false, 99999, 42, 43));
+	ORWELL_LOG_DEBUG("test_wrong_port_range_publisher_3");
+	test_ReadParameters(test::kFail, GetArugments(false, 99999, 42, 43));
 }
 
 static void test_same_ports_agent_publisher()
 {
-	test_initApplication(test::kFail, GetArugments(false, 41, 42, 41));
+	ORWELL_LOG_DEBUG("test_same_ports_agent_publisher");
+	test_ReadParameters(test::kFail, GetArugments(false, 41, 42, 41));
 }
 
 static void test_same_ports_puller_publisher()
 {
-	test_initApplication(test::kFail, GetArugments(false, 41, 41, 43));
+	ORWELL_LOG_DEBUG("test_same_ports_puller_publisher");
+	test_ReadParameters(test::kFail, GetArugments(false, 41, 41, 43));
 }
 
 static void test_same_ports_puller_agent()
 {
-	test_initApplication(test::kFail, GetArugments(false, 41, 42, 42));
+	ORWELL_LOG_DEBUG("test_same_ports_puller_agent");
+	test_ReadParameters(test::kFail, GetArugments(false, 41, 42, 42));
 }
 
 int main()

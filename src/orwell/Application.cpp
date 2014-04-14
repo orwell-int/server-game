@@ -55,17 +55,17 @@ bool Application::ReadParameters(
 	if (not oParam.m_publisherPort)
 	{
 		oParam.m_publisherPort = 9000;
-		ORWELL_LOG_DEBUG("by default, publisher-port = " << oParam.m_publisherPort );
+		ORWELL_LOG_DEBUG("by default, publisher-port = " << oParam.m_publisherPort);
 	}
 	if (not oParam.m_pullerPort)
 	{
 		oParam.m_pullerPort = 9001;
-		ORWELL_LOG_DEBUG("by default, puller-port = " << oParam.m_pullerPort );
+		ORWELL_LOG_DEBUG("by default, puller-port = " << oParam.m_pullerPort);
 	}
 	if (not oParam.m_tickInterval)
 	{
 		oParam.m_tickInterval = 500;
-		ORWELL_LOG_DEBUG("by default, tick interval = " << oParam.m_tickInterval );
+		ORWELL_LOG_DEBUG("by default, tick interval = " << oParam.m_tickInterval);
 	}
 
 	return CheckParametersConsistency(oParam);
@@ -92,7 +92,15 @@ bool Application::ParseParametersFromCommandLine(
 				("dry-run,n",                              "Do not start the server.");
 
 	variables_map aVariablesMap;
+	try
+	{
 	store(parse_command_line(argc, argv, aDescription), aVariablesMap);
+	}
+	catch (boost::program_options::error const & aParseException)
+	{
+		std::cerr << "ERROR: " << aParseException.what() << std::endl << std::endl;
+		return false;
+	}
 	notify(aVariablesMap);
 
 	// do we log the debug information on the console ?
@@ -222,9 +230,9 @@ bool Application::CheckParametersConsistency(Parameters const & iParam)
 		ORWELL_LOG_ERROR("Puller and agent ports have the same value (" << iParam.m_agentPort << ") which is not allowed.");
 		return false;
 	}
-	if (iParam.m_publisherPort == 0 or iParam.m_pullerPort == 0)
+	if (*iParam.m_publisherPort == 0 or *iParam.m_pullerPort == 0)
 	{
-		ORWELL_LOG_ERROR("Missing port information. Ports are \n Puller=" << iParam.m_pullerPort << "\n Publisher=" << iParam.m_publisherPort);
+		ORWELL_LOG_ERROR("Invalid port information. Ports are \n Puller=" << iParam.m_pullerPort << "\n Publisher=" << iParam.m_publisherPort);
 		return false;
 	}
 	return true;
