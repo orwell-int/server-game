@@ -27,8 +27,8 @@ Application & Application::GetInstance()
 }
 
 Application::Application()
-: m_server(nullptr)
-, m_broadcastServer(nullptr)
+	: m_server(nullptr)
+	, m_broadcastServer(nullptr)
 {
 }
 
@@ -89,6 +89,7 @@ bool Application::ParseParametersFromCommandLine(
 				("tick-interval,T",  value<uint32_t>(),    "Interval in ticks between GameState messages")
 				("version,v",                              "Print version number and exits")
 				("debug-log,d",                            "Print debug logs on the console")
+				("no-broadcast",                           "Do not start the broadcast.")
 				("dry-run,n",                              "Do not start the server.");
 
 	variables_map aVariablesMap;
@@ -153,6 +154,11 @@ bool Application::ParseParametersFromCommandLine(
 	{
 		oParam.m_dryRun = aVariablesMap["dry-run"].as<bool>();
 		ORWELL_LOG_DEBUG("this is a dry run");
+	}
+	if (aVariablesMap.count("dry-run"))
+	{
+		oParam.m_broadcast = not aVariablesMap["no-broadcast"].as<bool>();
+		ORWELL_LOG_DEBUG("do not start broadcast server");
 	}
 	return true;
 }
@@ -245,29 +251,41 @@ void Application::run(Parameters const & iParam)
 	 ***************************************/
 	if (initServer(iParam))
 	{
-		// Broadcast receiver and main loop are run in separated threads
-		pid_t aChildProcess = fork();
-
-		switch (aChildProcess)
+		if (iParam.m_dryRun)
 		{
-		case 0:
-			ORWELL_LOG_INFO("Child started");
-			m_broadcastServer->runBroadcastReceiver();
+			ORWELL_LOG_INFO("Exit without starting (dry-run).");
 			return;
-		default:
-			ORWELL_LOG_INFO("Father started, child's pid: " << aChildProcess);
-			m_server->loop();
-			break;
 		}
-
-		ORWELL_LOG_INFO("Father continued");
-
-		// Here the father will be waiting for the child to be over
-		int aStatus;
-		while (waitpid(aChildProcess, &aStatus, WNOHANG) == 0)
+		if (iParam.m_broadcast)
 		{
-			ORWELL_LOG_INFO("Waiting for process: " << aChildProcess << " to be over");
-			sleep(1);
+			// Broadcast receiver and main loop are run in separated threads
+			pid_t aChildProcess = fork();
+
+			switch (aChildProcess)
+			{
+				case 0:
+					ORWELL_LOG_INFO("Child started");
+					m_broadcastServer->runBroadcastReceiver();
+					return;
+				default:
+					ORWELL_LOG_INFO("Father started, child's pid: " << aChildProcess);
+					m_server->loop();
+					break;
+			}
+
+			ORWELL_LOG_INFO("Father continued");
+
+			// Here the father will be waiting for the child to be over
+			int aStatus;
+			while (waitpid(aChildProcess, &aStatus, WNOHANG) == 0)
+			{
+				ORWELL_LOG_INFO("Waiting for process: " << aChildProcess << " to be over");
+				sleep(1);
+			}
+		}
+		else
+		{
+			m_server->loop();
 		}
 	}
 }
@@ -275,18 +293,21 @@ void Application::run(Parameters const & iParam)
 bool Application::stop()
 {
 	m_server->stop();
-	m_broadcastServer->stop();
+	if (nullptr != m_broadcastServer)
+	{
+		m_broadcastServer->stop();
+	}
 	return true;
 }
 
 void Application::clean()
 {
-	if (m_server != nullptr)
+	if (nullptr != m_server)
 	{
 		delete m_server;
 		m_server = nullptr;
 	}
-	if (m_broadcastServer != nullptr)
+	if (nullptr != m_broadcastServer)
 	{
 		delete m_broadcastServer;
 		m_broadcastServer = nullptr;
@@ -301,7 +322,10 @@ bool Application::initServer(Parameters const & iParam)
 	std::string aPullerAddress = "tcp://*:" + boost::lexical_cast<std::string>( iParam.m_pullerPort) ;
 
 	m_server = new orwell::Server(aPullerAddress, aPublisherAddress, iParam.m_tickInterval.get());
-	m_broadcastServer = new orwell::BroadcastServer(aPullerAddress, aPublisherAddress);
+	if (iParam.m_broadcast)
+	{
+		m_broadcastServer = new orwell::BroadcastServer(aPullerAddress, aPublisherAddress);
+	}
 	return true;
 }
 

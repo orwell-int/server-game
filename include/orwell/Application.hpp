@@ -22,6 +22,7 @@ public:
 		boost::optional<int64_t> m_tickInterval;
 		boost::optional<std::string> m_rcFilePath;
 		boost::optional<bool> m_dryRun;
+		boost::optional<bool> m_broadcast;
 		std::vector<std::string> m_robotsList;
 	};
 
