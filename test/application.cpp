@@ -27,13 +27,35 @@
 
 static void test_ReadParameters(
 		Status const iTestStatus,
-		Arguments iArguments)
+		Arguments iArguments,
+		boost::optional< orwell::Application::Parameters > iExpectedParameters
+			= boost::none)
 {
 	ORWELL_LOG_DEBUG("arguments:" << iArguments);
 	orwell::Application::Parameters aParameters;
 	bool result = orwell::Application::ReadParameters(
 			iArguments.m_argc, iArguments.m_argv, aParameters);
 	assert((Status::PASS == iTestStatus) == result);
+	if (iExpectedParameters)
+	{
+		orwell::Application::Parameters & aExpectedParameters = *iExpectedParameters;
+		if (aExpectedParameters != aParameters)
+		{
+			//// epic failure
+			//ORWELL_LOG_DEBUG("expected parameters: " << aExpectedParameters);
+			{
+				std::ostringstream aStream;
+				aStream << aExpectedParameters;
+				ORWELL_LOG_DEBUG("expected parameters: " << aStream.str());
+			}
+			{
+				std::ostringstream aStream;
+				aStream << aParameters;
+				ORWELL_LOG_DEBUG("computed parameters: " << aStream.str());
+			}
+		}
+		assert(aParameters == *iExpectedParameters);
+	}
 }
 
 static void test_nothing()
@@ -81,6 +103,7 @@ static void test_same_ports_puller_agent()
 
 static void test_most_arguments()
 {
+	ORWELL_LOG_DEBUG("test_most_arguments");
 	test_ReadParameters(Status::PASS, Common::GetArugments(
 			false, // help
 			41, // publisher port
@@ -92,6 +115,32 @@ static void test_most_arguments()
 			true, // debug log
 			true, // no broadcast
 			false)); // dry run
+}
+
+static void test_parse_command_line()
+{
+	ORWELL_LOG_DEBUG("test_parse_command_line");
+	orwell::Application::Parameters aExpectedParameters = {
+				2, // puller port
+				1, // publisher port
+				3, // agent port
+				666, // tick interval
+				boost::none, // rc file path
+				true, // dry run
+				true, // broadcast
+			};
+	test_ReadParameters(Status::PASS, Common::GetArugments(
+			false, // help
+			1, // publisher port
+			2, // puller port
+			3, // agent port
+			boost::none, // std::string("orwell.rc"), // orwellrc
+			666, // tick interval
+			false, // version
+			true, // debug log
+			true, // no broadcast
+			true), // dry run
+			aExpectedParameters);
 }
 
 int main()
@@ -107,6 +156,7 @@ int main()
 	test_same_ports_puller_publisher();
 	test_same_ports_puller_agent();
 	test_most_arguments();
+	test_parse_command_line();
 
 	orwell::support::GlobalLogger::Clear();
 	return 0;

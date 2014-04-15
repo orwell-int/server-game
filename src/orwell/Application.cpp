@@ -67,6 +67,14 @@ bool Application::ReadParameters(
 		oParam.m_tickInterval = 500;
 		ORWELL_LOG_DEBUG("by default, tick interval = " << oParam.m_tickInterval);
 	}
+	if (not oParam.m_broadcast)
+	{
+		oParam.m_broadcast = true;
+	}
+	if (not oParam.m_dryRun)
+	{
+		oParam.m_dryRun = false;
+	}
 
 	return CheckParametersConsistency(oParam);
 }
@@ -95,7 +103,7 @@ bool Application::ParseParametersFromCommandLine(
 	variables_map aVariablesMap;
 	try
 	{
-	store(parse_command_line(argc, argv, aDescription), aVariablesMap);
+		store(parse_command_line(argc, argv, aDescription), aVariablesMap);
 	}
 	catch (boost::program_options::error const & aParseException)
 	{
@@ -152,12 +160,13 @@ bool Application::ParseParametersFromCommandLine(
 
 	if (aVariablesMap.count("dry-run"))
 	{
-		oParam.m_dryRun = aVariablesMap["dry-run"].as<bool>();
+		oParam.m_dryRun = true;
 		ORWELL_LOG_DEBUG("this is a dry run");
 	}
-	if (aVariablesMap.count("dry-run"))
+
+	if (aVariablesMap.count("broadcast"))
 	{
-		oParam.m_broadcast = not aVariablesMap["no-broadcast"].as<bool>();
+		oParam.m_broadcast = false;
 		ORWELL_LOG_DEBUG("do not start broadcast server");
 	}
 	return true;
@@ -360,4 +369,42 @@ std::vector<std::string> & Application::tokenizeRobots(std::string const & iRobo
 	return ioParameters.m_robotsList;
 }
 
+bool operator!=(
+		orwell::Application::Parameters const & iLeft,
+		orwell::Application::Parameters const & iRight)
+{
+	return (not (iLeft == iRight));
+}
+
+bool operator==(
+		orwell::Application::Parameters const & iLeft,
+		orwell::Application::Parameters const & iRight)
+{
+	return ((iLeft.m_pullerPort == iRight.m_pullerPort)
+		and (iLeft.m_publisherPort == iRight.m_publisherPort)
+		and (iLeft.m_agentPort == iRight.m_agentPort)
+		and (iLeft.m_tickInterval == iRight.m_tickInterval)
+		and (iLeft.m_rcFilePath == iRight.m_rcFilePath)
+		and (iLeft.m_dryRun == iRight.m_dryRun)
+		and (iLeft.m_broadcast == iRight.m_broadcast)
+		and (iLeft.m_robotsList == iRight.m_robotsList));
+}
+
+std::ostream & operator<<(
+		std::ostream & ioOstream,
+		orwell::Application::Parameters const & iParameters)
+{
+	ioOstream << "puller port [" << iParameters.m_pullerPort << "] ; ";
+	ioOstream << "publisher port [" << iParameters.m_publisherPort << "] ; ";
+	ioOstream << "agent port [" << iParameters.m_agentPort << "] ; ";
+	ioOstream << "tick interval [" << iParameters.m_tickInterval << "] ; ";
+	ioOstream << "rc file path [" << iParameters.m_rcFilePath << "] ; ";
+	ioOstream << "dry run [" << iParameters.m_dryRun << "] ; ";
+	ioOstream << "broadcast [" << iParameters.m_broadcast << "] ";
+	ioOstream << "robots list [";
+	std::ostream_iterator< std::string > aOut(ioOstream,", ");
+	std::copy(iParameters.m_robotsList.begin(), iParameters.m_robotsList.end(), aOut);
+	ioOstream << "]";
+	return ioOstream;
+}
 

@@ -51,7 +51,7 @@ Arguments::Arguments(Arguments && oOld)
 	oOld.m_argc = 0;
 }
 
-void Arguments::addArgument(char * const argument)
+void Arguments::addArgument(char const * const iArgument)
 {
 	m_argc += 1;
 	char ** tmp_argv = (char **)realloc(m_argv, m_argc * sizeof(char *));
@@ -61,7 +61,11 @@ void Arguments::addArgument(char * const argument)
 		throw 1;
 	}
 	m_argv = tmp_argv;
-	m_argv[m_argc - 1] = argument;
+	size_t aSize = strlen(iArgument) + 1;
+	char * aCopy = new char[aSize];
+	aCopy[aSize - 1] = '\0';
+	strncpy(aCopy, iArgument, aSize - 1);
+	m_argv[m_argc - 1] = aCopy;
 }
 
 std::ostream & operator<<(
@@ -76,13 +80,10 @@ std::ostream & operator<<(
 }
 
 static void BuildArgument(
-		char const * const iName,
+		char const * const iValue,
 		Arguments & ioArguments)
 {
-	size_t size = strlen(iName) + 1;
-	char * str = new char(size);
-	str = strncpy(str, iName, size);
-	ioArguments.addArgument(str);
+	ioArguments.addArgument(iValue);
 }
 
 

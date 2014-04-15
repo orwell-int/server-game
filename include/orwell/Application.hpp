@@ -60,3 +60,14 @@ private:
 };
 }
 
+bool operator==(
+		orwell::Application::Parameters const & iLeft,
+		orwell::Application::Parameters const & iRight);
+
+bool operator!=(
+		orwell::Application::Parameters const & iLeft,
+		orwell::Application::Parameters const & iRight);
+
+std::ostream & operator<<(
+		std::ostream & ioOstream,
+		orwell::Application::Parameters const & iParameters);

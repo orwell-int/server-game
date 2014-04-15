@@ -30,7 +30,7 @@ struct Arguments
 
 	Arguments(Arguments && oOld);
 
-	void addArgument(char * const argument);
+	void addArgument(char const * const argument);
 };
 
 class Common
