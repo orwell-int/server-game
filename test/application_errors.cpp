@@ -25,73 +25,70 @@
 #include "Common.hpp"
 
 
-namespace test
+enum class Status
 {
-enum Status
-{
-	kFail,
-	kPass,
+	FAIL,
+	PASS,
 };
-}
 
 
 static void test_ReadParameters(
-		test::Status const iTestStatus,
+		Status const iTestStatus,
 		Arguments iArguments)
 {
 	ORWELL_LOG_DEBUG("arguments:" << iArguments);
 	orwell::Application::Parameters aParameters;
 	bool result = orwell::Application::ReadParameters(
 			iArguments.m_argc, iArguments.m_argv, aParameters);
-	assert((test::kPass == iTestStatus) == result);
+	assert((Status::PASS == iTestStatus) == result);
 }
 
 static void test_nothing()
 {
 	ORWELL_LOG_DEBUG("test_nothing");
 	// we get default arguments
-	test_ReadParameters(test::kPass, Common::GetArugments());
+	test_ReadParameters(Status::PASS, Common::GetArugments());
 }
 
 static void test_wrong_port_range_publisher_1()
 {
 	ORWELL_LOG_DEBUG("test_wrong_port_range_publisher_1");
-	test_ReadParameters(test::kFail, Common::GetArugments(false, 0, 42, 43));
+	test_ReadParameters(Status::FAIL, Common::GetArugments(false, 0, 42, 43));
 }
 
 static void test_wrong_port_range_publisher_2()
 {
 	ORWELL_LOG_DEBUG("test_wrong_port_range_publisher_2");
-	test_ReadParameters(test::kPass, Common::GetArugments(false, -1024, 42, 43));
+	test_ReadParameters(Status::PASS, Common::GetArugments(false, -1024, 42, 43));
 }
 
 static void test_wrong_port_range_publisher_3()
 {
 	ORWELL_LOG_DEBUG("test_wrong_port_range_publisher_3");
-	test_ReadParameters(test::kFail, Common::GetArugments(false, 99999, 42, 43));
+	test_ReadParameters(Status::FAIL, Common::GetArugments(false, 99999, 42, 43));
 }
 
 static void test_same_ports_agent_publisher()
 {
 	ORWELL_LOG_DEBUG("test_same_ports_agent_publisher");
-	test_ReadParameters(test::kFail, Common::GetArugments(false, 41, 42, 41));
+	test_ReadParameters(Status::FAIL, Common::GetArugments(false, 41, 42, 41));
 }
 
 static void test_same_ports_puller_publisher()
 {
 	ORWELL_LOG_DEBUG("test_same_ports_puller_publisher");
-	test_ReadParameters(test::kFail, Common::GetArugments(false, 41, 41, 43));
+	test_ReadParameters(Status::FAIL, Common::GetArugments(false, 41, 41, 43));
 }
 
 static void test_same_ports_puller_agent()
 {
 	ORWELL_LOG_DEBUG("test_same_ports_puller_agent");
-	test_ReadParameters(test::kFail, Common::GetArugments(false, 41, 42, 42));
+	test_ReadParameters(Status::FAIL, Common::GetArugments(false, 41, 42, 42));
 }
 
 static void test_most_arguments()
 {
-	test_ReadParameters(test::kPass, Common::GetArugments(
+	test_ReadParameters(Status::PASS, Common::GetArugments(
 			false, // help
 			41, // publisher port
 			42, // puller port
