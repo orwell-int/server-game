@@ -25,28 +25,6 @@
 #include "Common.hpp"
 
 
-template < typename ReturnType >
-static ReturnType WrappExceptionsCall(
-		std::function< ReturnType (void) > iFunction,
-		ReturnType iResultOnError)
-{
-	try
-	{
-		return iFunction();
-	}
-	catch (std::exception const & exception)
-	{
-		std::cerr << exception.what() << std::endl;
-		return iResultOnError;
-	}
-	catch (...)
-	{
-		std::cerr << "Unknown exception caught" << std::endl;
-		return iResultOnError;
-	}
-}
-
-
 namespace test
 {
 enum Status
