@@ -30,47 +30,56 @@ struct Arguments
 	char ** m_argv;
 	uint8_t m_argc;
 
-	Arguments()
-		: m_argv(nullptr)
-		, m_argc(0)
-	{
-	}
+	Arguments();
 
-	~Arguments()
-	{
-		for (size_t i = 0 ; i < m_argc ; ++i)
-		{
-			delete [] m_argv[i];
-		}
-		if (nullptr != m_argv)
-		{
-			free(m_argv);
-			m_argv = nullptr;
-		}
-		m_argc = 0;
-	}
+	~Arguments();
 
-	Arguments(Arguments && oOld)
-		: m_argv(oOld.m_argv)
-		, m_argc(oOld.m_argc)
-	{
-		oOld.m_argv = nullptr;
-		oOld.m_argc = 0;
-	}
+	Arguments(Arguments && oOld);
 
-	void addArgument(char * const argument)
-	{
-		m_argc += 1;
-		char ** tmp_argv = (char **)realloc(m_argv, m_argc * sizeof(char *));
-		if (nullptr == tmp_argv)
-		{
-			std::cerr << "Out of memory !" << std::endl;
-			throw 1;
-		}
-		m_argv = tmp_argv;
-		m_argv[m_argc - 1] = argument;
-	}
+	void addArgument(char * const argument);
 };
+
+
+Arguments::Arguments()
+	: m_argv(nullptr)
+	, m_argc(0)
+{
+}
+
+Arguments::~Arguments()
+{
+	for (size_t i = 0 ; i < m_argc ; ++i)
+	{
+		delete [] m_argv[i];
+	}
+	if (nullptr != m_argv)
+	{
+		free(m_argv);
+		m_argv = nullptr;
+	}
+	m_argc = 0;
+}
+
+Arguments::Arguments(Arguments && oOld)
+	: m_argv(oOld.m_argv)
+	, m_argc(oOld.m_argc)
+{
+	oOld.m_argv = nullptr;
+	oOld.m_argc = 0;
+}
+
+void Arguments::addArgument(char * const argument)
+{
+	m_argc += 1;
+	char ** tmp_argv = (char **)realloc(m_argv, m_argc * sizeof(char *));
+	if (nullptr == tmp_argv)
+	{
+		std::cerr << "Out of memory !" << std::endl;
+		throw 1;
+	}
+	m_argv = tmp_argv;
+	m_argv[m_argc - 1] = argument;
+}
 
 std::ostream & operator<<(
 		std::ostream & ioOstream,
