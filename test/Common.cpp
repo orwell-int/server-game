@@ -9,7 +9,161 @@
 
 #include <unistd.h>
 
+#define ARG_HELP "-h"
+#define ARG_PUBLISHER_PORT "-P"
+#define ARG_PULLER_PORT "-p"
+#define ARG_AGENT_PORT "-A"
+#define ARG_ORWELLRC "-r"
+#define ARG_TIC_INTERVAL "-T"
+#define ARG_VERSION "-v"
+#define ARG_DEBUG_LOG "-d"
+#define ARG_NO_BROADCAST "--no-broadcast"
+#define ARG_DRY_RUN "-n"
+
+
 using namespace log4cxx;
+
+Arguments::Arguments()
+	: m_argv(nullptr)
+	, m_argc(0)
+{
+}
+
+Arguments::~Arguments()
+{
+	for (size_t i = 0 ; i < m_argc ; ++i)
+	{
+		delete [] m_argv[i];
+	}
+	if (nullptr != m_argv)
+	{
+		free(m_argv);
+		m_argv = nullptr;
+	}
+	m_argc = 0;
+}
+
+Arguments::Arguments(Arguments && oOld)
+	: m_argv(oOld.m_argv)
+	, m_argc(oOld.m_argc)
+{
+	oOld.m_argv = nullptr;
+	oOld.m_argc = 0;
+}
+
+void Arguments::addArgument(char * const argument)
+{
+	m_argc += 1;
+	char ** tmp_argv = (char **)realloc(m_argv, m_argc * sizeof(char *));
+	if (nullptr == tmp_argv)
+	{
+		std::cerr << "Out of memory !" << std::endl;
+		throw 1;
+	}
+	m_argv = tmp_argv;
+	m_argv[m_argc - 1] = argument;
+}
+
+std::ostream & operator<<(
+		std::ostream & ioOstream,
+		Arguments const & iArguments)
+{
+	for (size_t i = 0 ; i < iArguments.m_argc ; ++i)
+	{
+		ioOstream << " " << iArguments.m_argv[i];
+	}
+	return ioOstream;
+}
+
+static void BuildArgument(
+		char const * const iName,
+		Arguments & ioArguments)
+{
+	size_t size = strlen(iName) + 1;
+	char * str = new char(size);
+	str = strncpy(str, iName, size);
+	ioArguments.addArgument(str);
+}
+
+
+template< typename INT >
+static void BuildIntArgument(
+		char const * const iName,
+		INT const iValue,
+		Arguments & ioArguments)
+{
+	BuildArgument(iName, ioArguments);
+	std::string aString = std::to_string(iValue);
+	BuildArgument(aString.c_str(), ioArguments);
+}
+
+
+static void BuildStrArgument(
+		char const * const iName,
+		char const * const iValue,
+		Arguments & ioArguments)
+{
+	BuildArgument(iName, ioArguments);
+	BuildArgument(iValue, ioArguments);
+}
+
+Arguments Common::GetArugments(
+		bool const iHelp,
+		boost::optional< int32_t > const iPublisherPort,
+		boost::optional< int32_t > const iPullerPort,
+		boost::optional< int32_t > const iAgentPort,
+		boost::optional< std::string > const iOrwellRc,
+		boost::optional< int64_t > const iTicInterval,
+		bool const iVersion,
+		bool const iDebugLog,
+		bool const iNoBroadcast,
+		bool const iDryRun)
+{
+	Arguments arguments;
+	BuildArgument("FAKE", arguments);
+	if (iHelp)
+	{
+		BuildArgument(ARG_HELP, arguments);
+	}
+	if (iPublisherPort)
+	{
+		BuildIntArgument(ARG_PUBLISHER_PORT, *iPublisherPort, arguments);
+	}
+	if (iPullerPort)
+	{
+		BuildIntArgument(ARG_PULLER_PORT, *iPullerPort, arguments);
+	}
+	if (iAgentPort)
+	{
+		BuildIntArgument(ARG_AGENT_PORT, *iAgentPort, arguments);
+	}
+	if (iOrwellRc)
+	{
+		BuildStrArgument(ARG_ORWELLRC, (*iOrwellRc).c_str(), arguments);
+	}
+	if (iTicInterval)
+	{
+		BuildIntArgument(ARG_TIC_INTERVAL, *iTicInterval, arguments);
+	}
+	if (iVersion)
+	{
+		BuildArgument(ARG_VERSION, arguments);
+	}
+	if (iDebugLog)
+	{
+		BuildArgument(ARG_DEBUG_LOG, arguments);
+	}
+	if (iNoBroadcast)
+	{
+		BuildArgument(ARG_NO_BROADCAST, arguments);
+	}
+	if (iDryRun)
+	{
+		BuildArgument(ARG_DRY_RUN, arguments);
+	}
+	return arguments;
+}
+
 
 bool Common::ExpectMessage(
 		std::string const & iType,
