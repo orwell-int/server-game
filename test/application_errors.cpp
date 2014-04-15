@@ -25,13 +25,6 @@
 #include "Common.hpp"
 
 
-enum class Status
-{
-	FAIL,
-	PASS,
-};
-
-
 static void test_ReadParameters(
 		Status const iTestStatus,
 		Arguments iArguments)

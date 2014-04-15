@@ -13,6 +13,12 @@ class RawMessage;
 }
 }
 
+enum class Status
+{
+	FAIL,
+	PASS,
+};
+
 struct Arguments
 {
 	char ** m_argv;
