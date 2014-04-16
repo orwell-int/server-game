@@ -53,8 +53,8 @@ static void test_ReadParameters(
 				aStream << aParameters;
 				ORWELL_LOG_DEBUG("computed parameters: " << aStream.str());
 			}
+			throw false;
 		}
-		assert(aParameters == *iExpectedParameters);
 	}
 }
 
@@ -121,27 +121,280 @@ static void test_parse_command_line()
 {
 	ORWELL_LOG_DEBUG("test_parse_command_line");
 	orwell::Application::Parameters aExpectedParameters = {
-				2, // puller port
-				1, // publisher port
-				3, // agent port
-				666, // tick interval
-				boost::none, // rc file path
-				true, // dry run
-				true, // broadcast
-			};
+		2, // puller port
+		1, // publisher port
+		3, // agent port
+		666, // tick interval
+		boost::none, // rc file path
+		true, // dry run
+		true, // broadcast
+		//{}, // robot ids
+		{}, // robot descriptors
+		{}, // teams
+	};
 	test_ReadParameters(Status::PASS, Common::GetArugments(
-			false, // help
-			1, // publisher port
-			2, // puller port
-			3, // agent port
-			boost::none, // std::string("orwell.rc"), // orwellrc
-			666, // tick interval
-			false, // version
-			true, // debug log
-			true, // no broadcast
-			true), // dry run
+				false, // help
+				1, // publisher port
+				2, // puller port
+				3, // agent port
+				boost::none, // std::string("orwell.rc"), // orwellrc
+				666, // tick interval
+				false, // version
+				true, // debug log
+				true, // no broadcast
+				true), // dry run
 			aExpectedParameters);
 }
+
+#include <stdio.h>
+
+struct TempFile
+{
+	std::string m_fileName;
+
+	TempFile(std::string const & iContent);
+
+	~TempFile();
+};
+
+TempFile::TempFile(std::string const & iContent)
+{
+	char aFileName[L_tmpnam];
+	tmpnam(aFileName);
+	FILE * aFile = fopen(aFileName, "w");
+	size_t const aWritten = fputs(iContent.c_str(), aFile);
+	if (aWritten != iContent.size())
+	{
+		std::cerr << "Temporary file not create properly." << std::endl;
+	}
+	fclose(aFile);
+	m_fileName = std::string(aFileName);
+}
+
+TempFile::~TempFile()
+{
+	if (not m_fileName.empty())
+	{
+		remove(m_fileName.c_str());
+		m_fileName.erase();
+	}
+}
+
+// command line has priority over the file
+static void test_parse_command_line_and_file_1()
+{
+	ORWELL_LOG_DEBUG("test_parse_command_line_and_file_1");
+	TempFile aTempFile(std::string(R"(
+[server]
+publisher-port = 19000
+puller-port    = 19001
+agent-port     = 19003
+tic-interval   = 1500
+)"));
+	orwell::Application::Parameters aExpectedParameters = {
+		2, // puller port
+		1, // publisher port
+		3, // agent port
+		666, // tick interval
+		aTempFile.m_fileName, // rc file path
+		true, // dry run
+		true, // broadcast
+		//{}, // robot ids
+		{}, // robot descriptors
+		{}, // teams
+	};
+	test_ReadParameters(Status::PASS, Common::GetArugments(
+				false, // help
+				1, // publisher port
+				2, // puller port
+				3, // agent port
+				aTempFile.m_fileName, // orwellrc
+				666, // tick interval
+				false, // version
+				true, // debug log
+				true, // no broadcast
+				true), // dry run
+			aExpectedParameters);
+}
+
+// read some values from the file only
+static void test_parse_command_line_and_file_2()
+{
+	ORWELL_LOG_DEBUG("test_parse_command_line_and_file_2");
+	TempFile aTempFile(std::string(R"(
+[server]
+publisher-port = 900
+puller-port    = 901
+agent-port     = 903
+tic-interval   = 50
+)"));
+	orwell::Application::Parameters aExpectedParameters = {
+		901, // puller port
+		900, // publisher port
+		903, // agent port
+		50, // tick interval
+		aTempFile.m_fileName, // rc file path
+		false, // dry run
+		true, // broadcast
+		//{}, // robot ids
+		{}, // robot descriptors
+		{}, // teams
+	};
+	test_ReadParameters(Status::PASS, Common::GetArugments(
+				false, // help
+				boost::none, // publisher port
+				boost::none, // puller port
+				boost::none, // agent port
+				aTempFile.m_fileName, // orwellrc
+				boost::none), // tick interval)
+		aExpectedParameters);
+}
+
+// make sure a file containing unrelated configuration does nothing wrong.
+static void test_parse_command_line_and_file_3()
+{
+	ORWELL_LOG_DEBUG("test_parse_command_line_and_file_3");
+	TempFile aTempFile(std::string(R"(
+[server]
+[its a trap]
+puller-port = 42
+)"));
+	orwell::Application::Parameters aExpectedParameters = {
+		2, // puller port
+		1, // publisher port
+		3, // agent port
+		666, // tick interval
+		aTempFile.m_fileName, // rc file path
+		true, // dry run
+		true, // broadcast
+		//{}, // robot ids
+		{}, // robot descriptors
+		{}, // teams
+	};
+	test_ReadParameters(Status::PASS, Common::GetArugments(
+				false, // help
+				1, // publisher port
+				2, // puller port
+				3, // agent port
+				aTempFile.m_fileName, // orwellrc
+				666, // tick interval
+				false, // version
+				true, // debug log
+				true, // no broadcast
+				true), // dry run
+			aExpectedParameters);
+}
+
+// check the content of the game and the different robots.
+static void test_parse_command_line_and_file_4()
+{
+	ORWELL_LOG_DEBUG("test_parse_command_line_and_file_4");
+	TempFile aTempFile(std::string(R"(
+[game]
+robots = robot_A | robot_B
+gametype = Problem
+gamename = Enigma
+
+[robot_A]
+name = Aristotle
+team = Philosophers
+
+[robot_B]
+name = Bourbaki
+team = Mathematicians
+
+)"));
+	orwell::Application::Parameters aExpectedParameters = {
+		2, // puller port
+		1, // publisher port
+		3, // agent port
+		666, // tick interval
+		aTempFile.m_fileName, // rc file path
+		true, // dry run
+		true, // broadcast
+		//{"robot_A", "robot_B"}, // robot ids
+		{
+			{"robot_A", {"Aristotle", "Philosophers"}},
+			{"robot_B", {"Bourbaki", "Mathematicians"}},
+		}, // robot descriptors
+		{"Mathematicians", "Philosophers"}, // teams
+		std::string("Problem"), // game type
+		std::string("Enigma"), // game name
+	};
+	test_ReadParameters(Status::PASS, Common::GetArugments(
+				false, // help
+				1, // publisher port
+				2, // puller port
+				3, // agent port
+				aTempFile.m_fileName, // orwellrc
+				666, // tick interval
+				false, // version
+				true, // debug log
+				true, // no broadcast
+				true), // dry run
+			aExpectedParameters);
+}
+
+// make sure we detect errors
+static void test_parse_command_line_and_file_5()
+{
+	ORWELL_LOG_DEBUG("test_parse_command_line_and_file_4");
+	TempFile aTempFile(std::string(R"(
+[game]
+robots = robot_A | robot_B
+gametype = Problem
+gamename = Enigma
+
+[robot_A]
+name = Aristotle
+team = Philosophers
+
+[robot_B]
+name = Bourbaki
+team = Mathematicians
+
+)"));
+	orwell::Application::Parameters aExpectedParameters = {
+		2, // puller port
+		1, // publisher port
+		3, // agent port
+		666, // tick interval
+		aTempFile.m_fileName, // rc file path
+		true, // dry run
+		true, // broadcast
+		//{"robot_A", "robot_B"}, // robot ids
+		{
+			{"robot_A", {"Aristotle", "Philosophers"}},
+			{"robot_B", {"Bourbaki", "Mistake!!!"}}, // voluntary mistake
+		}, // robot descriptors
+		{"Mathematicians", "Philosophers"}, // teams
+		std::string("Problem"), // game type
+		std::string("Enigma"), // game name
+	};
+	bool aThrown = false;
+	try
+	{
+		test_ReadParameters(Status::PASS, Common::GetArugments(
+					false, // help
+					1, // publisher port
+					2, // puller port
+					3, // agent port
+					aTempFile.m_fileName, // orwellrc
+					666, // tick interval
+					false, // version
+					true, // debug log
+					true, // no broadcast
+					true), // dry run
+				aExpectedParameters);
+	}
+	catch (bool const aBool)
+	{
+		ORWELL_LOG_DEBUG("Expected exception cought");
+		aThrown = true;
+	}
+	assert(aThrown);
+}
+
 
 int main()
 {
@@ -157,6 +410,11 @@ int main()
 	test_same_ports_puller_agent();
 	test_most_arguments();
 	test_parse_command_line();
+	test_parse_command_line_and_file_1();
+	test_parse_command_line_and_file_2();
+	test_parse_command_line_and_file_3();
+	test_parse_command_line_and_file_4();
+	test_parse_command_line_and_file_5();
 
 	orwell::support::GlobalLogger::Clear();
 	return 0;

@@ -37,15 +37,13 @@ bool Application::ReadParameters(
 		char * argv[],
 		Parameters & oParam)
 {
-	std::string aConfigFilePath;
-
-	if ( not ParseParametersFromCommandLine(argc, argv, oParam, aConfigFilePath) )
+	if ( not ParseParametersFromCommandLine(argc, argv, oParam) )
 	{
 		return false;
 	}
-	if ( not aConfigFilePath.empty())
+	if (oParam.m_rcFilePath and (not (*oParam.m_rcFilePath).empty()))
 	{
-		if ( not ParseParametersFromConfigFile(oParam, aConfigFilePath) )
+		if ( not ParseParametersFromConfigFile(oParam) )
 		{
 			return false;
 		}
@@ -81,8 +79,7 @@ bool Application::ReadParameters(
 
 bool Application::ParseParametersFromCommandLine(
 		int argc, char * argv[],
-		Application::Parameters & oParam,
-		string & oConfigFile)
+		Application::Parameters & oParam)
 {
 	// Parse the command line arguments
 	options_description aDescription("Usage: " + std::string(argv[0]) + " [PpAvTdrhn]");
@@ -117,7 +114,8 @@ bool Application::ParseParametersFromCommandLine(
 
 	if (aVariablesMap.count("orwellrc"))
 	{
-		oConfigFile = aVariablesMap["orwellrc"].as<std::string>();
+		oParam.m_rcFilePath = aVariablesMap["orwellrc"].as<std::string>();
+		ORWELL_LOG_DEBUG("orwellrc from command line = " << oParam.m_rcFilePath);
 	}
 
 	if (aVariablesMap.count("help"))
@@ -173,58 +171,69 @@ bool Application::ParseParametersFromCommandLine(
 }
 
 bool Application::ParseParametersFromConfigFile(
-		Parameters & oParam,
-		std::string const & iConfigFilePath)
+		Parameters & ioParam)
 {
 	ptree aPtree;
-	ini_parser::read_ini(iConfigFilePath, aPtree);
+	ini_parser::read_ini(*ioParam.m_rcFilePath, aPtree);
 
-	if (not oParam.m_publisherPort)
+	if (not ioParam.m_publisherPort)
 	{
 		boost::optional<uint16_t> aPublisherPort = aPtree.get_optional<uint16_t>("server.publisher-port");
 		if (aPublisherPort)
 		{
-			oParam.m_publisherPort = aPublisherPort;
-			ORWELL_LOG_DEBUG("publisher-port from config file = " << oParam.m_publisherPort );
+			ioParam.m_publisherPort = aPublisherPort;
+			ORWELL_LOG_DEBUG("publisher-port from config file = " << ioParam.m_publisherPort );
 		}
 	}
-	if (not oParam.m_pullerPort)
+	if (not ioParam.m_pullerPort)
 	{
 		boost::optional<uint16_t> aPullerPort = aPtree.get_optional<uint16_t>("server.puller-port");
 		if (aPullerPort)
 		{
-			oParam.m_pullerPort = aPullerPort;
-			ORWELL_LOG_DEBUG("puller-port from config file = " << oParam.m_pullerPort );
+			ioParam.m_pullerPort = aPullerPort;
+			ORWELL_LOG_DEBUG("puller-port from config file = " << ioParam.m_pullerPort );
 		}
 	}
-	if (not oParam.m_tickInterval)
+	if (not ioParam.m_agentPort)
+	{
+		boost::optional<uint16_t> aAgentPort = aPtree.get_optional<uint16_t>("server.agent-port");
+		if (aAgentPort)
+		{
+			ioParam.m_agentPort = aAgentPort;
+			ORWELL_LOG_DEBUG("agent-port from config file = " << ioParam.m_agentPort );
+		}
+	}
+	if (not ioParam.m_tickInterval)
 	{
 		boost::optional<uint16_t> aTickInterval = aPtree.get_optional<uint16_t>("server.tic-interval");
 		if (aTickInterval)
 		{
-			oParam.m_tickInterval = aTickInterval;
-			ORWELL_LOG_DEBUG("tick interval from config file = " << oParam.m_tickInterval );
+			ioParam.m_tickInterval = aTickInterval;
+			ORWELL_LOG_DEBUG("tick interval from config file = " << ioParam.m_tickInterval );
 		}
 	}
-/*
+
 	// Now get the optional things regarding the game itself
 	boost::optional<std::string> aGameRobots = aPtree.get_optional<std::string>("game.robots");
-	boost::optional<std::string> aGameType = aPtree.get_optional<std::string>("game.gametype");
-	boost::optional<std::string> aGameName = aPtree.get_optional<std::string>("game.gamename");
+	ioParam.m_gameType = aPtree.get_optional<std::string>("game.gametype");
+	ioParam.m_gameName = aPtree.get_optional<std::string>("game.gamename");
 
 	// If we have some robots, we need to retrieve them from the ini file itself and add them in the Server's context
 	if (aGameRobots)
 	{
-		tokenizeRobots(aGameRobots.get(), oParam); // this fills oParam.m_robotsList
+		std::vector<std::string> aRobotList;
+		Application::TokenizeRobots(aGameRobots.get(), aRobotList);
 
-		for (std::string const & iRobot : oParam.m_robotsList)
+		for (std::string const & iRobot : aRobotList)
 		{
 			std::string aRobotName = aPtree.get<std::string>(iRobot + ".name");
-			ORWELL_LOG_INFO("Pushing robot: " << aRobotName);
-			m_server->accessContext().addRobot(aRobotName);
+			std::string aRobotTeam = aPtree.get<std::string>(iRobot + ".team");
+			ORWELL_LOG_INFO("Pushing robot: " << aRobotName << " ; in team " << aRobotTeam);
+			ioParam.m_robots[iRobot] = Parameters::Robot{aRobotName, aRobotTeam};
+			ioParam.m_teams.insert(aRobotTeam);
 		}
 	}
-	*/
+	
 	return true;
 }
 
@@ -338,7 +347,9 @@ bool Application::initServer(Parameters const & iParam)
 	return true;
 }
 
-std::vector<std::string> & Application::tokenizeRobots(std::string const & iRobotsString, Parameters & ioParameters)
+void Application::TokenizeRobots(
+		std::string const & iRobotsString,
+		std::vector<std::string> & oRobotList)
 {
 	std::string aToken;
 
@@ -355,7 +366,7 @@ std::vector<std::string> & Application::tokenizeRobots(std::string const & iRobo
 		{
 			if (not aToken.empty())
 			{
-				ioParameters.m_robotsList.push_back(aToken);
+				oRobotList.push_back(aToken);
 				aToken.clear();
 			}
 		}
@@ -363,10 +374,8 @@ std::vector<std::string> & Application::tokenizeRobots(std::string const & iRobo
 
 	if (not aToken.empty())
 	{
-		ioParameters.m_robotsList.push_back(aToken);
+		oRobotList.push_back(aToken);
 	}
-
-	return ioParameters.m_robotsList;
 }
 
 bool operator!=(
@@ -380,6 +389,19 @@ bool operator==(
 		orwell::Application::Parameters const & iLeft,
 		orwell::Application::Parameters const & iRight)
 {
+	// comparing maps directly does not work
+	bool aSameRobots = (iLeft.m_robots.size() == iRight.m_robots.size());
+	auto aRobotIterator = iLeft.m_robots.begin();
+	while ((aSameRobots) and (iLeft.m_robots.end() != aRobotIterator))
+	{
+		std::string const & aKey = aRobotIterator->first;
+		auto const aFound = iRight.m_robots.find(aKey);
+		if ((aSameRobots = (iRight.m_robots.end() != aFound)))
+		{
+			aSameRobots = (aRobotIterator->second == aFound->second);
+		}
+		++aRobotIterator;
+	}
 	return ((iLeft.m_pullerPort == iRight.m_pullerPort)
 		and (iLeft.m_publisherPort == iRight.m_publisherPort)
 		and (iLeft.m_agentPort == iRight.m_agentPort)
@@ -387,7 +409,10 @@ bool operator==(
 		and (iLeft.m_rcFilePath == iRight.m_rcFilePath)
 		and (iLeft.m_dryRun == iRight.m_dryRun)
 		and (iLeft.m_broadcast == iRight.m_broadcast)
-		and (iLeft.m_robotsList == iRight.m_robotsList));
+		and (aSameRobots)
+		and (iLeft.m_teams == iRight.m_teams)
+		and (iLeft.m_gameType == iRight.m_gameType)
+		and (iLeft.m_gameName == iRight.m_gameName));
 }
 
 std::ostream & operator<<(
@@ -401,10 +426,28 @@ std::ostream & operator<<(
 	ioOstream << "rc file path [" << iParameters.m_rcFilePath << "] ; ";
 	ioOstream << "dry run [" << iParameters.m_dryRun << "] ; ";
 	ioOstream << "broadcast [" << iParameters.m_broadcast << "] ";
-	ioOstream << "robots list [";
+	ioOstream << "robots [";
+	for (auto const aPair : iParameters.m_robots)
+	{
+		std::string const & aKey = aPair.first;
+		orwell::Application::Parameters::Robot const & aRobot = aPair.second;
+		ioOstream << aKey << ":" << aRobot.m_name << "@" << aRobot.m_team << ", ";
+	}
+	ioOstream << "] ; ";
+	ioOstream << "teams [";
 	std::ostream_iterator< std::string > aOut(ioOstream,", ");
-	std::copy(iParameters.m_robotsList.begin(), iParameters.m_robotsList.end(), aOut);
-	ioOstream << "]";
+	std::copy(iParameters.m_teams.begin(), iParameters.m_teams.end(), aOut);
+	ioOstream << "] ; ";
+	ioOstream << "game type [" << iParameters.m_gameType << "] ; ";
+	ioOstream << "game name [" << iParameters.m_gameName << "]";
 	return ioOstream;
+}
+
+bool operator==(
+		orwell::Application::Parameters::Robot const & iLeft,
+		orwell::Application::Parameters::Robot const & iRight)
+{
+	return ((iLeft.m_name == iRight.m_name)
+		and (iLeft.m_team == iRight.m_team));
 }
 
