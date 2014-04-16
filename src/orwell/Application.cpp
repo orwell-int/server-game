@@ -161,8 +161,12 @@ bool Application::ParseParametersFromCommandLine(
 		oParam.m_dryRun = true;
 		ORWELL_LOG_DEBUG("this is a dry run");
 	}
+	else
+	{
+		ORWELL_LOG_DEBUG("this is NOT a dry run");
+	}
 
-	if (aVariablesMap.count("broadcast"))
+	if (aVariablesMap.count("no-broadcast"))
 	{
 		oParam.m_broadcast = false;
 		ORWELL_LOG_DEBUG("do not start broadcast server");
@@ -269,12 +273,17 @@ void Application::run(Parameters const & iParam)
 	 ***************************************/
 	if (initServer(iParam))
 	{
-		if (iParam.m_dryRun)
+		// temporary hack
+		for (auto aPair : iParam.m_robots)
+		{
+			this->m_server->accessContext().addRobot(aPair.second.m_name);
+		}
+		if ((iParam.m_dryRun) and (*iParam.m_dryRun))
 		{
 			ORWELL_LOG_INFO("Exit without starting (dry-run).");
 			return;
 		}
-		if (iParam.m_broadcast)
+		if ((iParam.m_broadcast) and (*iParam.m_broadcast))
 		{
 			// Broadcast receiver and main loop are run in separated threads
 			pid_t aChildProcess = fork();
@@ -340,7 +349,7 @@ bool Application::initServer(Parameters const & iParam)
 	std::string aPullerAddress = "tcp://*:" + boost::lexical_cast<std::string>( iParam.m_pullerPort) ;
 
 	m_server = new orwell::Server(aPullerAddress, aPublisherAddress, iParam.m_tickInterval.get());
-	if (iParam.m_broadcast)
+	if ((iParam.m_broadcast) and (*iParam.m_broadcast))
 	{
 		m_broadcastServer = new orwell::BroadcastServer(aPullerAddress, aPublisherAddress);
 	}

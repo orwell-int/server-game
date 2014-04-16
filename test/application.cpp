@@ -127,7 +127,7 @@ static void test_parse_command_line()
 		666, // tick interval
 		boost::none, // rc file path
 		true, // dry run
-		true, // broadcast
+		false, // broadcast
 		//{}, // robot ids
 		{}, // robot descriptors
 		{}, // teams
@@ -198,7 +198,7 @@ tic-interval   = 1500
 		666, // tick interval
 		aTempFile.m_fileName, // rc file path
 		true, // dry run
-		true, // broadcast
+		false, // broadcast
 		//{}, // robot ids
 		{}, // robot descriptors
 		{}, // teams
@@ -266,7 +266,7 @@ puller-port = 42
 		666, // tick interval
 		aTempFile.m_fileName, // rc file path
 		true, // dry run
-		true, // broadcast
+		false, // broadcast
 		//{}, // robot ids
 		{}, // robot descriptors
 		{}, // teams
@@ -311,7 +311,7 @@ team = Mathematicians
 		666, // tick interval
 		aTempFile.m_fileName, // rc file path
 		true, // dry run
-		true, // broadcast
+		false, // broadcast
 		//{"robot_A", "robot_B"}, // robot ids
 		{
 			{"robot_A", {"Aristotle", "Philosophers"}},
@@ -361,7 +361,7 @@ team = Mathematicians
 		666, // tick interval
 		aTempFile.m_fileName, // rc file path
 		true, // dry run
-		true, // broadcast
+		false, // broadcast
 		//{"robot_A", "robot_B"}, // robot ids
 		{
 			{"robot_A", {"Aristotle", "Philosophers"}},

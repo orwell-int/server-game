@@ -31,7 +31,6 @@ public:
 		boost::optional<std::string> m_rcFilePath;
 		boost::optional<bool> m_dryRun;
 		boost::optional<bool> m_broadcast;
-		//std::vector<std::string> m_robotsList;
 		std::map<std::string, Robot> m_robots;
 		std::set<Team> m_teams;
 		boost::optional<std::string> m_gameType;
