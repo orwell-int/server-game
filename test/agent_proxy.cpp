@@ -36,7 +36,12 @@ int main()
 				false, 9001, 9000, 9003,
 				boost::none, 500,
 				false, true, true, true);
-		aApplication.run(aArguments.m_argc, aArguments.m_argv);
+		orwell::Application::Parameters aParameters;
+		orwell::Application::ReadParameters(
+				aArguments.m_argc,
+				aArguments.m_argv,
+				aParameters);
+		aApplication.run(aParameters);
 		test_1(aApplication);
 	}
 

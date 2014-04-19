@@ -4,17 +4,7 @@
 #include <stdint.h>
 
 #include <boost/optional.hpp>
-
-#define ARG_HELP "-h"
-#define ARG_PUBLISHER_PORT "-P"
-#define ARG_PULLER_PORT "-p"
-#define ARG_AGENT_PORT "-A"
-#define ARG_ORWELLRC "-r"
-#define ARG_TIC_INTERVAL "-T"
-#define ARG_VERSION "-v"
-#define ARG_DEBUG_LOG "-d"
-#define ARG_NO_BROADCAST "--no-broadcast"
-#define ARG_DRY_RUN "-n"
+#include <boost/none.hpp>
 
 namespace orwell
 {
@@ -24,6 +14,12 @@ class Receiver;
 class RawMessage;
 }
 }
+
+enum class Status
+{
+	FAIL,
+	PASS,
+};
 
 struct Arguments
 {
@@ -36,19 +32,12 @@ struct Arguments
 
 	Arguments(Arguments && oOld);
 
-	void addArgument(char * const argument);
+	void addArgument(char const * const argument);
 };
 
 class Common
 {
 public:
-	static bool ExpectMessage(
-			std::string const & iType,
-			orwell::com::Receiver & iSubscriber,
-			orwell::com::RawMessage & oReceived,
-			unsigned int const iTimeout = 500);
-
-
 	static Arguments GetArugments(
 			bool const iHelp = false,
 			boost::optional< int32_t > const iPublisherPort = boost::none,
@@ -61,6 +50,11 @@ public:
 			bool const iNoBroadcast = false,
 			bool const iDryRun = false);
 
+	static bool ExpectMessage(
+			std::string const & iType,
+			orwell::com::Receiver & iSubscriber,
+			orwell::com::RawMessage & oReceived,
+			unsigned int const iTimeout = 500);
 };
 
 std::ostream & operator<<(
