@@ -32,7 +32,7 @@ int main()
 	{
 		orwell::Application & aApplication = orwell::Application::GetInstance();
 
-		Arguments aArguments = Common::GetArugments(
+		Arguments aArguments = Common::GetArguments(
 				false, 9001, 9000, 9003,
 				boost::none, 500,
 				false, true, true, true);

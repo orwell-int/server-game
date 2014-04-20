@@ -17,7 +17,7 @@ class RawMessage;
 class Receiver
 {
 
-public:
+public :
 	/// \param iSleep
 	///  Time to sleep after bind and connect.
 	///
@@ -30,10 +30,19 @@ public:
 
 	~Receiver();
 
+	/// Try to get a message from the socket (non blocking).
+	///
+	/// \param oMessage
+	///  This string will contain the received message if available.
+	///
+	/// \return
+	///  True if and only if a message was received.
+	///
+	bool receiveString(std::string & oMessage);
 	bool receive(RawMessage & oMessage);
 	std::string const & getUrl() const;
 
-private:
+private :
 	Receiver(Receiver const & iOther);
 
 	zmq::socket_t * m_zmqSocket;

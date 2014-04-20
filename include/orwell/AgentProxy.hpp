@@ -3,11 +3,14 @@
 
 #include <string>
 
-namespace orwell {
+#include "orwell/IAgentProxy.hpp"
+
+namespace orwell
+{
 class Application;
 
 /// Class that gives access to commands to be run from an agent.
-class AgentProxy
+class AgentProxy : public IAgentProxy
 {
 public :
 	/// \param ioApplication

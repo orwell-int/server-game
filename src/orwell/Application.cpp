@@ -30,6 +30,7 @@ Application::Application()
 	: m_server(nullptr)
 	, m_broadcastServer(nullptr)
 	, m_state(State::CREATED)
+	, m_agentProxy(*this)
 {
 }
 
@@ -60,6 +61,11 @@ bool Application::ReadParameters(
 	{
 		oParam.m_pullerPort = 9001;
 		ORWELL_LOG_DEBUG("by default, puller-port = " << oParam.m_pullerPort);
+	}
+	if (not oParam.m_agentPort)
+	{
+		oParam.m_agentPort = 9003;
+		ORWELL_LOG_DEBUG("by default, agent-port = " << oParam.m_agentPort);
 	}
 	if (not oParam.m_tickInterval)
 	{
@@ -380,10 +386,16 @@ bool Application::initServer(Parameters const & iParam)
 {
 	ORWELL_LOG_INFO("Initialize server : publisher tcp://*:" << iParam.m_publisherPort << " puller tcp://*:" << iParam.m_pullerPort);
 
-	std::string aPublisherAddress = "tcp://*:" + boost::lexical_cast<std::string>( iParam.m_publisherPort);
-	std::string aPullerAddress = "tcp://*:" + boost::lexical_cast<std::string>( iParam.m_pullerPort) ;
+	std::string aAgentAddress = "tcp://*:" + boost::lexical_cast<std::string>(*iParam.m_agentPort);
+	std::string aPublisherAddress = "tcp://*:" + boost::lexical_cast<std::string>(*iParam.m_publisherPort);
+	std::string aPullerAddress = "tcp://*:" + boost::lexical_cast<std::string>(*iParam.m_pullerPort);
 
-	m_server = new orwell::Server(aPullerAddress, aPublisherAddress, iParam.m_tickInterval.get());
+	m_server = new orwell::Server(
+			m_agentProxy,
+			aAgentAddress,
+			aPullerAddress,
+			aPublisherAddress,
+			iParam.m_tickInterval.get());
 	if ((iParam.m_broadcast) and (*iParam.m_broadcast))
 	{
 		m_broadcastServer = new orwell::BroadcastServer(aPullerAddress, aPublisherAddress);

@@ -24,10 +24,14 @@ class Receiver;
 class Sender;
 }
 
+class IAgentProxy;
+
 class Server
 {
 public:
 	Server(
+			orwell::IAgentProxy & ioAgentProxy,
+			std::string const & iAgentUrl =  "tcp://*:9003",
 			std::string const & iPullUrl = "tcp://*:9000",
 			std::string const & iPublishUrl = "tcp://*:9001",
 			long const iTicDuration = 500); //milliseconds
@@ -47,8 +51,12 @@ public:
 
 	orwell::game::Game & accessContext();
 
+	void feedAgentProxy();
+
 private:
 	zmq::context_t _zmqContext;
+	orwell::IAgentProxy & m_agentProxy;
+	std::shared_ptr< com::Receiver > m_agentListener;
 	std::shared_ptr< com::Receiver > _puller;
 	std::shared_ptr< com::Sender > _publisher;
 	orwell::game::Game _game;

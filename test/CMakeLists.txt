@@ -46,6 +46,15 @@ include_directories(
 	${CMAKE_BINARY_DIR}/messages
 	)
 
+FUNCTION(add_orwell_test test_name file_name)
+	add_executable(${test_name} ${file_name})
+	target_link_libraries(
+		${test_name}
+		orwell_server_game
+		orwell_test)
+	add_test(${test_name} ${CMAKE_CURRENT_BINARY_DIR}/${test_name})
+ENDFUNCTION()
+
 add_executable(test_input "input_to_robot.cpp")
 target_link_libraries(
 	test_input
@@ -82,6 +91,8 @@ target_link_libraries(
 	orwell_test)
 add_test(test_agent_proxy ${CMAKE_CURRENT_BINARY_DIR}/test_agent_proxy)
 
+add_orwell_test(test_agent "agent.cpp")
+
 get_property(VAR_ALL_TEST_TARGETS GLOBAL PROPERTY P_ALL_TEST_TARGETS)
 ADD_CUSTOM_TARGET(ctest
 	COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}
@@ -89,7 +100,7 @@ ADD_CUSTOM_TARGET(ctest
 	DEPENDS ${VAR_ALL_TEST_TARGETS}
 )
 
-SET(DART_TESTING_TIMEOUT "7")
+SET(DART_TESTING_TIMEOUT "2")
 SET(MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --show-reachable=yes")
 
 # this might be a hack but it works

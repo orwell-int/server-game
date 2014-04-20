@@ -21,6 +21,7 @@
 #include "orwell/com/RawMessage.hpp"
 #include "orwell/callbacks/ProcessDecider.hpp"
 #include "orwell/callbacks/ProcessTimer.hpp"
+#include "orwell/AgentProxy.hpp"
 
 #define UDP_MESSAGE_LIMIT 512
 
@@ -33,10 +34,19 @@ namespace orwell
 {
 
 Server::Server(
+		orwell::IAgentProxy & ioAgentProxy,
+		std::string const & iAgentUrl,
 		std::string const & iPullUrl,
 		std::string const & iPublishUrl,
 		long const iTicDuration)
 	: _zmqContext(1)
+	, m_agentProxy(ioAgentProxy)
+	, m_agentListener(std::make_shared< Receiver >(
+				iAgentUrl,
+				ZMQ_SUB,
+				orwell::com::ConnectionMode::BIND,
+				_zmqContext,
+				0))
 	, _puller(std::make_shared< Receiver >(
 				iPullUrl,
 				ZMQ_PULL,
@@ -52,7 +62,7 @@ Server::Server(
 	, _game()
 	, _decider(_game, _publisher)
 	, _ticDuration( boost::posix_time::milliseconds(iTicDuration) )
-	, _previousTic(boost::posix_time::second_clock::local_time() )
+	, _previousTic(boost::posix_time::microsec_clock::local_time())
 	, _mainLoopRunning(false)
 	, _forcedStop(false)
 {
@@ -81,9 +91,10 @@ void Server::loopUntilOneMessageIsProcessed()
 	boost::posix_time::time_duration aDuration;
 	boost::posix_time::ptime aCurrentTic;
 
+	feedAgentProxy();
 	while (not aMessageHasBeenProcessed)
 	{
-		aCurrentTic = boost::posix_time::second_clock::local_time();
+		aCurrentTic = boost::posix_time::microsec_clock::local_time();
 		aDuration = aCurrentTic - _previousTic;
 		if ( aDuration < _ticDuration )
 		{
@@ -103,6 +114,7 @@ void Server::loopUntilOneMessageIsProcessed()
 		}
 		else
 		{
+			feedAgentProxy();
 			ProcessTimer aProcessTimer(_publisher, _game);
 			aProcessTimer.execute();
 			_previousTic = aCurrentTic;
@@ -130,6 +142,17 @@ void Server::stop()
 orwell::game::Game & Server::accessContext()
 {
 	return _game;
+}
+
+void Server::feedAgentProxy()
+{
+	std::string aMessage;
+	ORWELL_LOG_DEBUG("Try to read agent command ...");
+	if (m_agentListener->receiveString(aMessage))
+	{
+		ORWELL_LOG_DEBUG("command received: " << aMessage);
+		m_agentProxy.step(aMessage);
+	}
 }
 
 }

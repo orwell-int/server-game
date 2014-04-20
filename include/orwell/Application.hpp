@@ -10,12 +10,15 @@
 
 #include <boost/optional.hpp>
 
+#include "orwell/IApplication.hpp"
+#include "orwell/AgentProxy.hpp"
+
 namespace orwell {
 class Server;
 class BroadcastServer;
 class AgentProxy;
 
-class Application
+class Application : public IApplication
 {
 public :
 	struct Parameters
@@ -88,6 +91,7 @@ private:
 		STOPPED,
 	};
 	State m_state;
+	orwell::AgentProxy m_agentProxy;
 };
 }
 
