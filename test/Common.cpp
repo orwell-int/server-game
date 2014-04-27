@@ -14,6 +14,7 @@
 #define ARG_PULLER_PORT "-p"
 #define ARG_AGENT_PORT "-A"
 #define ARG_ORWELLRC "-r"
+#define ARG_GAMECONFIG "-g"
 #define ARG_TIC_INTERVAL "-T"
 #define ARG_VERSION "-v"
 #define ARG_DEBUG_LOG "-d"
@@ -114,6 +115,7 @@ Arguments Common::GetArugments(
 		boost::optional< int32_t > const iPullerPort,
 		boost::optional< int32_t > const iAgentPort,
 		boost::optional< std::string > const iOrwellRc,
+		boost::optional< std::string > const iGameConfigPath,
 		boost::optional< int64_t > const iTicInterval,
 		bool const iVersion,
 		bool const iDebugLog,
@@ -141,6 +143,10 @@ Arguments Common::GetArugments(
 	if (iOrwellRc)
 	{
 		BuildStrArgument(ARG_ORWELLRC, (*iOrwellRc).c_str(), arguments);
+	}
+	if (iGameConfigPath)
+	{
+		BuildStrArgument(ARG_GAMECONFIG, (*iGameConfigPath).c_str(), arguments);
 	}
 	if (iTicInterval)
 	{

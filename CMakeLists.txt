@@ -110,8 +110,10 @@ target_link_libraries(
 install(TARGETS orwell_server_game LIBRARY DESTINATION lib)
 install(FILES ${EXPORTABLEHEADERS} DESTINATION include)
 install(FILES ${PROTO_HDRS} DESTINATION include)
-#install(FILES "orwell-config.ini" DESTINATION .)
-add_custom_command(TARGET orwell_server_game COMMAND ${CMAKE_COMMAND} -E copy ${CONFIG} ${CMAKE_BINARY_DIR})
+foreach(configFile ${CONFIG})
+    add_custom_command(TARGET orwell_server_game COMMAND ${CMAKE_COMMAND} -E copy ${configFile} ${CMAKE_BINARY_DIR})
+endforeach(configFile) 
+
 
 include_directories(
 	${ZMQ_INCLUDE_DIRS}

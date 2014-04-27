@@ -42,6 +42,7 @@ public:
 			boost::optional< int32_t > const iPullerPort = boost::none,
 			boost::optional< int32_t > const iAgentPort = boost::none,
 			boost::optional< std::string > const iOrwellRc = boost::none,
+			boost::optional< std::string > const iGameConfig = boost::none,
 			boost::optional< int64_t > const iTicInterval = boost::none,
 			bool const iVersion = false,
 			bool const iDebugLog = false,
