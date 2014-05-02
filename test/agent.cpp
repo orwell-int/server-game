@@ -4,8 +4,6 @@
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
-//#include <signal.h>
-//#include <cassert>
 #include <thread>
 
 #include <log4cxx/ndc.h>
