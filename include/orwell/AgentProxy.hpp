@@ -24,11 +24,25 @@ public :
 	/// stop application
 	void stopApplication();
 
+	/// List all the robots present.
+	/// The reply is sent to <iReplyAddress>:<iReplyPort>.
+	///
+	void listRobot(
+			std::string const & iReplyAddress,
+			uint16_t const iReplyPort);
+
 	/// add robot <name>
 	void addRobot(std::string const & iRobotName);
 
 	/// remove robot <name>
 	void removeRobot(std::string const & iRobotName);
+
+	/// List all the players present.
+	/// The reply is sent to <iReplyAddress>:<iReplyPort>.
+	///
+	void listPlayer(
+			std::string const & iReplyAddress,
+			uint16_t const iReplyPort);
 
 	/// add player <name>
 	void addPlayer(std::string const & iPlayerName);

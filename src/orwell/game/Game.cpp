@@ -71,6 +71,18 @@ bool Game::addPlayer(string const & iName)
 	return aAddedPlayerSuccess;
 }
 
+bool Game::removePlayer(string const & iName)
+{
+	bool aRemovedPlayerSuccess = false;
+	auto aFound = m_players.find(iName);
+	if (aFound != m_players.end())
+	{
+		m_players.erase(aFound);
+		aRemovedPlayerSuccess = true;
+	}
+	return aRemovedPlayerSuccess;
+}
+
 bool Game::addRobot(string const & iName)
 {
 	bool aAddedRobotSuccess = false;

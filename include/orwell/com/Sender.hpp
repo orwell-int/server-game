@@ -38,6 +38,8 @@ public:
 			unsigned int const iSleep = 0);
 	~Sender();
 
+	void sendString(std::string const & iMessage);
+
 	void send( RawMessage const & iMessage );
 	std::string const & getUrl() const;
 

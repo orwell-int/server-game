@@ -53,6 +53,12 @@ public:
 
 	void feedAgentProxy();
 
+	/// Create a temporary socket to connect to #iUrl and send #iMessage.
+	/// TODO: do we need some type of error handling at this stage ?
+	void push(
+			std::string const & iUrl,
+			std::string const & iMessage);
+
 private:
 	zmq::context_t _zmqContext;
 	orwell::IAgentProxy & m_agentProxy;

@@ -35,8 +35,17 @@ public:
 
 	//add empty PlayerContext
 	bool addPlayer(std::string const & iName);
+
+	/// Remove a player named #iName if found.
+	/// \param iName
+	///  The name of the player to remove.
+	/// \return
+	///  True if and only if the player was found and removed.
+	bool removePlayer(std::string const & iName);
+
 	//add empty RobotContext
 	bool addRobot(std::string const & iName);
+
 	/// Remove a robot named #iName if found.
 	/// \param iName
 	///  The name of the robot to remove.

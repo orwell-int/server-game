@@ -9,7 +9,7 @@
 #include <log4cxx/ndc.h>
 
 #include "orwell/Application.hpp"
-#include "orwell/com/url.hpp"
+#include "orwell/com/Url.hpp"
 #include "orwell/support/GlobalLogger.hpp"
 
 #include <boost/lexical_cast.hpp>
@@ -29,7 +29,7 @@ static void Agent(uint16_t const iAgentPort)
 	zmq::socket_t aAgentSocket(aZmqContext, ZMQ_PUB);
 	int const aLinger = 10;
 	aAgentSocket.setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
-	orwell::com::url aUrl;
+	orwell::com::Url aUrl;
 	aUrl.setProtocol("tcp");
 	aUrl.setHost("localhost");
 	aUrl.setPort(iAgentPort);
