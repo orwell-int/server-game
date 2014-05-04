@@ -55,3 +55,13 @@ string const & Url::toString() const
 	return _url;
 }
 
+std::string const & Url::getHost() const
+{
+	return _host;
+}
+
+uint16_t const & Url::getPort() const
+{
+	return _port;
+}
+

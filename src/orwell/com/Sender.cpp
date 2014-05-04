@@ -63,6 +63,7 @@ void Sender::sendString(std::string const & iMessage)
 	memcpy((void *) aZmqMessage.data(), iMessage.c_str(), iMessage.size());
 
 	m_zmqSocket->send(aZmqMessage);
+	ORWELL_LOG_DEBUG("Sent " << iMessage);
 }
 
 void Sender::send( RawMessage const & iMessage )
@@ -75,7 +76,7 @@ void Sender::send( RawMessage const & iMessage )
 	aMessage += iMessage._payload;
 
 	sendString(aMessage);
-	ORWELL_LOG_DEBUG("Sent " << aMessage.size() << " bytes : " << iMessage._type << "-" );
+	ORWELL_LOG_DEBUG("Sent " << aMessage.size() << " bytes : " << iMessage._type << "-");
 }
 
 std::string const & Sender::getUrl() const

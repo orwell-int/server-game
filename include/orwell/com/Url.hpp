@@ -25,6 +25,9 @@ public:
 
 	std::string const & toString() const;
 
+	std::string const & getHost() const;
+	uint16_t const & getPort() const;
+
 private:
 	std::string _protocol;
 	std::string _host;
