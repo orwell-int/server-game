@@ -1,8 +1,12 @@
 #include <string>
 #include <iosfwd>
 
+#include <stdint.h>
+
 #include <boost/optional.hpp>
 #include <boost/none.hpp>
+
+#include "orwell/IAgentProxy.hpp"
 
 namespace orwell
 {
@@ -36,7 +40,7 @@ struct Arguments
 class Common
 {
 public:
-	static Arguments GetArugments(
+	static Arguments GetArguments(
 			bool const iHelp = false,
 			boost::optional< int32_t > const iPublisherPort = boost::none,
 			boost::optional< int32_t > const iPullerPort = boost::none,
@@ -53,7 +57,35 @@ public:
 			orwell::com::Receiver & iSubscriber,
 			orwell::com::RawMessage & oReceived,
 			unsigned int const iTimeout = 500);
+};
 
+class FakeAgentProxy : public orwell::IAgentProxy
+{
+public :
+	/// \return
+	///  True if and only if the command was successfully parsed.
+	bool step(std::string const & iCommand);
+
+	/// stop application
+	void stopApplication();
+
+	/// add robot <name>
+	void addRobot(std::string const & iRobotName);
+
+	/// remove robot <name>
+	void removeRobot(std::string const & iRobotName);
+
+	/// add player <name>
+	void addPlayer(std::string const & iPlayerName);
+
+	/// remove player <name>
+	void removePlayer(std::string const & iPlayerName);
+
+	/// start game
+	void startGame();
+
+	/// stop game
+	void stopGame();
 };
 
 std::ostream & operator<<(

@@ -5,7 +5,7 @@ using namespace std;
 namespace orwell {
 namespace game {
 
-Player::Player(string const & iName) : _name(iName)
+Player::Player(string const & iName) : m_name(iName)
 {
 
 }
@@ -15,20 +15,21 @@ Player::~Player()
 
 }
 
-void Player::setRobot(string const & iName)
+void Player::setRobot(std::shared_ptr< Robot > aRobot)
 {
-	_robot = iName;
+	m_robot = aRobot;
 }
 
-string Player::getName()
+string const & Player::getName() const
 {
-	return _name;
+	return m_name;
 }
 
-string Player::getRobot()
+std::shared_ptr< Robot > const Player::getRobot() const
 {
-	return _robot;
+	return m_robot.lock();
 }
 
 
 }} // namespaces
+

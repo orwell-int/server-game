@@ -1,5 +1,7 @@
 #include "Common.hpp"
 
+#include <iostream>
+
 #include "orwell/com/Receiver.hpp"
 #include "orwell/com/RawMessage.hpp"
 #include "orwell/support/GlobalLogger.hpp"
@@ -108,7 +110,7 @@ static void BuildStrArgument(
 	BuildArgument(iValue, ioArguments);
 }
 
-Arguments Common::GetArugments(
+Arguments Common::GetArguments(
 		bool const iHelp,
 		boost::optional< int32_t > const iPublisherPort,
 		boost::optional< int32_t > const iPullerPort,
@@ -207,4 +209,49 @@ bool Common::ExpectMessage(
 	}
 	return aReceivedExpectedMessage;
 }
+
+bool FakeAgentProxy::step(std::string const & iCommand)
+{
+	return true;
+}
+
+void FakeAgentProxy::stopApplication()
+{
+	ORWELL_LOG_INFO("stop application");
+}
+
+void FakeAgentProxy::addRobot(
+		std::string const & iRobotName)
+{
+	ORWELL_LOG_INFO("add robot " << iRobotName);
+}
+
+void FakeAgentProxy::removeRobot(
+		std::string const & iRobotName)
+{
+	ORWELL_LOG_INFO("remove robot " << iRobotName);
+}
+
+void FakeAgentProxy::addPlayer(
+		std::string const & iPlayerName)
+{
+	ORWELL_LOG_INFO("add player " << iPlayerName);
+}
+
+void FakeAgentProxy::removePlayer(
+		std::string const & iPlayerName)
+{
+	ORWELL_LOG_INFO("remove player " << iPlayerName);
+}
+
+void FakeAgentProxy::startGame()
+{
+	ORWELL_LOG_INFO("start game");
+}
+
+void FakeAgentProxy::stopGame()
+{
+	ORWELL_LOG_INFO("stop game");
+}
+
 

@@ -4,6 +4,7 @@
 
 #include <string>
 #include <cstdint>
+#include <inttypes.h>
 
 namespace orwell {
 namespace com {
@@ -16,7 +17,7 @@ public:
 
 	void setProtocol(std::string const & iProtocol);
 	void setHost(std::string const & iHost);
-	void setPort(uint32_t const iPort);
+	void setPort(uint16_t const iPort);
 
 	void resetUrl();
 
@@ -25,7 +26,7 @@ public:
 private:
 	std::string _protocol;
 	std::string _host;
-	uint32_t _port;
+	uint16_t _port;
 
 	std::string _url;
 

@@ -6,16 +6,21 @@
 #include <map>
 #include <set>
 #include <memory>
+#include <stdint.h>
 
 #include <boost/optional.hpp>
+
+#include "orwell/IApplication.hpp"
+#include "orwell/AgentProxy.hpp"
 
 namespace orwell {
 class Server;
 class BroadcastServer;
+class AgentProxy;
 
-class Application
+class Application : public IApplication
 {
-public:
+public :
 	struct Parameters
 	{
 		struct Robot
@@ -37,7 +42,8 @@ public:
 		boost::optional<std::string> m_gameName;
 	};
 
-	virtual ~Application() {};
+	virtual ~Application();
+
 	static Application & GetInstance();
 
 	static bool ReadParameters(
@@ -47,6 +53,10 @@ public:
 	void run(Parameters const & iParam);
 	bool stop();
 	void clean();
+
+protected :
+	friend class AgentProxy;
+	orwell::Server * accessServer(bool const iUnsafe = false);
 
 private:
 	Application();
@@ -71,6 +81,17 @@ private:
 	orwell::Server * m_server;
 	// Broadcast server for UDP discovery
 	orwell::BroadcastServer * m_broadcastServer;
+
+	enum class State
+	{
+		CREATED,
+		// it does not seem to be needed
+		//INITIALISED,
+		RUNNING,
+		STOPPED,
+	};
+	State m_state;
+	orwell::AgentProxy m_agentProxy;
 };
 }
 

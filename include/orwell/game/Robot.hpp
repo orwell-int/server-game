@@ -4,11 +4,15 @@
 
 #include <string>
 
+#include <memory>
+
 namespace orwell {
 namespace messages {
 class RobotState;
 }
-namespace game {
+namespace game
+{
+class Player;
 
 class Robot
 {
@@ -16,17 +20,21 @@ public:
 	Robot(std::string const & iName);
 	~Robot();
 
-	void setPlayerName(std::string const & iName);
+	void setPlayer(std::shared_ptr< Player > const iPlayer);
+	std::shared_ptr< Player > const getPlayer() const;
 
-	std::string const &  getName() const;
+	//void setPlayerName(std::string const & iName);
 
-	std::string const &  getPlayerName() const;
+	std::string const & getName() const;
+
+	//std::string const & getPlayerName() const;
 
 	void fillRobotStateMessage( messages::RobotState & oMessage );
 
 private:
-	std::string _name;
-	std::string _playerName;
+	std::string m_name;
+	std::weak_ptr< Player > m_player;
 };
 
 }} //end namespace
+
