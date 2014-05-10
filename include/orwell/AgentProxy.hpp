@@ -2,6 +2,7 @@
 #pragma once
 
 #include <string>
+#include <stdint.h>
 
 #include "orwell/IAgentProxy.hpp"
 
@@ -19,42 +20,42 @@ public :
 
 	/// \return
 	///  True if and only if the command was successfully parsed.
-	bool step(std::string const & iCommand);
+	bool step(std::string const & iCommand) override;
 
 	/// stop application
-	void stopApplication();
+	void stopApplication() override;
 
 	/// List all the robots present.
 	/// The reply is sent to <iReplyAddress>:<iReplyPort>.
 	///
 	void listRobot(
 			std::string const & iReplyAddress,
-			uint16_t const iReplyPort);
+			uint16_t const iReplyPort) override;
 
 	/// add robot <name>
-	void addRobot(std::string const & iRobotName);
+	void addRobot(std::string const & iRobotName) override;
 
 	/// remove robot <name>
-	void removeRobot(std::string const & iRobotName);
+	void removeRobot(std::string const & iRobotName) override;
 
 	/// List all the players present.
 	/// The reply is sent to <iReplyAddress>:<iReplyPort>.
 	///
 	void listPlayer(
 			std::string const & iReplyAddress,
-			uint16_t const iReplyPort);
+			uint16_t const iReplyPort) override;
 
 	/// add player <name>
-	void addPlayer(std::string const & iPlayerName);
+	void addPlayer(std::string const & iPlayerName) override;
 
 	/// remove player <name>
-	void removePlayer(std::string const & iPlayerName);
+	void removePlayer(std::string const & iPlayerName) override;
 
 	/// start game
-	void startGame();
+	void startGame() override;
 
 	/// stop game
-	void stopGame();
+	void stopGame() override;
 protected :
 
 private :

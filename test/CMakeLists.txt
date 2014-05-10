@@ -13,6 +13,9 @@ find_package(ZMQ REQUIRED)
 
 find_package(LOG4CXX_LIBRARIES REQUIRED)
 
+find_package(GMock REQUIRED)
+find_package(GTest REQUIRED)
+
 include_directories(
 	${CMAKE_SOURCE_DIR}/include
 	${CMAKE_BINARY_DIR}/messages
@@ -26,6 +29,8 @@ target_link_libraries(
 	orwell_test
 	orwell_server_game
 	${ZMQ_LIBRARIES}
+	${GMOCK_LIBRARIES}
+	${GTEST_LIBRARIES}
 	${Boost_LIBRARIES}
 	${LOG4CXX_LIBRARIES})
 
@@ -35,6 +40,8 @@ target_link_libraries(
 
 include_directories(
 	${ZMQ_INCLUDE_DIRS}
+	${GMOCK_INCLUDE_DIRS}
+	${GTEST_INCLUDE_DIRS}
 	${LOG4CXX_INCLUDE_DIR}
 	${PROTOBUF_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
