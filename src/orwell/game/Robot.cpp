@@ -44,7 +44,7 @@ std::shared_ptr< Player > const Robot::getPlayer() const
 
 bool const Robot::getHasPlayer() const
 {
-	return (nullptr != getPlayer());
+	return (nullptr != getPlayer().get());
 }
 
 string const & Robot::getName() const

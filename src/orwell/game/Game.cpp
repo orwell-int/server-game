@@ -146,7 +146,7 @@ std::shared_ptr<Robot> Game::getAvailableRobot() const
 	//search for the first robot which is not already associated to a player
 	map<string, std::shared_ptr<Robot>>::const_iterator aIterOnRobots;
 	aIterOnRobots = m_robots.begin();
-	while (aIterOnRobots != m_robots.end() && aIterOnRobots->second->getIsAvailable())
+	while (aIterOnRobots != m_robots.end() && (not aIterOnRobots->second->getIsAvailable()))
 	{
 		++aIterOnRobots;
 	}
@@ -159,20 +159,23 @@ std::shared_ptr<Robot> Game::getAvailableRobot() const
 	return aFoundRobot;
 }
 
-string const Game::getRobotNameForPlayer(string const & iPlayer) const
+std::shared_ptr< Robot > Game::getRobotForPlayer(string const & iPlayer) const
 {
-	string retValue;
+	std::shared_ptr< Robot > aFoundRobot;
 	
 	for (pair<string, std::shared_ptr<Robot>> const & iItem : m_robots)
 	{
 		std::shared_ptr< Player > aPlayer = iItem.second.get()->getPlayer();
 		if ((nullptr != aPlayer) and (aPlayer->getName() == iPlayer))
 		{
-			retValue = iItem.second.get()->getName();
+			aFoundRobot = iItem.second;
 		}
 	}
-	
-	return retValue;
+	if (nullptr == aFoundRobot.get())
+	{
+		aFoundRobot = getAvailableRobot();
+	}
+	return aFoundRobot;
 }
 	
 void Game::fillGameStateMessage(messages::GameState & oGameState)

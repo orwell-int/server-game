@@ -59,7 +59,7 @@ public:
 	bool removeRobot(std::string const & iName);
 
 	std::shared_ptr< Robot > getRobotWithoutRealRobot() const;
-	std::string const getRobotNameForPlayer(std::string const & iPlayer) const;
+	std::shared_ptr< Robot > getRobotForPlayer(std::string const & iPlayer) const;
 	std::shared_ptr<Robot> getAvailableRobot() const;
 	void fillGameStateMessage( messages::GameState & oGameState);
 

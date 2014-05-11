@@ -45,6 +45,7 @@ void ProcessRegister::execute()
 	if (aRobot)
 	{
 		aRobotId = aRobot->getRobotId();
+		aRobot->setHasRealRobot(true);
 	}
 	
 	Registered aRegistered;
