@@ -10,7 +10,7 @@ namespace orwell {
 namespace game {
 
 Robot::Robot(string const & iName)
-	: _name(iName)
+	: m_name(iName)
 {
 }
 
@@ -18,20 +18,30 @@ Robot::~Robot()
 {
 }
 
-void Robot::setPlayerName(string const & iName)
+void Robot::setPlayer(std::shared_ptr< Player > const iPlayer)
 {
-	_playerName = iName;
+	m_player = iPlayer;
 }
+
+std::shared_ptr< Player > const Robot::getPlayer() const
+{
+	return m_player.lock();
+}
+
+//void Robot::setPlayerName(string const & iName)
+//{
+	//_playerName = iName;
+//}
 
 string const & Robot::getName() const
 {
-	return _name;
+	return m_name;
 }
 
-string const &  Robot::getPlayerName() const
-{
-	return _playerName;
-}
+//string const & Robot::getPlayerName() const
+//{
+	//return _playerName;
+//}
 
 void fillRobotStateMessage( messages::RobotState & oMessage )
 {

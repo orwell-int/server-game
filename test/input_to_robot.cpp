@@ -72,8 +72,14 @@ int main()
 {
 	orwell::support::GlobalLogger::Create("input", "test_input.log");
 	log4cxx::NDC ndc("input");
+	FakeAgentProxy aFakeAgentProxy;
 	std::shared_ptr< orwell::Server > aServer =
-		std::make_shared< orwell::Server >("tcp://*:9000", "tcp://*:9001", 500);
+		std::make_shared< orwell::Server >(
+			aFakeAgentProxy,
+			"tcp://*:9003",
+			"tcp://*:9000",
+			"tcp://*:9001",
+			500);
 	ORWELL_LOG_INFO("server created");
 	aServer->accessContext().addRobot("Gipsy Danger");
 	aServer->accessContext().addRobot("Goldorak");

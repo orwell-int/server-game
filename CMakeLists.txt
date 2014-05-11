@@ -169,7 +169,7 @@ ELSE()
 	MESSAGE("Code coverage not considered")
 ENDIF()
 
-SET(DART_TESTING_TIMEOUT "9")
+SET(DART_TESTING_TIMEOUT "1")
 SET(MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --show-reachable=yes")
 
 # this might be a hack but it works

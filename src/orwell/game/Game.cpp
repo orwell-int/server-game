@@ -22,7 +22,7 @@ namespace orwell {
 namespace game {
 
 Game::Game()
-	: _isRunning(false)
+	: m_isRunning(false)
 {
 }
 
@@ -33,28 +33,28 @@ Game::~Game()
 
 shared_ptr<Robot> Game::accessRobot(string const & iRobotName)
 {
-	return _robots.at(iRobotName);
+	return m_robots.at(iRobotName);
 }
 
 map<string, shared_ptr<Robot> > const & Game::getRobots()
 {
-	return _robots;
+	return m_robots;
 }
 
-Player & Game::accessPlayer( string const & iPlayerName)
+std::shared_ptr< Player > Game::accessPlayer( string const & iPlayerName)
 {
-	return _players.at(iPlayerName);
+	return m_players.at(iPlayerName);
 }
 
-map<string, Player> const & Game::getPlayers()
+map< string, std::shared_ptr< Player > > const & Game::getPlayers()
 {
-	return _players;
+	return m_players;
 }
 
 bool Game::addPlayer(string const & iName)
 {
 	bool aAddedPlayerSuccess = false;
-	if (_players.find(iName) != _players.end())
+	if (m_players.find(iName) != m_players.end())
 	{
 		ORWELL_LOG_WARN("Player name (" << iName << ") is already in the player Map.");
 		aAddedPlayerSuccess = true;
@@ -62,8 +62,8 @@ bool Game::addPlayer(string const & iName)
 	else
 	{
 		//create playercontext and append
-		Player aPlayerContext( iName );
-		_players.insert(pair<string,Player>(iName, aPlayerContext));
+		std::shared_ptr< Player > aPlayer = std::make_shared< Player >(iName);
+		m_players.insert(std::make_pair(iName, aPlayer));
 		ORWELL_LOG_DEBUG("new PlayerContext added with internalId=" << iName);
 		aAddedPlayerSuccess = true;
 	}
@@ -74,7 +74,7 @@ bool Game::addPlayer(string const & iName)
 bool Game::addRobot(string const & iName)
 {
 	bool aAddedRobotSuccess = false;
-	if (_robots.find(iName) != _robots.end())
+	if (m_robots.find(iName) != m_robots.end())
 	{
 		ORWELL_LOG_WARN("Robot name (" << iName << ") is already in the robot Map.");
 	}
@@ -82,11 +82,23 @@ bool Game::addRobot(string const & iName)
 	{
 		// create RobotContext with that index
 		shared_ptr<Robot> aRobot = make_shared<Robot>(iName) ;
-		_robots.insert( pair<string, shared_ptr<Robot> >( iName, aRobot ) );
+		m_robots.insert( pair<string, shared_ptr<Robot> >( iName, aRobot ) );
 		ORWELL_LOG_DEBUG("new RobotContext added with internal ID=" << iName);
 		aAddedRobotSuccess = true;
 	}
 	return aAddedRobotSuccess;
+}
+
+bool Game::removeRobot(string const & iName)
+{
+	bool aRemovedRobotSuccess = false;
+	auto aFound = m_robots.find(iName);
+	if (aFound != m_robots.end())
+	{
+		m_robots.erase(aFound);
+		aRemovedRobotSuccess = true;
+	}
+	return aRemovedRobotSuccess;
 }
 
 std::shared_ptr<Robot> Game::getAvailableRobot() const
@@ -95,14 +107,13 @@ std::shared_ptr<Robot> Game::getAvailableRobot() const
 
 	//search for the first robot which is not already associated to a player
 	map<string, std::shared_ptr<Robot>>::const_iterator aIterOnRobots;
-	aIterOnRobots = _robots.begin();
-	while ( aIterOnRobots != _robots.end()
-			&& !aIterOnRobots->second->getPlayerName().empty())
+	aIterOnRobots = m_robots.begin();
+	while (aIterOnRobots != m_robots.end() && aIterOnRobots->second->getPlayer())
 	{
 		++aIterOnRobots;
 	}
 	
-	if (_robots.end() != aIterOnRobots)
+	if (m_robots.end() != aIterOnRobots)
 	{
 		aFoundRobot = aIterOnRobots->second;
 	}
@@ -114,9 +125,10 @@ string const Game::getRobotNameForPlayer(string const & iPlayer) const
 {
 	string retValue;
 	
-	for (pair<string, std::shared_ptr<Robot>> const & iItem : _robots)
+	for (pair<string, std::shared_ptr<Robot>> const & iItem : m_robots)
 	{
-		if (iItem.second.get()->getPlayerName() == iPlayer)
+		std::shared_ptr< Player > aPlayer = iItem.second.get()->getPlayer();
+		if ((nullptr != aPlayer) and (aPlayer->getName() == iPlayer))
 		{
 			retValue = iItem.second.get()->getName();
 		}

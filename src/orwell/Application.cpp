@@ -29,6 +29,8 @@ Application & Application::GetInstance()
 Application::Application()
 	: m_server(nullptr)
 	, m_broadcastServer(nullptr)
+	, m_state(State::CREATED)
+	, m_agentProxy(*this)
 {
 }
 
@@ -63,6 +65,11 @@ bool Application::ReadParameters(
 	{
 		oParam.m_pullerPort = 9001;
 		ORWELL_LOG_DEBUG("by default, puller-port = " << oParam.m_pullerPort);
+	}
+	if (not oParam.m_agentPort)
+	{
+		oParam.m_agentPort = 9003;
+		ORWELL_LOG_DEBUG("by default, agent-port = " << oParam.m_agentPort);
 	}
 	if (not oParam.m_tickInterval)
 	{
@@ -275,7 +282,7 @@ bool Application::CheckParametersConsistency(Parameters const & iParam)
 		ORWELL_LOG_ERROR("Puller and agent ports have the same value (" << iParam.m_agentPort << ") which is not allowed.");
 		return false;
 	}
-	if (*iParam.m_publisherPort == 0 or *iParam.m_pullerPort == 0)
+	if ((*iParam.m_publisherPort) == 0 or (*iParam.m_pullerPort == 0))
 	{
 		ORWELL_LOG_ERROR("Invalid port information. Ports are \n Puller=" << iParam.m_pullerPort << "\n Publisher=" << iParam.m_publisherPort);
 		return false;
@@ -283,8 +290,20 @@ bool Application::CheckParametersConsistency(Parameters const & iParam)
 	return true;
 }
 
+Application::~Application()
+{
+	// this is for debugging purpose
+	//std::cout << "Application::~Application()" << std::endl;
+	clean();
+}
+
 void Application::run(Parameters const & iParam)
 {
+	if (State::CREATED != m_state)
+	{
+		ORWELL_LOG_WARN("run can only be called when in state CREATED");
+		return;
+	}
 	/***************************************
 	 *  Run the server only if all is set  *
 	 ***************************************/
@@ -295,6 +314,8 @@ void Application::run(Parameters const & iParam)
 		{
 			this->m_server->accessContext().addRobot(aPair.second.m_name);
 		}
+		//m_state = State::INITIALISED;
+		m_state = State::RUNNING;
 		if ((iParam.m_dryRun) and (*iParam.m_dryRun))
 		{
 			ORWELL_LOG_INFO("Exit without starting (dry-run).");
@@ -336,12 +357,22 @@ void Application::run(Parameters const & iParam)
 
 bool Application::stop()
 {
-	m_server->stop();
-	if (nullptr != m_broadcastServer)
+	bool aStopped = false;
+	if (State::RUNNING == m_state)
 	{
-		m_broadcastServer->stop();
+		m_server->stop();
+		if (nullptr != m_broadcastServer)
+		{
+			m_broadcastServer->stop();
+		}
+		aStopped = true;
+		m_state = State::STOPPED;
 	}
-	return true;
+	else
+	{
+		ORWELL_LOG_WARN("stop can only be called when in state RUNNING");
+	}
+	return aStopped;
 }
 
 void Application::clean()
@@ -358,14 +389,30 @@ void Application::clean()
 	}
 }
 
+orwell::Server * Application::accessServer(bool const iUnsafe)
+{
+	if (not iUnsafe)
+	{
+		assert(nullptr != m_server);
+	}
+	return m_server;
+}
+
+
 bool Application::initServer(Parameters const & iParam)
 {
 	ORWELL_LOG_INFO("Initialize server : publisher tcp://*:" << iParam.m_publisherPort << " puller tcp://*:" << iParam.m_pullerPort);
 
-	std::string aPublisherAddress = "tcp://*:" + boost::lexical_cast<std::string>( iParam.m_publisherPort);
-	std::string aPullerAddress = "tcp://*:" + boost::lexical_cast<std::string>( iParam.m_pullerPort) ;
+	std::string aAgentAddress = "tcp://*:" + boost::lexical_cast<std::string>(*iParam.m_agentPort);
+	std::string aPublisherAddress = "tcp://*:" + boost::lexical_cast<std::string>(*iParam.m_publisherPort);
+	std::string aPullerAddress = "tcp://*:" + boost::lexical_cast<std::string>(*iParam.m_pullerPort);
 
-	m_server = new orwell::Server(aPullerAddress, aPublisherAddress, iParam.m_tickInterval.get());
+	m_server = new orwell::Server(
+			m_agentProxy,
+			aAgentAddress,
+			aPullerAddress,
+			aPublisherAddress,
+			iParam.m_tickInterval.get());
 	if ((iParam.m_broadcast) and (*iParam.m_broadcast))
 	{
 		m_broadcastServer = new orwell::BroadcastServer(aPullerAddress, aPublisherAddress);

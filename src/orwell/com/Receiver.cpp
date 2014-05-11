@@ -19,7 +19,7 @@ namespace com {
 Receiver::Receiver(
 		std::string const & iUrl,
 		unsigned int const iSocketType,
-		ConnectionMode::ConnectionMode const iConnectionMode,
+		ConnectionMode const iConnectionMode,
 		zmq::context_t & ioZmqContext,
 		unsigned int const iSleep)
 	: m_zmqSocket(new zmq::socket_t(ioZmqContext, iSocketType))
@@ -59,6 +59,18 @@ Receiver::~Receiver()
 	delete(m_zmqSocket);
 }
 
+bool Receiver::receiveString(std::string & oMessage)
+{
+	zmq::message_t aZmqMessage;
+
+	bool aReceived = m_zmqSocket->recv(&aZmqMessage, ZMQ_NOBLOCK);
+	if ( aReceived )
+	{
+		oMessage = string(static_cast<char*>(aZmqMessage.data()), aZmqMessage.size());
+	}
+	return aReceived;
+}
+
 bool Receiver::receive(RawMessage & oMessage)
 {
 	zmq::message_t aZmqMessage;
@@ -66,10 +78,10 @@ bool Receiver::receive(RawMessage & oMessage)
 	string aPayload;
 	string aDest;
 
-	bool aReceived = m_zmqSocket->recv(&aZmqMessage, ZMQ_NOBLOCK);
+	std::string aMessageData;
+	bool aReceived = receiveString(aMessageData);
 	if ( aReceived )
 	{
-		string aMessageData = string(static_cast<char*>(aZmqMessage.data()), aZmqMessage.size());
 		size_t aEndDestFlag = aMessageData.find( " ", 0 );
 		if (string::npos != aEndDestFlag)
 		{
