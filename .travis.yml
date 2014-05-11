@@ -19,6 +19,12 @@ before_install:
     - tar xzf lcov-1.10.tar.gz
     - cd lcov-1.10 && make && sudo make install
     - cd ../..
+    - mkdir gtest_build
+    - cd gtest_build
+    - cmake -DCMAKE_BUILD_TYPE=RELEASE /usr/src/gtest/
+    - make
+    - sudo mv libg* /usr/lib/
+    - cd ..
 
 script:
     - gcov -v | grep "4.8"
