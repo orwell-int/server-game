@@ -17,22 +17,29 @@ class Player;
 class Robot
 {
 public:
-	Robot(std::string const & iName);
+	Robot(
+			std::string const & iName,
+			std::string const & iRobotId);
 	~Robot();
+
+	void setHasRealRobot(bool const iHasRealRobot);
+	bool const getHasRealRobot() const;
 
 	void setPlayer(std::shared_ptr< Player > const iPlayer);
 	std::shared_ptr< Player > const getPlayer() const;
-
-	//void setPlayerName(std::string const & iName);
+	bool const getHasPlayer() const;
 
 	std::string const & getName() const;
+	std::string const & getRobotId() const;
 
-	//std::string const & getPlayerName() const;
+	bool const getIsAvailable() const;
 
 	void fillRobotStateMessage( messages::RobotState & oMessage );
 
 private:
 	std::string m_name;
+	std::string m_robotId;
+	bool m_hasRealRobot;
 	std::weak_ptr< Player > m_player;
 };
 

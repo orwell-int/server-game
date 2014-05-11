@@ -295,7 +295,9 @@ void Application::run(Parameters const & iParam)
 		// temporary hack
 		for (auto aPair : iParam.m_robots)
 		{
-			this->m_server->accessContext().addRobot(aPair.second.m_name);
+			this->m_server->accessContext().addRobot(
+					aPair.second.m_name,
+					aPair.first);
 		}
 		//m_state = State::INITIALISED;
 		m_state = State::RUNNING;

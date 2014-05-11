@@ -75,6 +75,7 @@ void ProcessHello::execute()
 		Welcome aWelcome;
 		aWelcome.set_robot(aRobotForPlayer.empty() ? aAvailableRobot->getName() : aRobotForPlayer);
 		aWelcome.set_team( orwell::messages::RED ); //currently stupidly hardoded
+		aWelcome.set_id(aAvailableRobot->getRobotId());
 		RawMessage aReply(aClientID, "Welcome", aWelcome.SerializeAsString());
 		_publisher->send( aReply );
 	}

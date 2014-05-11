@@ -9,13 +9,27 @@ using orwell::messages::RobotState;
 namespace orwell {
 namespace game {
 
-Robot::Robot(string const & iName)
+Robot::Robot(
+		string const & iName,
+		std::string const & iRobotId)
 	: m_name(iName)
+	, m_robotId(iRobotId)
+	, m_hasRealRobot(false)
 {
 }
 
 Robot::~Robot()
 {
+}
+
+void Robot::setHasRealRobot(bool const iHasRealRobot)
+{
+	m_hasRealRobot = iHasRealRobot;
+}
+
+bool const Robot::getHasRealRobot() const
+{
+	return m_hasRealRobot;
 }
 
 void Robot::setPlayer(std::shared_ptr< Player > const iPlayer)
@@ -28,20 +42,25 @@ std::shared_ptr< Player > const Robot::getPlayer() const
 	return m_player.lock();
 }
 
-//void Robot::setPlayerName(string const & iName)
-//{
-	//_playerName = iName;
-//}
+bool const Robot::getHasPlayer() const
+{
+	return (nullptr != getPlayer());
+}
 
 string const & Robot::getName() const
 {
 	return m_name;
 }
 
-//string const & Robot::getPlayerName() const
-//{
-	//return _playerName;
-//}
+std::string const & Robot::getRobotId() const
+{
+	return m_robotId;
+}
+
+bool const Robot::getIsAvailable() const
+{
+	return ((m_hasRealRobot) and (not getHasPlayer()));
+}
 
 void fillRobotStateMessage( messages::RobotState & oMessage )
 {
@@ -53,5 +72,6 @@ void fillRobotStateMessage( messages::RobotState & oMessage )
 	oMessage.set_active(true);
 }
 
-}} // namespaces
+}
+} // namespaces
 

@@ -8,11 +8,14 @@
 
 #include "server-game.pb.h"
 
-namespace orwell {
-namespace com {
+namespace orwell
+{
+namespace com
+{
 class Sender;
 }
-namespace game {
+namespace game
+{
 class Robot;
 
 class Game
@@ -44,7 +47,9 @@ public:
 	bool removePlayer(std::string const & iName);
 
 	//add empty RobotContext
-	bool addRobot(std::string const & iName);
+	bool addRobot(
+			std::string const & iName,
+			std::string iRobotId = "");
 
 	/// Remove a robot named #iName if found.
 	/// \param iName
@@ -53,11 +58,15 @@ public:
 	///  True if and only if the robot was found and removed.
 	bool removeRobot(std::string const & iName);
 
+	std::shared_ptr< Robot > getRobotWithoutRealRobot() const;
 	std::string const getRobotNameForPlayer(std::string const & iPlayer) const;
 	std::shared_ptr<Robot> getAvailableRobot() const;
 	void fillGameStateMessage( messages::GameState & oGameState);
 
 private:
+	/// \return
+	///  A RobotID that is not already used.
+	std::string getNewRobotId() const;
 	// Is the game started and running or not ?
 	bool m_isRunning;
 	// Each connected robot has a robotContext in this map. The key is the robot name.
@@ -66,7 +75,8 @@ private:
 	std::map< std::string, std::shared_ptr< Player > > m_players;
 	// Each connected controller has a playerContext in this map. The key is the team name.
 	std::map<std::string, Team> m_teams;
-
 };
 
-}} //end namespace
+}
+} //end namespace
+
