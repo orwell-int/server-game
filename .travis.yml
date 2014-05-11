@@ -18,13 +18,15 @@ before_install:
     - wget -nc --no-check-certificate http://downloads.sourceforge.net/ltp/lcov-1.10.tar.gz
     - tar xzf lcov-1.10.tar.gz
     - cd lcov-1.10 && make && sudo make install
-    - cd ../..
-    - mkdir gtest_build
-    - cd gtest_build
-    - cmake -DCMAKE_BUILD_TYPE=RELEASE /usr/src/gtest/
-    - make
-    - sudo mv libg* /usr/lib/
     - cd ..
+    - wget -nc --no-check-certificate https://googlemock.googlecode.com/files/gmock-1.7.0.zip
+    - unzip gmock-1.7.0.zip
+    - cd gmock-1.7.0
+    - cmake -DCMAKE_BUILD_TYPE=RELEASE
+    - make
+    - export GTEST_ROOT=$(pwd)/gtest/
+    - export GMOCK_ROOT=$(pwd)/
+    - cd ../..
 
 script:
     - gcov -v | grep "4.8"
