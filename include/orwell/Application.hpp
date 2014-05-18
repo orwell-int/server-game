@@ -33,7 +33,8 @@ public :
 		boost::optional<uint16_t> m_publisherPort;
 		boost::optional<uint16_t> m_agentPort;
 		boost::optional<int64_t> m_tickInterval;
-		boost::optional<std::string> m_rcFilePath;
+		boost::optional<std::string> m_rcFilePath;		// path to technical configuration file
+		boost::optional<std::string> m_gameFilePath;	// path to game configuration file
 		boost::optional<bool> m_dryRun;
 		boost::optional<bool> m_broadcast;
 		std::map<std::string, Robot> m_robots;
@@ -76,6 +77,8 @@ private:
 	static bool ParseParametersFromConfigFile(
 			Parameters & ioParam);
 	static bool CheckParametersConsistency(Parameters const & iParam);
+	static void ParseGameConfigFromFile(
+			Parameters & ioParam);
 
 	// Instance of the server running
 	orwell::Server * m_server;

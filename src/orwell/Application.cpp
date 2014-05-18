@@ -50,6 +50,10 @@ bool Application::ReadParameters(
 			return false;
 		}
 	}
+	if (oParam.m_gameFilePath and (not (*oParam.m_gameFilePath).empty()))
+	{
+		ParseGameConfigFromFile(oParam);
+	}
 
 	// Default values
 	if (not oParam.m_publisherPort)
@@ -97,7 +101,8 @@ bool Application::ParseParametersFromCommandLine(
 				("publisher-port,P", value<uint16_t>(),    "Publisher port")
 				("puller-port,p",    value<uint16_t>(),    "Puller port")
 				("agent-port,A",     value<uint16_t>(),    "Agent Port")
-				("orwellrc,r",       value<std::string>(), "Load configuration from rc file")
+				("orwellrc,r",       value<std::string>(), "Load technical configuration from rc file")
+				("gamefile,g",       value<std::string>(), "Load game configuration from game file")
 				("tick-interval,T",  value<uint32_t>(),    "Interval in ticks between GameState messages")
 				("version,v",                              "Print version number and exits")
 				("debug-log,d",                            "Print debug logs on the console")
@@ -123,6 +128,11 @@ bool Application::ParseParametersFromCommandLine(
 	{
 		oParam.m_rcFilePath = aVariablesMap["orwellrc"].as<std::string>();
 		ORWELL_LOG_DEBUG("orwellrc from command line = " << oParam.m_rcFilePath);
+	}
+	if (aVariablesMap.count("gamefile"))
+	{
+		oParam.m_gameFilePath = aVariablesMap["gamefile"].as<std::string>();
+		ORWELL_LOG_DEBUG("game file from command line = " << oParam.m_gameFilePath);
 	}
 
 	if (aVariablesMap.count("help"))
@@ -224,11 +234,20 @@ bool Application::ParseParametersFromConfigFile(
 		}
 	}
 
-	// Now get the optional things regarding the game itself
-	boost::optional<std::string> aGameRobots = aPtree.get_optional<std::string>("game.robots");
+	return true;
+}
+
+void Application::ParseGameConfigFromFile(
+		Parameters & ioParam)
+{
+	ptree aPtree;
+	ini_parser::read_ini(*ioParam.m_gameFilePath, aPtree);
+
 	ioParam.m_gameType = aPtree.get_optional<std::string>("game.gametype");
 	ioParam.m_gameName = aPtree.get_optional<std::string>("game.gamename");
 
+	// list of all robots to add
+	boost::optional<std::string> aGameRobots = aPtree.get_optional<std::string>("game.robots");
 	// If we have some robots, we need to retrieve them from the ini file itself and add them in the Server's context
 	if (aGameRobots)
 	{
@@ -244,8 +263,6 @@ bool Application::ParseParametersFromConfigFile(
 			ioParam.m_teams.insert(aRobotTeam);
 		}
 	}
-	
-	return true;
 }
 
 bool Application::CheckParametersConsistency(Parameters const & iParam)
@@ -463,6 +480,7 @@ bool operator==(
 		and (iLeft.m_agentPort == iRight.m_agentPort)
 		and (iLeft.m_tickInterval == iRight.m_tickInterval)
 		and (iLeft.m_rcFilePath == iRight.m_rcFilePath)
+		and (iLeft.m_gameFilePath == iRight.m_gameFilePath)
 		and (iLeft.m_dryRun == iRight.m_dryRun)
 		and (iLeft.m_broadcast == iRight.m_broadcast)
 		and (aSameRobots)
@@ -480,6 +498,7 @@ std::ostream & operator<<(
 	ioOstream << "agent port [" << iParameters.m_agentPort << "] ; ";
 	ioOstream << "tick interval [" << iParameters.m_tickInterval << "] ; ";
 	ioOstream << "rc file path [" << iParameters.m_rcFilePath << "] ; ";
+	ioOstream << "game config file path [" << iParameters.m_gameFilePath << "] ; ";
 	ioOstream << "dry run [" << iParameters.m_dryRun << "] ; ";
 	ioOstream << "broadcast [" << iParameters.m_broadcast << "] ";
 	ioOstream << "robots [";
