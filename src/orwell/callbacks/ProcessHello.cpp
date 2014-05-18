@@ -45,12 +45,9 @@ void ProcessHello::execute()
 	if (aPlayerAddedSuccess)
 	{
 		std::shared_ptr< ::orwell::game::Robot > aAvailableRobot = _game->getRobotForPlayer(aNewPlayerName);
+		aFailure = true;
 
-		if (aAvailableRobot.get() == nullptr)
-		{
-			aFailure = true;
-		}
-		else
+		if (aAvailableRobot.get() != nullptr)
 		{
 			ORWELL_LOG_INFO(
 					"Player " << aNewPlayerName <<
@@ -61,14 +58,22 @@ void ProcessHello::execute()
 			{
 				aPlayer->setRobot(aAvailableRobot);
 				aAvailableRobot->setPlayer(aPlayer);
-			}
 
-			Welcome aWelcome;
-			aWelcome.set_robot(aAvailableRobot->getName());
-			aWelcome.set_team( orwell::messages::RED ); //currently stupidly hardoded
-			aWelcome.set_id(aAvailableRobot->getRobotId());
-			RawMessage aReply(aClientID, "Welcome", aWelcome.SerializeAsString());
-			_publisher->send( aReply );
+				Welcome aWelcome;
+				aWelcome.set_robot(aAvailableRobot->getName());
+				aWelcome.set_team( orwell::messages::RED ); //currently stupidly hardoded
+				aWelcome.set_id(aAvailableRobot->getRobotId());
+				aWelcome.set_video_address(aAvailableRobot->getVideoAddress());
+				aWelcome.set_video_port(aAvailableRobot->getVideoPort());
+				RawMessage aReply(aClientID, "Welcome", aWelcome.SerializeAsString());
+				_publisher->send( aReply );
+				aFailure = false;
+			}
+			else
+			{
+				// there is no reason for the player not to be found
+				// but we consider Goodbye would be sent.
+			}
 		}
 	}
 	if (aFailure)

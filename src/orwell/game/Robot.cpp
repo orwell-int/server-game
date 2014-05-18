@@ -14,6 +14,7 @@ Robot::Robot(
 		std::string const & iRobotId)
 	: m_name(iName)
 	, m_robotId(iRobotId)
+	, m_videoPort(0)
 	, m_hasRealRobot(false)
 {
 }
@@ -45,6 +46,26 @@ std::shared_ptr< Player > const Robot::getPlayer() const
 bool const Robot::getHasPlayer() const
 {
 	return (nullptr != getPlayer().get());
+}
+
+void Robot::setVideoAddress(std::string const & iVideoAddress)
+{
+	m_videoAddress = iVideoAddress;
+}
+
+std::string const & Robot::getVideoAddress() const
+{
+	return m_videoAddress;
+}
+
+void Robot::setVideoPort(uint32_t const iVideoPort)
+{
+	m_videoPort = iVideoPort;
+}
+
+uint32_t Robot::getVideoPort() const
+{
+	return m_videoPort;
 }
 
 string const & Robot::getName() const

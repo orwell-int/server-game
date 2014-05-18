@@ -46,10 +46,12 @@ void ProcessRegister::execute()
 	{
 		aRobotId = aRobot->getRobotId();
 		aRobot->setHasRealRobot(true);
+		aRobot->setVideoAddress(aRegisterMsg.video_address());
+		aRobot->setVideoPort(aRegisterMsg.video_port());
 	}
-	
+
 	Registered aRegistered;
-	aRegistered.set_name(aRobotId); 
+	aRegistered.set_name(aRobotId);
 	RawMessage aReply(aClientID, "Registered", aRegistered.SerializeAsString());
 	_publisher->send(aReply);
 }
