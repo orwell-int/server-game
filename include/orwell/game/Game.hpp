@@ -58,7 +58,8 @@ public:
 	///  True if and only if the robot was found and removed.
 	bool removeRobot(std::string const & iName);
 
-	std::shared_ptr< Robot > getRobotWithoutRealRobot() const;
+	std::shared_ptr< Robot > getRobotWithoutRealRobot(
+			std::string const & iTemporaryRobotId) const;
 	std::shared_ptr< Robot > getRobotForPlayer(std::string const & iPlayer) const;
 	std::shared_ptr<Robot> getAvailableRobot() const;
 	void fillGameStateMessage( messages::GameState & oGameState);
@@ -67,14 +68,18 @@ private:
 	/// \return
 	///  A RobotID that is not already used.
 	std::string getNewRobotId() const;
-	// Is the game started and running or not ?
+	/// True if and only if the game is running
 	bool m_isRunning;
-	// Each connected robot has a robotContext in this map. The key is the robot name.
+	/// Each connected robot has a robotContext in this map. The key is the robot name.
 	std::map<std::string, std::shared_ptr<Robot> > m_robots;
-	// Each connected controller has a playerContext in this map. The key is the player name.
+	/// Each connected controller has a playerContext in this map. The key is the player name.
 	std::map< std::string, std::shared_ptr< Player > > m_players;
-	// Each connected controller has a playerContext in this map. The key is the team name.
+	/// Each connected controller has a playerContext in this map. The key is the team name.
 	std::map<std::string, Team> m_teams;
+	/// Stores the temporary robots ID sent by the different robots in case
+	/// they send the same value again to send back the same information
+	/// the following times.
+	mutable std::map< std::string, std::string > m_registeredRobots;
 };
 
 }

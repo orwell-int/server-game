@@ -120,20 +120,29 @@ bool Game::removeRobot(string const & iName)
 	return aRemovedRobotSuccess;
 }
 
-std::shared_ptr< Robot > Game::getRobotWithoutRealRobot() const
+std::shared_ptr< Robot > Game::getRobotWithoutRealRobot(
+		std::string const & iTemporaryRobotId) const
 {
 	shared_ptr< Robot > aFoundRobot;
-
-	map< string, std::shared_ptr< Robot > >::const_iterator aIterOnRobots;
-	aIterOnRobots = m_robots.begin();
-	while (aIterOnRobots != m_robots.end() && aIterOnRobots->second->getHasRealRobot())
+	auto const aRegistrationIterator = m_registeredRobots.find(iTemporaryRobotId);
+	if (m_registeredRobots.end() != aRegistrationIterator)
 	{
-		++aIterOnRobots;
+		aFoundRobot = m_robots.at(aRegistrationIterator->second);
 	}
-
-	if (m_robots.end() != aIterOnRobots)
+	else
 	{
-		aFoundRobot = aIterOnRobots->second;
+		map< string, std::shared_ptr< Robot > >::const_iterator aIterOnRobots;
+		aIterOnRobots = m_robots.begin();
+		while (aIterOnRobots != m_robots.end() && aIterOnRobots->second->getHasRealRobot())
+		{
+			++aIterOnRobots;
+		}
+
+		if (m_robots.end() != aIterOnRobots)
+		{
+			aFoundRobot = aIterOnRobots->second;
+			m_registeredRobots[iTemporaryRobotId] = aIterOnRobots->first;
+		}
 	}
 
 	return aFoundRobot;
