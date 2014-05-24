@@ -110,6 +110,7 @@ static void test_most_arguments()
 			42, // puller port
 			43, // agent port
 			boost::none, // std::string("orwell.rc"), // orwellrc
+			boost::none, // game config file path
 			666, // tick interval
 			false, // version
 			true, // debug log
@@ -126,6 +127,7 @@ static void test_parse_command_line()
 		3, // agent port
 		666, // tick interval
 		boost::none, // rc file path
+		boost::none, // game config file path
 		true, // dry run
 		false, // broadcast
 		//{}, // robot ids
@@ -138,6 +140,7 @@ static void test_parse_command_line()
 				2, // puller port
 				3, // agent port
 				boost::none, // std::string("orwell.rc"), // orwellrc
+				boost::none, // game config file path
 				666, // tick interval
 				false, // version
 				true, // debug log
@@ -197,6 +200,7 @@ tic-interval   = 1500
 		3, // agent port
 		666, // tick interval
 		aTempFile.m_fileName, // rc file path
+		boost::none, // game config file path
 		true, // dry run
 		false, // broadcast
 		//{}, // robot ids
@@ -209,6 +213,7 @@ tic-interval   = 1500
 				2, // puller port
 				3, // agent port
 				aTempFile.m_fileName, // orwellrc
+				boost::none, // game config file path
 				666, // tick interval
 				false, // version
 				true, // debug log
@@ -234,6 +239,7 @@ tic-interval   = 50
 		903, // agent port
 		50, // tick interval
 		aTempFile.m_fileName, // rc file path
+		boost::none, // game config file path
 		false, // dry run
 		true, // broadcast
 		//{}, // robot ids
@@ -246,6 +252,7 @@ tic-interval   = 50
 				boost::none, // puller port
 				boost::none, // agent port
 				aTempFile.m_fileName, // orwellrc
+				boost::none, // game config file path
 				boost::none), // tick interval)
 		aExpectedParameters);
 }
@@ -265,6 +272,7 @@ puller-port = 42
 		3, // agent port
 		666, // tick interval
 		aTempFile.m_fileName, // rc file path
+		boost::none, // game config file path
 		true, // dry run
 		false, // broadcast
 		//{}, // robot ids
@@ -277,6 +285,7 @@ puller-port = 42
 				2, // puller port
 				3, // agent port
 				aTempFile.m_fileName, // orwellrc
+				boost::none, // game config file path
 				666, // tick interval
 				false, // version
 				true, // debug log
@@ -309,7 +318,8 @@ team = Mathematicians
 		1, // publisher port
 		3, // agent port
 		666, // tick interval
-		aTempFile.m_fileName, // rc file path
+		boost::none, // rc file path
+		aTempFile.m_fileName, // game config file path
 		true, // dry run
 		false, // broadcast
 		//{"robot_A", "robot_B"}, // robot ids
@@ -326,7 +336,8 @@ team = Mathematicians
 				1, // publisher port
 				2, // puller port
 				3, // agent port
-				aTempFile.m_fileName, // orwellrc
+				boost::none, // orwellrc
+				aTempFile.m_fileName, // game config file path
 				666, // tick interval
 				false, // version
 				true, // debug log
@@ -338,7 +349,7 @@ team = Mathematicians
 // make sure we detect errors
 static void test_parse_command_line_and_file_5()
 {
-	ORWELL_LOG_DEBUG("test_parse_command_line_and_file_4");
+	ORWELL_LOG_DEBUG("test_parse_command_line_and_file_5");
 	TempFile aTempFile(std::string(R"(
 [game]
 robots = robot_A | robot_B
@@ -359,7 +370,8 @@ team = Mathematicians
 		1, // publisher port
 		3, // agent port
 		666, // tick interval
-		aTempFile.m_fileName, // rc file path
+		boost::none, // rc file path
+		aTempFile.m_fileName, // game config file path
 		true, // dry run
 		false, // broadcast
 		//{"robot_A", "robot_B"}, // robot ids
@@ -379,7 +391,8 @@ team = Mathematicians
 					1, // publisher port
 					2, // puller port
 					3, // agent port
-					aTempFile.m_fileName, // orwellrc
+					boost::none, // orwellrc
+					aTempFile.m_fileName, // game config file path
 					666, // tick interval
 					false, // version
 					true, // debug log
