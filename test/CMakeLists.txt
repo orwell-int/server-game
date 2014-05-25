@@ -13,6 +13,9 @@ find_package(ZMQ REQUIRED)
 
 find_package(LOG4CXX_LIBRARIES REQUIRED)
 
+find_package(GMock REQUIRED)
+find_package(GTest REQUIRED)
+
 include_directories(
 	${CMAKE_SOURCE_DIR}/include
 	${CMAKE_BINARY_DIR}/messages
@@ -26,6 +29,8 @@ target_link_libraries(
 	orwell_test
 	orwell_server_game
 	${ZMQ_LIBRARIES}
+	${GMOCK_LIBRARIES}
+	${GTEST_LIBRARIES}
 	${Boost_LIBRARIES}
 	${LOG4CXX_LIBRARIES})
 
@@ -35,6 +40,8 @@ target_link_libraries(
 
 include_directories(
 	${ZMQ_INCLUDE_DIRS}
+	${GMOCK_INCLUDE_DIRS}
+	${GTEST_INCLUDE_DIRS}
 	${LOG4CXX_INCLUDE_DIR}
 	${PROTOBUF_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
@@ -55,43 +62,14 @@ FUNCTION(add_orwell_test test_name file_name)
 	add_test(${test_name} ${CMAKE_CURRENT_BINARY_DIR}/${test_name})
 ENDFUNCTION()
 
-add_executable(test_input "input_to_robot.cpp")
-target_link_libraries(
-	test_input
-	orwell_server_game
-	orwell_test)
-add_test(test_input ${CMAKE_CURRENT_BINARY_DIR}/test_input)
-
-add_executable(test_hello "hello_client.cpp")
-target_link_libraries(
-	test_hello
-	orwell_server_game
-	orwell_test)
-add_test(test_hello ${CMAKE_CURRENT_BINARY_DIR}/test_hello)
-
-add_executable(test_application "application.cpp")
-target_link_libraries(
-	test_application
-	orwell_server_game
-	orwell_test)
-add_test(test_application ${CMAKE_CURRENT_BINARY_DIR}/test_application)
-
+add_orwell_test(test_input "input_to_robot.cpp")
+add_orwell_test(test_hello "hello_client.cpp")
+add_orwell_test(test_application "application.cpp")
 add_definitions( "-D__HYPER_BLASTER__" )
-add_executable(broadcast_test "broadcast_test.cpp")
-target_link_libraries(
-	broadcast_test
-	orwell_server_game
-	orwell_test)
-add_test(broadcast_test ${CMAKE_CURRENT_BINARY_DIR}/broadcast_test)
-
-add_executable(test_agent_proxy "agent_proxy.cpp")
-target_link_libraries(
-	test_agent_proxy
-	orwell_server_game
-	orwell_test)
-add_test(test_agent_proxy ${CMAKE_CURRENT_BINARY_DIR}/test_agent_proxy)
-
+add_orwell_test(broadcast_test "broadcast_test.cpp")
+add_orwell_test(test_agent_proxy "agent_proxy.cpp")
 add_orwell_test(test_agent "agent.cpp")
+add_orwell_test(test_register_robot "register_robot.cpp")
 
 get_property(VAR_ALL_TEST_TARGETS GLOBAL PROPERTY P_ALL_TEST_TARGETS)
 ADD_CUSTOM_TARGET(ctest

@@ -1,4 +1,4 @@
-/* Urls used in rosk */
+/* Urls */
 
 #pragma once
 
@@ -6,14 +6,16 @@
 #include <cstdint>
 #include <inttypes.h>
 
-namespace orwell {
-namespace com {
+namespace orwell
+{
+namespace com
+{
 
-class url
+class Url
 {
 public:
-	explicit url();
-	virtual ~url();
+	explicit Url();
+	virtual ~Url();
 
 	void setProtocol(std::string const & iProtocol);
 	void setHost(std::string const & iHost);
@@ -22,6 +24,9 @@ public:
 	void resetUrl();
 
 	std::string const & toString() const;
+
+	std::string const & getHost() const;
+	uint16_t const & getPort() const;
 
 private:
 	std::string _protocol;
@@ -33,3 +38,4 @@ private:
 };
 }
 }
+

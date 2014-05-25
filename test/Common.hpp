@@ -8,6 +8,8 @@
 
 #include "orwell/IAgentProxy.hpp"
 
+#include "gmock/gmock.h"
+
 namespace orwell
 {
 namespace com
@@ -63,30 +65,29 @@ public:
 class FakeAgentProxy : public orwell::IAgentProxy
 {
 public :
-	/// \return
-	///  True if and only if the command was successfully parsed.
-	bool step(std::string const & iCommand);
+	MOCK_METHOD1(step, bool(std::string const & iCommand));
 
-	/// stop application
-	void stopApplication();
+	MOCK_METHOD0(stopApplication, void());
+	
+	MOCK_METHOD2(listRobot, void(
+				std::string const & iReplyAddress,
+				uint16_t const iReplyPort));
 
-	/// add robot <name>
-	void addRobot(std::string const & iRobotName);
+	MOCK_METHOD1(addRobot, void(std::string const & iRobotName));
 
-	/// remove robot <name>
-	void removeRobot(std::string const & iRobotName);
+	MOCK_METHOD1(removeRobot, void(std::string const & iRobotName));
+	
+	MOCK_METHOD2(listPlayer, void(
+				std::string const & iReplyAddress,
+				uint16_t const iReplyPort));
 
-	/// add player <name>
-	void addPlayer(std::string const & iPlayerName);
+	MOCK_METHOD1(addPlayer, void(std::string const & iPlayerName));
 
-	/// remove player <name>
-	void removePlayer(std::string const & iPlayerName);
+	MOCK_METHOD1(removePlayer, void(std::string const & iPlayerName));
 
-	/// start game
-	void startGame();
+	MOCK_METHOD0(startGame, void());
 
-	/// stop game
-	void stopGame();
+	MOCK_METHOD0(stopGame, void());
 };
 
 std::ostream & operator<<(

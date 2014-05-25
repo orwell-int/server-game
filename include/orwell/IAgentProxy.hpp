@@ -2,6 +2,7 @@
 #pragma once
 
 #include <string>
+#include <stdint.h>
 
 namespace orwell
 {
@@ -20,11 +21,21 @@ public :
 	/// stop application
 	virtual void stopApplication() = 0;
 
+	/// get the list of robots
+	virtual void listRobot(
+			std::string const & iReplyAddress,
+			uint16_t const iReplyPort) = 0;
+
 	/// add robot <name>
 	virtual void addRobot(std::string const & iRobotName) = 0;
 
 	/// remove robot <name>
 	virtual void removeRobot(std::string const & iRobotName) = 0;
+
+	/// get the list of players
+	virtual void listPlayer(
+			std::string const & iReplyAddress,
+			uint16_t const iReplyPort) = 0;
 
 	/// add player <name>
 	virtual void addPlayer(std::string const & iPlayerName) = 0;

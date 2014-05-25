@@ -4,7 +4,7 @@ compiler:
     - gcc
 
 before_install:
-    - sudo apt-get install -qq libzmq3-dev libprotobuf-dev protobuf-compiler cmake libboost-all-dev liblog4cxx10-dev valgrind
+    - sudo apt-get install -qq libzmq3-dev libprotobuf-dev protobuf-compiler cmake libboost-all-dev liblog4cxx10-dev valgrind libgtest-dev google-mock
     - wget https://raw.github.com/zeromq/cppzmq/master/zmq.hpp -O ./include/zmq.hpp
     - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     - sudo apt-get update -qq
@@ -18,6 +18,14 @@ before_install:
     - wget -nc --no-check-certificate http://downloads.sourceforge.net/ltp/lcov-1.10.tar.gz
     - tar xzf lcov-1.10.tar.gz
     - cd lcov-1.10 && make && sudo make install
+    - cd ..
+    - wget -nc --no-check-certificate https://googlemock.googlecode.com/files/gmock-1.7.0.zip
+    - unzip gmock-1.7.0.zip
+    - cd gmock-1.7.0
+    - cmake -DCMAKE_BUILD_TYPE=RELEASE
+    - make
+    - export GTEST_ROOT=$(pwd)/gtest/
+    - export GMOCK_ROOT=$(pwd)/
     - cd ../..
 
 script:

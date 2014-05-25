@@ -155,5 +155,17 @@ void Server::feedAgentProxy()
 	}
 }
 
+void Server::push(
+		std::string const & iUrl,
+		std::string const & iMessage)
+{
+	orwell::com::Sender aPusher(
+			iUrl,
+			ZMQ_PUSH,
+			orwell::com::ConnectionMode::CONNECT,
+			_zmqContext);
+	aPusher.sendString(iMessage);
+}
+
 }
 

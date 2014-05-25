@@ -10,7 +10,6 @@
 
 #include <boost/optional.hpp>
 
-#include "orwell/IApplication.hpp"
 #include "orwell/AgentProxy.hpp"
 
 namespace orwell {
@@ -18,7 +17,7 @@ class Server;
 class BroadcastServer;
 class AgentProxy;
 
-class Application : public IApplication
+class Application
 {
 public :
 	struct Parameters

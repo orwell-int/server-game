@@ -1,4 +1,4 @@
-#include "orwell/com/url.hpp"
+#include "orwell/com/Url.hpp"
 #include <string>
 #include <boost/lexical_cast.hpp>
 
@@ -7,15 +7,15 @@
 using std::string;
 using namespace orwell::com;
 
-url::url() : _protocol("tcp"), _host("localhost"),_port(9000), _url("tcp://localhost:9000")
+Url::Url() : _protocol("tcp"), _host("localhost"),_port(9000), _url("tcp://localhost:9000")
 {
 }
 
-url::~url()
+Url::~Url()
 {
 }
 
-void url::resetUrl()
+void Url::resetUrl()
 {
 	_url.clear();
 	_url += _protocol;
@@ -26,7 +26,7 @@ void url::resetUrl()
 	//ORWELL_LOG_DEBUG("url = '" << _url << "'");
 }
 
-void url::setProtocol(string const & iProtocol)
+void Url::setProtocol(string const & iProtocol)
 {
 	if (!iProtocol.empty())
 	{
@@ -35,7 +35,7 @@ void url::setProtocol(string const & iProtocol)
 	}
 }
 
-void url::setHost(string const & iHost)
+void Url::setHost(string const & iHost)
 {
 	if (!iHost.empty())
 	{
@@ -44,14 +44,24 @@ void url::setHost(string const & iHost)
 	}
 }
 
-void url::setPort(uint16_t const iPort)
+void Url::setPort(uint16_t const iPort)
 {
 	_port = iPort;
 	resetUrl();
 }
 
-string const & url::toString() const
+string const & Url::toString() const
 {
 	return _url;
+}
+
+std::string const & Url::getHost() const
+{
+	return _host;
+}
+
+uint16_t const & Url::getPort() const
+{
+	return _port;
 }
 

@@ -57,6 +57,15 @@ Sender::~Sender()
 	delete(m_zmqSocket);
 }
 
+void Sender::sendString(std::string const & iMessage)
+{
+	zmq::message_t aZmqMessage(iMessage.size());
+	memcpy((void *) aZmqMessage.data(), iMessage.c_str(), iMessage.size());
+
+	m_zmqSocket->send(aZmqMessage);
+	ORWELL_LOG_DEBUG("Sent " << iMessage);
+}
+
 void Sender::send( RawMessage const & iMessage )
 {
 	string aMessage;
@@ -66,12 +75,8 @@ void Sender::send( RawMessage const & iMessage )
 	aMessage += " ";
 	aMessage += iMessage._payload;
 
-	zmq::message_t aZmqMessage( aMessage.size() );
-	memcpy((void *) aZmqMessage.data(), aMessage.c_str(), aMessage.size());
-
-	m_zmqSocket->send( aZmqMessage );
-	ORWELL_LOG_DEBUG("Sent " << aMessage.size() << " bytes : " << iMessage._type << "-" );
-
+	sendString(aMessage);
+	ORWELL_LOG_DEBUG("Sent " << aMessage.size() << " bytes : " << iMessage._type << "-");
 }
 
 std::string const & Sender::getUrl() const
@@ -79,5 +84,6 @@ std::string const & Sender::getUrl() const
 	return m_url;
 }
 
-}} // end namespace
+}
+} // end namespace
 

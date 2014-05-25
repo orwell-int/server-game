@@ -2,6 +2,9 @@
 
 #include "orwell/Application.hpp"
 #include "orwell/Server.hpp"
+#include "orwell/game/Player.hpp"
+#include "orwell/game/Robot.hpp"
+#include "orwell/com/Url.hpp"
 
 #include "orwell/support/GlobalLogger.hpp"
 
@@ -54,7 +57,30 @@ bool AgentProxy::step(std::string const & iCommand)
 	using std::placeholders::_1;
 	std::istringstream aStream(iCommand);
 	aStream >> iAction;
-	if ("start" == iAction)
+	if ("list" == iAction)
+	{
+		std::string aObject;
+		aStream >> aObject;
+		std::string aAddress;
+		aStream >> aAddress;
+		uint16_t aPort;
+		aStream >> aPort;
+		if ("player" == aObject)
+		{
+			Dispatch(
+				aStream,
+				std::bind(&AgentProxy::listPlayer, this, aAddress, aPort),
+				aResult);
+		}
+		else if ("robot" == aObject)
+		{
+			Dispatch(
+				aStream,
+				std::bind(&AgentProxy::listRobot, this, aAddress, aPort),
+				aResult);
+		}
+	}
+	else if ("start" == iAction)
 	{
 		std::string aObject;
 		aStream >> aObject;
@@ -116,6 +142,35 @@ void AgentProxy::stopApplication()
 	m_application.stop();
 }
 
+void AgentProxy::listRobot(
+		std::string const & iReplyAddress,
+		uint16_t const iReplyPort)
+{
+	ORWELL_LOG_INFO("list robot " << iReplyAddress << " " << iReplyPort);
+	std::map< std::string, std::shared_ptr< orwell::game::Robot > > aRobots =
+		m_application.accessServer()->accessContext().getRobots();
+	std::string aReply = "Robots:\n";
+	for (auto const & aPair : aRobots)
+	{
+		aReply += "\t" + aPair.first + " -> ";
+		aReply += "name = " + aPair.second->getName() + " ; ";
+		bool aHasPlayer(aPair.second->getPlayer());
+		if (aHasPlayer)
+		{
+			aReply += "player = " + aPair.second->getPlayer()->getName() + "\n";
+		}
+		else
+		{
+			aReply += "player = \n";
+		}
+	}
+	orwell::com::Url aUrl;
+	aUrl.setHost(iReplyAddress);
+	aUrl.setPort(iReplyPort);
+	m_application.accessServer()->push(aUrl.toString(), aReply);
+}
+
+
 void AgentProxy::addRobot(
 		std::string const & iRobotName)
 {
@@ -130,6 +185,35 @@ void AgentProxy::removeRobot(
 	m_application.accessServer()->accessContext().removeRobot(iRobotName);
 }
 
+void AgentProxy::listPlayer(
+		std::string const & iReplyAddress,
+		uint16_t const iReplyPort)
+{
+	ORWELL_LOG_INFO("list player " << iReplyAddress << " " << iReplyPort);
+	std::map< std::string, std::shared_ptr< orwell::game::Player > > aPlayers =
+		m_application.accessServer()->accessContext().getPlayers();
+	std::string aReply = "Players:\n";
+	for (auto const & aPair : aPlayers)
+	{
+		aReply += "\t" + aPair.first + " -> ";
+		aReply += "name = " + aPair.second->getName() + " ; ";
+		bool aHasRobot(aPair.second->getRobot());
+		if (aHasRobot)
+		{
+			aReply += "robot = " + aPair.second->getRobot()->getName() + "\n";
+		}
+		else
+		{
+			aReply += "robot = \n";
+		}
+	}
+	orwell::com::Url aUrl;
+	aUrl.setHost(iReplyAddress);
+	aUrl.setPort(iReplyPort);
+	m_application.accessServer()->push(aUrl.toString(), aReply);
+}
+
+
 void AgentProxy::addPlayer(
 		std::string const & iPlayerName)
 {
@@ -141,6 +225,7 @@ void AgentProxy::removePlayer(
 		std::string const & iPlayerName)
 {
 	ORWELL_LOG_INFO("remove player " << iPlayerName);
+	m_application.accessServer()->accessContext().removePlayer(iPlayerName);
 }
 
 void AgentProxy::startGame()

@@ -66,6 +66,7 @@ bool Receiver::receiveString(std::string & oMessage)
 	bool aReceived = m_zmqSocket->recv(&aZmqMessage, ZMQ_NOBLOCK);
 	if ( aReceived )
 	{
+		ORWELL_LOG_DEBUG("message received");
 		oMessage = string(static_cast<char*>(aZmqMessage.data()), aZmqMessage.size());
 	}
 	return aReceived;
