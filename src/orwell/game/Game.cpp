@@ -2,6 +2,8 @@
 
 #include "orwell/game/Game.hpp"
 
+#include <stdlib.h>
+
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/game/Robot.hpp"
 #include "orwell/game/Player.hpp"
@@ -10,7 +12,6 @@
 #include <iostream>
 #include <zmq.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 
 using std::map;
@@ -91,8 +92,17 @@ bool Game::getIsRunning() const
 
 void Game::start()
 {
-	ORWELL_LOG_INFO( "game starts" );
-	m_isRunning = true;
+	if (not m_isRunning)
+	{
+		for ( auto const aPair : m_robots )
+		{
+			std::shared_ptr< Robot > aRobot = aPair.second;
+			system("netstat | grep 9100");
+			system("cd server-web && make start");
+		}
+		ORWELL_LOG_INFO( "game starts" );
+		m_isRunning = true;
+	}
 }
 
 void Game::stop()

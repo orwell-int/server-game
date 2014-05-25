@@ -69,7 +69,6 @@ void ProcessHello::execute()
 
 				if (m_game->getAvailableRobot() == nullptr)
 				{
-					ORWELL_LOG_INFO( "The last robot has been associated. Time to start the game" );
 					m_game->start();
 				}
 			}
