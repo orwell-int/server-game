@@ -36,24 +36,22 @@ void ProcessHello::execute()
 {
 	ORWELL_LOG_INFO("ProcessHello::execute");
 
-	orwell::messages::Hello const & anHelloMsg = static_cast<orwell::messages::Hello const & >(*_msg);
+	orwell::messages::Hello const & anHelloMsg = static_cast<orwell::messages::Hello const & >(*m_msg);
 	std::string const & aClientID = getArgument("RoutingID").second;
     
 	string aNewPlayerName = anHelloMsg.name();
-	bool const aPlayerAddedSuccess = _game->addPlayer( aNewPlayerName );
+	bool const aPlayerAddedSuccess = m_game->addPlayer( aNewPlayerName );
 	bool aFailure = not aPlayerAddedSuccess;
 	if (aPlayerAddedSuccess)
 	{
-		std::shared_ptr< ::orwell::game::Robot > aAvailableRobot = _game->getRobotForPlayer(aNewPlayerName);
+		std::shared_ptr< ::orwell::game::Robot > aAvailableRobot = m_game->getRobotForPlayer(aNewPlayerName);
 		aFailure = true;
 
 		if (aAvailableRobot.get() != nullptr)
 		{
-			ORWELL_LOG_INFO(
-					"Player " << aNewPlayerName <<
-					" is now linked to robot " << aAvailableRobot->getName());
+			ORWELL_LOG_INFO( "Player " << aNewPlayerName << " is now linked to robot " << aAvailableRobot->getName() );
 
-			std::shared_ptr< game::Player > aPlayer = _game->accessPlayer(aNewPlayerName);
+			std::shared_ptr< game::Player > aPlayer = m_game->accessPlayer(aNewPlayerName);
 			if (nullptr != aPlayer)
 			{
 				aPlayer->setRobot(aAvailableRobot);
@@ -66,8 +64,14 @@ void ProcessHello::execute()
 				aWelcome.set_video_address(aAvailableRobot->getVideoAddress());
 				aWelcome.set_video_port(aAvailableRobot->getVideoPort());
 				RawMessage aReply(aClientID, "Welcome", aWelcome.SerializeAsString());
-				_publisher->send( aReply );
+				m_publisher->send( aReply );
 				aFailure = false;
+
+				if (m_game->getAvailableRobot() == nullptr)
+				{
+					ORWELL_LOG_INFO( "The last robot has been associated. Time to start the game" );
+					m_game->start();
+				}
 			}
 			else
 			{
@@ -83,7 +87,7 @@ void ProcessHello::execute()
 
 		Goodbye aGoodbye;
 		RawMessage aReply(aClientID, "Goodbye", aGoodbye.SerializeAsString());
-		_publisher->send( aReply );
+		m_publisher->send( aReply );
 	}
 }
 

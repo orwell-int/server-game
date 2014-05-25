@@ -37,12 +37,12 @@ void ProcessRegister::execute()
 	ORWELL_LOG_INFO("ProcessRegister::execute");
 
 	orwell::messages::Register const & aRegisterMsg =
-		static_cast< orwell::messages::Register const & >(*_msg);
+		static_cast< orwell::messages::Register const & >(*m_msg);
 	std::string const & aClientID = getArgument("RoutingID").second;
     
 	std::string aTemporaryRobotId = aRegisterMsg.temporary_robot_id();
 	std::shared_ptr< orwell::game::Robot > aRobot =
-		_game->getRobotWithoutRealRobot(aTemporaryRobotId);
+		m_game->getRobotWithoutRealRobot(aTemporaryRobotId);
 	std::string aRobotId;
 	if (aRobot)
 	{
@@ -55,7 +55,7 @@ void ProcessRegister::execute()
 	Registered aRegistered;
 	aRegistered.set_robot_id(aRobotId);
 	RawMessage aReply(aClientID, "Registered", aRegistered.SerializeAsString());
-	_publisher->send(aReply);
+	m_publisher->send(aReply);
 }
 
 }

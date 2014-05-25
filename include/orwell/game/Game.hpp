@@ -33,8 +33,10 @@ public:
 	std::shared_ptr< Player > accessPlayer( std::string const & iPlayerName );
 	std::map< std::string, std::shared_ptr< Player > > const & getPlayers();
 
-	void start() { m_isRunning = true; }
-	void stop() { m_isRunning = false; }
+	bool getIsRunning() const;
+
+	void start();
+	void stop();
 
 	//add empty PlayerContext
 	bool addPlayer(std::string const & iName);

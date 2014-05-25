@@ -70,6 +70,7 @@ add_orwell_test(broadcast_test "broadcast_test.cpp")
 add_orwell_test(test_agent_proxy "agent_proxy.cpp")
 add_orwell_test(test_agent "agent.cpp")
 add_orwell_test(test_register_robot "register_robot.cpp")
+add_orwell_test(test_start_game_condition "start_game_condition.cpp")
 
 get_property(VAR_ALL_TEST_TARGETS GLOBAL PROPERTY P_ALL_TEST_TARGETS)
 ADD_CUSTOM_TARGET(ctest

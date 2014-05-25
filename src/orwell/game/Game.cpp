@@ -84,6 +84,23 @@ bool Game::removePlayer(string const & iName)
 	return aRemovedPlayerSuccess;
 }
 
+bool Game::getIsRunning() const
+{
+	return m_isRunning;
+}
+
+void Game::start()
+{
+	ORWELL_LOG_INFO( "game starts" );
+	m_isRunning = true;
+}
+
+void Game::stop()
+{
+	ORWELL_LOG_INFO( "game stops" );
+	m_isRunning = false;
+}
+
 bool Game::addRobot(
 		string const & iName,
 		std::string iRobotId)
