@@ -10,6 +10,8 @@
 #include "orwell/com/Sender.hpp"
 #include "orwell/com/Receiver.hpp"
 #include "orwell/Server.hpp"
+#include "orwell/game/Robot.hpp"
+
 #include "Common.hpp"
 
 #include "MissingFromTheStandard.hpp"
@@ -81,9 +83,13 @@ int main()
 			"tcp://*:9001",
 			500);
 	ORWELL_LOG_INFO("server created");
-	aServer->accessContext().addRobot("Gipsy Danger");
-	aServer->accessContext().addRobot("Goldorak");
-	aServer->accessContext().addRobot("Securitron");
+	std::vector< std::string > aRobots = {"Gipsy Danger", "Goldorak", "Securitron"};
+	aServer->accessContext().addRobot(aRobots[0]);
+	aServer->accessContext().addRobot(aRobots[1]);
+	aServer->accessContext().addRobot(aRobots[2]);
+	aServer->accessContext().accessRobot(aRobots[0])->setHasRealRobot(true);
+	aServer->accessContext().accessRobot(aRobots[1])->setHasRealRobot(true);
+	aServer->accessContext().accessRobot(aRobots[2])->setHasRealRobot(true);
 	std::thread aServerThread(server, aServer);
 	std::thread aClientThread(client);
 	aClientThread.join();

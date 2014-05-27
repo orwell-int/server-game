@@ -14,6 +14,7 @@
 #include "orwell/game/Game.hpp"
 #include "orwell/callbacks/ProcessHello.hpp"
 #include "orwell/callbacks/ProcessInput.hpp"
+#include "orwell/callbacks/ProcessRegister.hpp"
 #include "orwell/callbacks/ProcessRobotState.hpp"
 #include <map>
 
@@ -42,6 +43,7 @@ ProcessDecider::ProcessDecider(
 {
 	_map["Hello"] = std::unique_ptr<InterfaceProcess>(new ProcessHello(ioPublisher, ioGame));
 	_map["Input"] = std::unique_ptr<InterfaceProcess>(new ProcessInput(ioPublisher, ioGame));
+	_map["Register"] = std::unique_ptr<InterfaceProcess>(new ProcessRegister(ioPublisher, ioGame));
 	_map["RobotState"] = std::unique_ptr<InterfaceProcess>(new ProcessRobotState(ioPublisher, ioGame));
 }
 
@@ -66,6 +68,10 @@ void ProcessDecider::process(com::RawMessage const & iMessage)
 	else if (iMessage._type == "RobotState")
 	{
 		aMsg = new messages::RobotState(BuildProtobuf<messages::RobotState>(iMessage));
+	}
+	else if (iMessage._type == "Register")
+	{
+		aMsg = new messages::Register(BuildProtobuf<messages::Register>(iMessage));
 	}
 
 	if (aMsg != nullptr && aProcess != nullptr)

@@ -11,6 +11,7 @@
 #include <zmq.hpp>
 
 #include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
 
 using std::map;
 using std::string;
@@ -83,7 +84,9 @@ bool Game::removePlayer(string const & iName)
 	return aRemovedPlayerSuccess;
 }
 
-bool Game::addRobot(string const & iName)
+bool Game::addRobot(
+		string const & iName,
+		std::string iRobotId)
 {
 	bool aAddedRobotSuccess = false;
 	if (m_robots.find(iName) != m_robots.end())
@@ -93,7 +96,11 @@ bool Game::addRobot(string const & iName)
 	else
 	{
 		// create RobotContext with that index
-		shared_ptr<Robot> aRobot = make_shared<Robot>(iName) ;
+		if (iRobotId.empty())
+		{
+			iRobotId = getNewRobotId();
+		}
+		shared_ptr<Robot> aRobot = make_shared<Robot>(iName, iRobotId);
 		m_robots.insert( pair<string, shared_ptr<Robot> >( iName, aRobot ) );
 		ORWELL_LOG_DEBUG("new RobotContext added with internal ID=" << iName);
 		aAddedRobotSuccess = true;
@@ -113,6 +120,34 @@ bool Game::removeRobot(string const & iName)
 	return aRemovedRobotSuccess;
 }
 
+std::shared_ptr< Robot > Game::getRobotWithoutRealRobot(
+		std::string const & iTemporaryRobotId) const
+{
+	shared_ptr< Robot > aFoundRobot;
+	auto const aRegistrationIterator = m_registeredRobots.find(iTemporaryRobotId);
+	if (m_registeredRobots.end() != aRegistrationIterator)
+	{
+		aFoundRobot = m_robots.at(aRegistrationIterator->second);
+	}
+	else
+	{
+		map< string, std::shared_ptr< Robot > >::const_iterator aIterOnRobots;
+		aIterOnRobots = m_robots.begin();
+		while (aIterOnRobots != m_robots.end() && aIterOnRobots->second->getHasRealRobot())
+		{
+			++aIterOnRobots;
+		}
+
+		if (m_robots.end() != aIterOnRobots)
+		{
+			aFoundRobot = aIterOnRobots->second;
+			m_registeredRobots[iTemporaryRobotId] = aIterOnRobots->first;
+		}
+	}
+
+	return aFoundRobot;
+}
+
 std::shared_ptr<Robot> Game::getAvailableRobot() const
 {
 	shared_ptr<Robot> aFoundRobot;
@@ -120,11 +155,11 @@ std::shared_ptr<Robot> Game::getAvailableRobot() const
 	//search for the first robot which is not already associated to a player
 	map<string, std::shared_ptr<Robot>>::const_iterator aIterOnRobots;
 	aIterOnRobots = m_robots.begin();
-	while (aIterOnRobots != m_robots.end() && aIterOnRobots->second->getPlayer())
+	while (aIterOnRobots != m_robots.end() && (not aIterOnRobots->second->getIsAvailable()))
 	{
 		++aIterOnRobots;
 	}
-	
+
 	if (m_robots.end() != aIterOnRobots)
 	{
 		aFoundRobot = aIterOnRobots->second;
@@ -133,20 +168,23 @@ std::shared_ptr<Robot> Game::getAvailableRobot() const
 	return aFoundRobot;
 }
 
-string const Game::getRobotNameForPlayer(string const & iPlayer) const
+std::shared_ptr< Robot > Game::getRobotForPlayer(string const & iPlayer) const
 {
-	string retValue;
+	std::shared_ptr< Robot > aFoundRobot;
 	
 	for (pair<string, std::shared_ptr<Robot>> const & iItem : m_robots)
 	{
 		std::shared_ptr< Player > aPlayer = iItem.second.get()->getPlayer();
 		if ((nullptr != aPlayer) and (aPlayer->getName() == iPlayer))
 		{
-			retValue = iItem.second.get()->getName();
+			aFoundRobot = iItem.second;
 		}
 	}
-	
-	return retValue;
+	if (nullptr == aFoundRobot.get())
+	{
+		aFoundRobot = getAvailableRobot();
+	}
+	return aFoundRobot;
 }
 	
 void Game::fillGameStateMessage(messages::GameState & oGameState)
@@ -154,5 +192,30 @@ void Game::fillGameStateMessage(messages::GameState & oGameState)
 	//todo
 }
 
-}} // namespaces
+std::string Game::getNewRobotId() const
+{
+	std::string const aRobotIdPrefix("robot_");
+	std::string aFullRobotId;
+	uint32_t aIndex = 0;
+	bool aAlreadyThere(true);
+	while (aAlreadyThere)
+	{
+		aAlreadyThere = false;
+		aFullRobotId = aRobotIdPrefix + boost::lexical_cast< std::string >(aIndex);
+		for (std::pair< std::string, std::shared_ptr< Robot > > const & iItem : m_robots)
+		{
+			if (iItem.second->getRobotId() == aFullRobotId)
+			{
+				aAlreadyThere = true;
+				break;
+			}
+		}
+		++aIndex;
+	}
+	return aFullRobotId;
+}
+
+
+}
+} // namespaces
 
