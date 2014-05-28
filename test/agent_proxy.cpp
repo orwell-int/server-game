@@ -56,7 +56,7 @@ static void test_1(orwell::Application & ioApplication)
 	aPuller.receiveString(aRobotList);
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
 	std::string aExpectedRobotList(R"(Robots:
-	Robot1 -> name = Robot1 ; not registered ; player = 
+	Robot1 -> name = Robot1 ; not registered ; video_port = 0 ; video_address =  ; player = 
 )");
 	assert(aExpectedRobotList == aRobotList);
 	// } list robot
@@ -69,11 +69,15 @@ static void test_1(orwell::Application & ioApplication)
 	usleep(2 * 1000); // give enough time to zmq to forward the message
 	aPuller.receiveString(aRobotList);
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
-	std::string aExpectedRobotList2(R"(Robots:
-	Robot1 -> name = Robot1 ; registered ; player = 
+	aExpectedRobotList = (R"(Robots:
+	Robot1 -> name = Robot1 ; registered ; video_port = 0 ; video_address =  ; player = 
 )");
-	assert(aExpectedRobotList2 == aRobotList);
+	assert(aExpectedRobotList == aRobotList);
 	// } register robot
+	// set robot {
+	assert(aAgentProxy.step("set robot Robot1 video_port 5"));
+	assert(aAgentProxy.step("set robot Robot1 video_address titi"));
+	// } set robot
 	// unregister robot {
 	assert(aAgentProxy.step("unregister robot Robot1"));
 	// make sure that Robot1 is now unregistered
@@ -83,6 +87,9 @@ static void test_1(orwell::Application & ioApplication)
 	usleep(2 * 1000); // give enough time to zmq to forward the message
 	aPuller.receiveString(aRobotList);
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
+	aExpectedRobotList = (R"(Robots:
+	Robot1 -> name = Robot1 ; not registered ; video_port = 5 ; video_address = titi ; player = 
+)");
 	assert(aExpectedRobotList == aRobotList);
 	// } unregister robot
 	assert(aAgentProxy.step("start game"));

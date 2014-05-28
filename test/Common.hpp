@@ -79,6 +79,13 @@ public :
 
 	MOCK_METHOD1(registerRobot, void(std::string const & iRobotName));
 	
+	MOCK_METHOD1(unregisterRobot, void(std::string const & iRobotName));
+	
+	MOCK_METHOD3(setRobot, void(
+			std::string const & iRobotName,
+			std::string const & iProperty,
+			std::string const & iValue));
+
 	MOCK_METHOD2(listPlayer, void(
 				std::string const & iReplyAddress,
 				uint16_t const iReplyPort));

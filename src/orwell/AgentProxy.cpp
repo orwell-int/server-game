@@ -137,6 +137,33 @@ bool AgentProxy::step(std::string const & iCommand)
 			DispatchArgument(aStream, std::bind(&AgentProxy::registerRobot, this, _1), aResult);
 		}
 	}
+	else if ("unregister" == iAction)
+	{
+		std::string aObject;
+		aStream >> aObject;
+		if ("robot" == aObject)
+		{
+			DispatchArgument(aStream, std::bind(&AgentProxy::unregisterRobot, this, _1), aResult);
+		}
+	}
+	if ("set" == iAction)
+	{
+		std::string aObject;
+		aStream >> aObject;
+		std::string aName;
+		aStream >> aName;
+		std::string aProperty;
+		aStream >> aProperty;
+		std::string aValue;
+		aStream >> aValue;
+		if ("robot" == aObject)
+		{
+			Dispatch(
+				aStream,
+				std::bind(&AgentProxy::setRobot, this, aName, aProperty, aValue),
+				aResult);
+		}
+	}
 	ORWELL_LOG_DEBUG("Parsing result = " << aResult);
 	if (not aResult)
 	{
@@ -168,6 +195,9 @@ void AgentProxy::listRobot(
 			aReply += "not ";
 		}
 		aReply += "registered ; ";
+		aReply += "video_port = " + boost::lexical_cast< std::string >(
+				aPair.second->getVideoPort()) + " ; ";
+		aReply += "video_address = " + aPair.second->getVideoAddress() + " ; ";
 		bool aHasPlayer(aPair.second->getPlayer());
 		if (aHasPlayer)
 		{
@@ -206,6 +236,50 @@ void AgentProxy::registerRobot(std::string const & iRobotName)
 	{
 		m_application.accessServer()->accessContext().accessRobot(iRobotName)
 			->setHasRealRobot(true);
+	}
+	catch (std::exception const & anException)
+	{
+		ORWELL_LOG_ERROR(anException.what());
+	}
+}
+
+void AgentProxy::unregisterRobot(std::string const & iRobotName)
+{
+	ORWELL_LOG_INFO("unregister robot " << iRobotName);
+	try
+	{
+		m_application.accessServer()->accessContext().accessRobot(iRobotName)
+			->setHasRealRobot(false);
+	}
+	catch (std::exception const & anException)
+	{
+		ORWELL_LOG_ERROR(anException.what());
+	}
+}
+
+void AgentProxy::setRobot(
+		std::string const & iRobotName,
+		std::string const & iProperty,
+		std::string const & iValue)
+{
+	ORWELL_LOG_INFO("set robot " << iRobotName <<
+		" " << iProperty << " " << iValue);
+	try
+	{
+		std::shared_ptr< orwell::game::Robot > aRobot =
+			m_application.accessServer()->accessContext().accessRobot(iRobotName);
+		if ("video_port" == iProperty)
+		{
+			aRobot->setVideoPort(boost::lexical_cast< uint32_t >(iValue));
+		}
+		else if ("video_address" == iProperty)
+		{
+			aRobot->setVideoAddress(iValue);
+		}
+		else
+		{
+			ORWELL_LOG_WARN("Unkown property for a robot: '" << iProperty << "'");
+		}
 	}
 	catch (std::exception const & anException)
 	{
