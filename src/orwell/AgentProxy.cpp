@@ -128,6 +128,15 @@ bool AgentProxy::step(std::string const & iCommand)
 			DispatchArgument(aStream, std::bind(&AgentProxy::removePlayer, this, _1), aResult);
 		}
 	}
+	else if ("register" == iAction)
+	{
+		std::string aObject;
+		aStream >> aObject;
+		if ("robot" == aObject)
+		{
+			DispatchArgument(aStream, std::bind(&AgentProxy::registerRobot, this, _1), aResult);
+		}
+	}
 	ORWELL_LOG_DEBUG("Parsing result = " << aResult);
 	if (not aResult)
 	{
@@ -154,6 +163,11 @@ void AgentProxy::listRobot(
 	{
 		aReply += "\t" + aPair.first + " -> ";
 		aReply += "name = " + aPair.second->getName() + " ; ";
+		if (not aPair.second->getHasRealRobot())
+		{
+			aReply += "not ";
+		}
+		aReply += "registered ; ";
 		bool aHasPlayer(aPair.second->getPlayer());
 		if (aHasPlayer)
 		{
@@ -183,6 +197,20 @@ void AgentProxy::removeRobot(
 {
 	ORWELL_LOG_INFO("remove robot " << iRobotName);
 	m_application.accessServer()->accessContext().removeRobot(iRobotName);
+}
+
+void AgentProxy::registerRobot(std::string const & iRobotName)
+{
+	ORWELL_LOG_INFO("register robot " << iRobotName);
+	try
+	{
+		m_application.accessServer()->accessContext().accessRobot(iRobotName)
+			->setHasRealRobot(true);
+	}
+	catch (std::exception const & anException)
+	{
+		ORWELL_LOG_ERROR(anException.what());
+	}
 }
 
 void AgentProxy::listPlayer(

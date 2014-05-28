@@ -76,6 +76,8 @@ public :
 	MOCK_METHOD1(addRobot, void(std::string const & iRobotName));
 
 	MOCK_METHOD1(removeRobot, void(std::string const & iRobotName));
+
+	MOCK_METHOD1(registerRobot, void(std::string const & iRobotName));
 	
 	MOCK_METHOD2(listPlayer, void(
 				std::string const & iReplyAddress,

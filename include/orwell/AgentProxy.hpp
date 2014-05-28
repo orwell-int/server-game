@@ -38,6 +38,9 @@ public :
 	/// remove robot <name>
 	void removeRobot(std::string const & iRobotName) override;
 
+	/// register robot <name>
+	void registerRobot(std::string const & iRobotName) override;
+
 	/// List all the players present.
 	/// The reply is sent to <iReplyAddress>:<iReplyPort>.
 	///

@@ -53,7 +53,7 @@ static void test_1(orwell::Application & ioApplication)
 	aPuller.receiveString(aRobotList);
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
 	std::string aExpectedRobotList(R"(Robots:
-	Robot1 -> name = Robot1 ; player = 
+	Robot1 -> name = Robot1 ; not registered ; player = 
 )");
 	assert(aExpectedRobotList == aRobotList);
 	assert(aAgentProxy.step("start game"));

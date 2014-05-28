@@ -63,8 +63,8 @@ bool Receiver::receiveString(std::string & oMessage)
 {
 	zmq::message_t aZmqMessage;
 
-	bool aReceived = m_zmqSocket->recv(&aZmqMessage, ZMQ_NOBLOCK);
-	if ( aReceived )
+	bool const aReceived = m_zmqSocket->recv(&aZmqMessage, ZMQ_NOBLOCK);
+	if (aReceived)
 	{
 		ORWELL_LOG_DEBUG("message received");
 		oMessage = string(static_cast<char*>(aZmqMessage.data()), aZmqMessage.size());
@@ -80,15 +80,15 @@ bool Receiver::receive(RawMessage & oMessage)
 	string aDest;
 
 	std::string aMessageData;
-	bool aReceived = receiveString(aMessageData);
-	if ( aReceived )
+	bool const aReceived = receiveString(aMessageData);
+	if (aReceived)
 	{
 		size_t aEndDestFlag = aMessageData.find( " ", 0 );
 		if (string::npos != aEndDestFlag)
 		{
 			aDest = aMessageData.substr(0, aEndDestFlag);
 
-			size_t aEndTypeFlag = aMessageData.find(" ", aEndDestFlag + 1 );
+			size_t aEndTypeFlag = aMessageData.find(" ", aEndDestFlag + 1);
 			if ( aEndTypeFlag != string::npos )
 			{
 				aType = aMessageData.substr( aEndDestFlag + 1, aEndTypeFlag - aEndDestFlag - 1 );
@@ -99,7 +99,7 @@ bool Receiver::receive(RawMessage & oMessage)
 		oMessage._type = aType;
 		oMessage._routingId = aDest;
 		oMessage._payload = aPayload;
-		ORWELL_LOG_DEBUG("Received "<< aZmqMessage.size() << " bytes : type=" << aType << "- dest=" << aDest << "-");
+		ORWELL_LOG_DEBUG("Received " << aZmqMessage.size() << " bytes : type=" << aType << "- dest=" << aDest << "-");
 	}
 	return aReceived;
 }
