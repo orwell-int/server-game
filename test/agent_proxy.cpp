@@ -34,6 +34,7 @@ static void test_1(orwell::Application & ioApplication)
 	orwell::AgentProxy aAgentProxy(ioApplication);
 	assert(aAgentProxy.step("add player Player1"));
 	assert(aAgentProxy.step("add robot Robot1"));
+	// list player {
 	assert(aAgentProxy.step(
 				"list player " + aUrl.getHost() + " "
 				+ boost::lexical_cast< std::string >(aUrl.getPort())));
@@ -45,6 +46,8 @@ static void test_1(orwell::Application & ioApplication)
 	Player1 -> name = Player1 ; robot = 
 )");
 	assert(aExpectedPlayerList == aPlayerList);
+	// } list player
+	// list robot {
 	assert(aAgentProxy.step(
 				"list robot " + aUrl.getHost() + " "
 				+ boost::lexical_cast< std::string >(aUrl.getPort())));
@@ -56,6 +59,32 @@ static void test_1(orwell::Application & ioApplication)
 	Robot1 -> name = Robot1 ; not registered ; player = 
 )");
 	assert(aExpectedRobotList == aRobotList);
+	// } list robot
+	// register robot {
+	assert(aAgentProxy.step("register robot Robot1"));
+	// make sure that Robot1 is now registered
+	assert(aAgentProxy.step(
+				"list robot " + aUrl.getHost() + " "
+				+ boost::lexical_cast< std::string >(aUrl.getPort())));
+	usleep(2 * 1000); // give enough time to zmq to forward the message
+	aPuller.receiveString(aRobotList);
+	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
+	std::string aExpectedRobotList2(R"(Robots:
+	Robot1 -> name = Robot1 ; registered ; player = 
+)");
+	assert(aExpectedRobotList2 == aRobotList);
+	// } register robot
+	// unregister robot {
+	assert(aAgentProxy.step("unregister robot Robot1"));
+	// make sure that Robot1 is now unregistered
+	assert(aAgentProxy.step(
+				"list robot " + aUrl.getHost() + " "
+				+ boost::lexical_cast< std::string >(aUrl.getPort())));
+	usleep(2 * 1000); // give enough time to zmq to forward the message
+	aPuller.receiveString(aRobotList);
+	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
+	assert(aExpectedRobotList == aRobotList);
+	// } unregister robot
 	assert(aAgentProxy.step("start game"));
 	assert(aAgentProxy.step("stop game"));
 	assert(aAgentProxy.step("remove robot Robot1"));
