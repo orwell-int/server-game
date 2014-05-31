@@ -60,6 +60,8 @@ public:
 			orwell::com::Receiver & iSubscriber,
 			orwell::com::RawMessage & oReceived,
 			unsigned int const iTimeout = 500);
+
+	static uint16_t GetWaitLoops();
 };
 
 class FakeAgentProxy : public orwell::IAgentProxy
