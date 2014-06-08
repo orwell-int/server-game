@@ -6,8 +6,9 @@
 #include "orwell/Application.hpp"
 #include "orwell/support/GlobalLogger.hpp"
 
-static void signal_handler(int /*signum*/)
+static void signal_handler(int iSignum)
 {
+	std::cerr << "Signal received: " << iSignum << std::endl;
 	// Stop the application whan a signal is received
 	orwell::Application::GetInstance().stop();
 }

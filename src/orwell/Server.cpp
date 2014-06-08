@@ -150,7 +150,7 @@ void Server::feedAgentProxy()
 	ORWELL_LOG_DEBUG("Try to read agent command ...");
 	if (m_agentListener->receiveString(aMessage))
 	{
-		ORWELL_LOG_DEBUG("command received: " << aMessage);
+		ORWELL_LOG_DEBUG("command received: '" << aMessage << "'");
 		m_agentProxy.step(aMessage);
 	}
 }

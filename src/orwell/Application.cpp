@@ -123,6 +123,7 @@ bool Application::ParseParametersFromCommandLine(
 
 	// do we log the debug information on the console ?
 	orwell::support::GlobalLogger::Create("server_game", "orwell.log", aVariablesMap.count("debug-log"));
+	ORWELL_LOG_INFO("Start application.\n");
 
 	if (aVariablesMap.count("orwellrc"))
 	{
@@ -342,6 +343,11 @@ void Application::run(Parameters const & iParam)
 
 			ORWELL_LOG_INFO("Father continued");
 
+			if (0 != kill(aChildProcess, SIGTERM))
+			{
+				ORWELL_LOG_WARN("Try to abort child as terminate failed.");
+				kill(aChildProcess, SIGABRT);
+			}
 			// Here the father will be waiting for the child to be over
 			int aStatus;
 			while (waitpid(aChildProcess, &aStatus, WNOHANG) == 0)

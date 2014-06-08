@@ -9,7 +9,6 @@
 #include <log4cxx/ndc.h>
 
 #include "orwell/Application.hpp"
-#include "orwell/com/Url.hpp"
 #include "orwell/support/GlobalLogger.hpp"
 
 #include <boost/lexical_cast.hpp>
@@ -21,28 +20,6 @@ static void Application(orwell::Application::Parameters const & aParameters)
 {
 	orwell::Application & aApplication = orwell::Application::GetInstance();
 	aApplication.run(aParameters);
-}
-
-static void Agent(uint16_t const iAgentPort)
-{
-	zmq::context_t aZmqContext(1);
-	zmq::socket_t aAgentSocket(aZmqContext, ZMQ_PUB);
-	int const aLinger = 10;
-	aAgentSocket.setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
-	orwell::com::Url aUrl;
-	aUrl.setProtocol("tcp");
-	aUrl.setHost("localhost");
-	aUrl.setPort(iAgentPort);
-	usleep(20 * 1000); // sleep for 0.020 s
-	ORWELL_LOG_DEBUG("send agent command to " << aUrl.toString());
-	aAgentSocket.connect(aUrl.toString().c_str());
-	std::string aMessage("stop application");
-	zmq::message_t aZmqMessage(aMessage.size());
-	memcpy((void *) aZmqMessage.data(), aMessage.c_str(), aMessage.size());
-	// for some reason messages are lost without the sleep
-	usleep(2000 * Common::GetWaitLoops());
-	ORWELL_LOG_DEBUG("send command: " << aMessage);
-	aAgentSocket.send(aZmqMessage);
 }
 
 int main()
@@ -69,7 +46,8 @@ int main()
 			aArguments.m_argv,
 			aParameters);
 	std::thread aApplicationThread(Application, aParameters);
-	std::thread aAgentThread(Agent, *aParameters.m_agentPort);
+	std::thread aAgentThread(
+			Common::SendStopFromFakeAgent, *aParameters.m_agentPort, 0);
 	aApplicationThread.join();
 	aAgentThread.join();
 	orwell::support::GlobalLogger::Clear();
