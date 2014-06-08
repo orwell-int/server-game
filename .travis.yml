@@ -33,7 +33,7 @@ script:
     - lcov --version | grep "1.10"
     - mkdir -p ./build
     - cd ./build && cmake .. && make
-    - cd ./test && ctest && cd ..
+    - cd ./test && ctest || cat test_main.log && cd ..
     - if [ "$CXX" = "g++-4.8" ] ; then cd .. && mkdir -p build_coverage && cd build_coverage ; fi
     - if [ "$CXX" = "g++-4.8" ] ; then cmake .. -DORWELL_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug ; fi
     - if [ "$CXX" = "g++-4.8" ] ; then make orwell_coverage ; fi
