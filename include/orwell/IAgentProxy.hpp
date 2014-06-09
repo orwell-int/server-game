@@ -32,6 +32,18 @@ public :
 	/// remove robot <name>
 	virtual void removeRobot(std::string const & iRobotName) = 0;
 
+	/// register robot <name>
+	virtual void registerRobot(std::string const & iRobotName) = 0;
+
+	/// register robot <name>
+	virtual void unregisterRobot(std::string const & iRobotName) = 0;
+
+	/// set property <property> of robot <name>
+	virtual void setRobot(
+			std::string const & iRobotName,
+			std::string const & iProperty,
+			std::string const & iValue) = 0;
+
 	/// get the list of players
 	virtual void listPlayer(
 			std::string const & iReplyAddress,

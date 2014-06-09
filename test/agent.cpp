@@ -40,7 +40,7 @@ static void Agent(uint16_t const iAgentPort)
 	zmq::message_t aZmqMessage(aMessage.size());
 	memcpy((void *) aZmqMessage.data(), aMessage.c_str(), aMessage.size());
 	// for some reason messages are lost without the sleep
-	usleep(13 * 1000); // magic number: 12 ; add one for 'security'
+	usleep(2000 * Common::GetWaitLoops());
 	ORWELL_LOG_DEBUG("send command: " << aMessage);
 	aAgentSocket.send(aZmqMessage);
 }
@@ -49,6 +49,7 @@ int main()
 {
 	orwell::support::GlobalLogger::Create("agent", "test_agent.log", true);
 	log4cxx::NDC ndc("agent");
+	ORWELL_LOG_INFO("Test starts\n");
 
 	orwell::Application::Parameters aParameters;
 	Arguments aArguments = Common::GetArguments(

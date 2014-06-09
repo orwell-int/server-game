@@ -117,7 +117,7 @@ static void const server(std::shared_ptr< orwell::Server > ioServer)
 
 int main()
 {
-	orwell::support::GlobalLogger::Create("register", "test_register.log");
+	orwell::support::GlobalLogger::Create("register", "test_register_robot.log");
 	log4cxx::NDC ndc("register");
 	FakeAgentProxy aFakeAgentProxy;
 	std::shared_ptr< orwell::Server > aServer =
