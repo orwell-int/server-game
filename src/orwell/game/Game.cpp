@@ -3,6 +3,7 @@
 #include "orwell/game/Game.hpp"
 
 #include <stdlib.h>
+#include <sstream>
 
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/game/Robot.hpp"
@@ -94,12 +95,18 @@ void Game::start()
 {
 	if (not m_isRunning)
 	{
-		for ( auto const aPair : m_robots )
-		{
-			std::shared_ptr< Robot > aRobot = aPair.second;
-			system("netstat | grep 9100");
-			system("cd server-web && make start");
-		}
+//		for ( auto const aPair : m_robots )
+//		{
+//			std::shared_ptr< Robot > aRobot = aPair.second;
+//			std::stringstream aCommandLine;
+//			if (aRobot->getVideoAddress().empty() or aRobot->getVideoPort() == 0)
+//			{
+//				ORWELL_LOG_WARN("Robot " << aRobot->getName() << " has wrong connection parameters : videoIp=" << aRobot->getVideoAddress() << " videoPort=" << aRobot->getVideoPort());
+//				continue;
+//			}
+//			aCommandLine << " cd server-web && make start ARGS=-u " << aRobot->getVideoAddress() << " -p " << aRobot->getVideoPort();
+//			system( aCommandLine.str().c_str() );
+//		}
 		ORWELL_LOG_INFO( "game starts" );
 		m_isRunning = true;
 	}
