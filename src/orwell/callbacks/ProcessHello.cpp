@@ -75,6 +75,10 @@ void ProcessHello::execute()
 				// but we consider Goodbye would be sent.
 			}
 		}
+		else
+		{
+			ORWELL_LOG_INFO("No robot available for player (" << aNewPlayerName << ")");
+		}
 	}
 	if (aFailure)
 	{

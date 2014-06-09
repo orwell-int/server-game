@@ -3,11 +3,14 @@
 #include <iostream>
 
 #include "orwell/com/Receiver.hpp"
+#include "orwell/com/Sender.hpp"
 #include "orwell/com/RawMessage.hpp"
 #include "orwell/support/GlobalLogger.hpp"
 #include "MissingFromTheStandard.hpp"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+
+#include <zmq.hpp>
 
 #include <unistd.h>
 
@@ -180,7 +183,7 @@ bool Common::ExpectMessage(
 		orwell::com::RawMessage & oReceived,
 		unsigned int const iTimeout)
 {
-	ORWELL_LOG_DEBUG("Wait for message of type " << iType << " for " << iTimeout);
+	ORWELL_LOG_DEBUG("GetWaitLoops for message of type " << iType << " for " << iTimeout);
 	bool aReceivedExpectedMessage(false);
 	boost::posix_time::time_duration aTrueTimeout = boost::posix_time::milliseconds(iTimeout);
 	boost::posix_time::time_duration aDuration;
@@ -214,5 +217,41 @@ bool Common::ExpectMessage(
 		}
 	}
 	return aReceivedExpectedMessage;
+}
+
+uint16_t Common::GetWaitLoops()
+{
+	ORWELL_LOG_DEBUG("GetWaitLoops");
+	zmq::context_t aZmqContext(1);
+	orwell::com::Receiver aReceiver(
+			"tcp://*:9999",
+			ZMQ_PULL,
+			orwell::com::ConnectionMode::BIND,
+			aZmqContext,
+			0);
+	orwell::com::Sender aSender(
+			"tcp://127.0.0.1:9999",
+			ZMQ_PUSH,
+			orwell::com::ConnectionMode::CONNECT,
+			aZmqContext,
+			0);
+	boost::posix_time::ptime aBeginTime(boost::posix_time::microsec_clock::local_time());
+	aSender.sendString("test");
+	std::string aMessage;
+	ORWELL_LOG_DEBUG("GetWaitLoops ; start");
+	uint16_t aLoops = 0;
+	while (not aReceiver.receiveString(aMessage))
+	{
+		ORWELL_LOG_DEBUG("GetWaitLoops ; sleep");
+		usleep(10);
+		++aLoops;
+	}
+	boost::posix_time::ptime aEndTime(boost::posix_time::microsec_clock::local_time());
+	boost::posix_time::time_duration const aDuration = aEndTime - aBeginTime;
+	ORWELL_LOG_DEBUG("GetWaitLoops ; aLoops = " << aLoops);
+	ORWELL_LOG_DEBUG("GetWaitLoops ; aDuration = " << aDuration.total_milliseconds() << "ms");
+	bool const aIsSlow(aDuration > boost::posix_time::milliseconds(100));
+	ORWELL_LOG_DEBUG("GetWaitLoops ; aIsSlow = " << aIsSlow);
+	return aLoops;
 }
 
