@@ -61,8 +61,8 @@ void ProcessHello::execute()
 				aWelcome.set_robot(aAvailableRobot->getName());
 				aWelcome.set_team( orwell::messages::RED ); //currently stupidly hardoded
 				aWelcome.set_id(aAvailableRobot->getRobotId());
-				aWelcome.set_video_address(aAvailableRobot->getVideoAddress());
-				aWelcome.set_video_port(aAvailableRobot->getVideoPort());
+//	todo			aWelcome.set_video_address(aAvailableRobot->getVideoAddress());
+//				aWelcome.set_video_port(aAvailableRobot->getVideoPort());
 				RawMessage aReply(aClientID, "Welcome", aWelcome.SerializeAsString());
 				m_publisher->send( aReply );
 				aFailure = false;

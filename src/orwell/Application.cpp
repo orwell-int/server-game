@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #include <stdio.h>
 #include <signal.h>
+#include <sstream>
 
 using namespace orwell;
 using namespace boost::program_options;
@@ -43,7 +44,14 @@ bool Application::ReadParameters(
 	{
 		return false;
 	}
-	if (oParam.m_rcFilePath and (not (*oParam.m_rcFilePath).empty()))
+
+	if (not oParam.m_rcFilePath)
+	{
+		oParam.m_rcFilePath = "orwell-config.ini";
+		ORWELL_LOG_DEBUG("by default, config file = " << oParam.m_rcFilePath);
+	}
+
+	if (oParam.m_rcFilePath )
 	{
 		if ( not ParseParametersFromConfigFile(oParam) )
 		{
@@ -195,7 +203,15 @@ bool Application::ParseParametersFromConfigFile(
 		Parameters & ioParam)
 {
 	ptree aPtree;
-	ini_parser::read_ini(*ioParam.m_rcFilePath, aPtree);
+	try
+	{
+		ini_parser::read_ini(*ioParam.m_rcFilePath, aPtree);
+	}
+	catch (std::exception const & aExc)
+	{
+		ORWELL_LOG_ERROR("Could not read technical config file at " << *ioParam.m_rcFilePath);
+		return false;
+	}
 
 	if (not ioParam.m_publisherPort)
 	{
@@ -231,6 +247,43 @@ bool Application::ParseParametersFromConfigFile(
 		{
 			ioParam.m_tickInterval = aTickInterval;
 			ORWELL_LOG_DEBUG("tick interval from config file = " << ioParam.m_tickInterval );
+		}
+	}
+	if ( ioParam.m_videoPorts.empty() )
+	{
+		std::string aVideoPortRange;
+		try
+		{
+			aVideoPortRange = aPtree.get< std::string >("server.video-ports");
+		}
+		catch (std::exception const & iExc)
+		{
+			ORWELL_LOG_ERROR("video port has not been defined in config file");
+			return false;
+		}
+		std::istringstream aStream(aVideoPortRange);
+		uint16_t aBeginPortRange = 0;
+		char aSeparator;
+		uint16_t aEndPortRange = 0;
+		aStream >> aBeginPortRange;
+		aStream >> aSeparator;
+		aStream >> aEndPortRange;
+
+		if (aEndPortRange == 0)
+		{
+			aEndPortRange = aBeginPortRange;
+		}
+
+		if ( aBeginPortRange > aEndPortRange )
+		{
+			ORWELL_LOG_ERROR("bad video ports range");
+			return false;
+		}
+
+		ORWELL_LOG_DEBUG("video port range from config file = " << aBeginPortRange << " to " << aEndPortRange );
+		for (uint16_t i = aBeginPortRange ; i <= aEndPortRange ; ++i)
+		{
+			ioParam.m_videoPorts.push_back(i);
 		}
 	}
 
@@ -285,6 +338,12 @@ bool Application::CheckParametersConsistency(Parameters const & iParam)
 	if ((*iParam.m_publisherPort) == 0 or (*iParam.m_pullerPort == 0))
 	{
 		ORWELL_LOG_ERROR("Invalid port information. Ports are \n Puller=" << iParam.m_pullerPort << "\n Publisher=" << iParam.m_publisherPort);
+		return false;
+	}
+
+	if (iParam.m_videoPorts.size() < iParam.m_robots.size())
+	{
+		ORWELL_LOG_ERROR("Only " << iParam.m_videoPorts.size() << " ports for " << iParam.m_robots.size() << " robots");
 		return false;
 	}
 	return true;
@@ -480,6 +539,7 @@ bool operator==(
 	return ((iLeft.m_pullerPort == iRight.m_pullerPort)
 		and (iLeft.m_publisherPort == iRight.m_publisherPort)
 		and (iLeft.m_agentPort == iRight.m_agentPort)
+		and (iLeft.m_videoPorts == iRight.m_videoPorts)
 		and (iLeft.m_tickInterval == iRight.m_tickInterval)
 		and (iLeft.m_rcFilePath == iRight.m_rcFilePath)
 		and (iLeft.m_gameFilePath == iRight.m_gameFilePath)
@@ -488,7 +548,8 @@ bool operator==(
 		and (aSameRobots)
 		and (iLeft.m_teams == iRight.m_teams)
 		and (iLeft.m_gameType == iRight.m_gameType)
-		and (iLeft.m_gameName == iRight.m_gameName));
+		and (iLeft.m_gameName == iRight.m_gameName)
+		);
 }
 
 std::ostream & operator<<(
@@ -498,6 +559,12 @@ std::ostream & operator<<(
 	ioOstream << "puller port [" << iParameters.m_pullerPort << "] ; ";
 	ioOstream << "publisher port [" << iParameters.m_publisherPort << "] ; ";
 	ioOstream << "agent port [" << iParameters.m_agentPort << "] ; ";
+	ioOstream << "available video ports [";
+	for (auto const aPort : iParameters.m_videoPorts)
+	{
+		ioOstream << aPort << ", ";
+	}
+	ioOstream << "] ; ";
 	ioOstream << "tick interval [" << iParameters.m_tickInterval << "] ; ";
 	ioOstream << "rc file path [" << iParameters.m_rcFilePath << "] ; ";
 	ioOstream << "game config file path [" << iParameters.m_gameFilePath << "] ; ";

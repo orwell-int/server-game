@@ -37,8 +37,7 @@ static void ExpectRegistered(
 {
 	Register aRegisterMessage;
 	aRegisterMessage.set_temporary_robot_id(iTemporaryRobotId);
-	aRegisterMessage.set_video_port(80);
-	aRegisterMessage.set_video_address("localhost");
+	aRegisterMessage.set_video_url("http://localhost:80");
 	RawMessage aMessage(
 			iTemporaryRobotId,
 			"Register",

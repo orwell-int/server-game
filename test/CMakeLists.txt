@@ -5,6 +5,7 @@ message(CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR})
 # Get together all the source files and all the headers
 file(GLOB SOURCES Common.cpp)
 file(GLOB EXPORTABLEHEADERS *.hpp *.h)
+file(GLOB CONFIG ${CMAKE_SOURCE_DIR}/*.ini)
 
 # Required libraries
 find_package(Boost REQUIRED COMPONENTS system)
@@ -60,6 +61,9 @@ FUNCTION(add_orwell_test test_name file_name)
 		orwell_server_game
 		orwell_test)
 	add_test(${test_name} ${CMAKE_CURRENT_BINARY_DIR}/${test_name})
+	foreach(configFile ${CONFIG})
+    	add_custom_command(TARGET ${test_name} COMMAND ${CMAKE_COMMAND} -E copy ${configFile} ${CMAKE_CURRENT_BINARY_DIR})
+	endforeach(configFile) 
 ENDFUNCTION()
 
 add_orwell_test(test_input "input_to_robot.cpp")

@@ -48,8 +48,7 @@ void ProcessRegister::execute()
 	{
 		aRobotId = aRobot->getRobotId();
 		aRobot->setHasRealRobot(true);
-		aRobot->setVideoAddress(aRegisterMsg.video_address());
-		aRobot->setVideoPort(aRegisterMsg.video_port());
+		aRobot->setVideoUrl(aRegisterMsg.video_url());
 	}
 
 	Registered aRegistered;
