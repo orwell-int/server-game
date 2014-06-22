@@ -339,7 +339,8 @@ void Application::run(Parameters const & iParam)
 					ORWELL_LOG_INFO("Child started");
 					m_broadcastServer->runBroadcastReceiver();
 					ORWELL_LOG_INFO("Exit from broadcast server.");
-					return;
+					exit(0);
+					//return;
 				}
 				default:
 				{
