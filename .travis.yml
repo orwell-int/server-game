@@ -43,7 +43,7 @@ script:
     - lcov --version | grep "1.10"
     - mkdir -p ./build
     - cd ./build && cmake -DZMQ_INCLUDE_DIR="$ZMQ_INSTALL_DIR/include" -DZMQ_LIBRARY="$ZMQ_INSTALL_DIR/lib/libzmq.so.3" .. && make
-    - cd ./test && ctest && cd ..
+    - cd ./test && ctest || ./test_main || cat test_main.log orwell.log && cd ..
     - if [ "$CXX" = "g++-4.8" ] ; then cd .. && mkdir -p build_coverage && cd build_coverage ; fi
     - if [ "$CXX" = "g++-4.8" ] ; then cmake .. -DORWELL_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug -DZMQ_INCLUDE_DIR="$ZMQ_INSTALL_DIR/include" -DZMQ_LIBRARY="$ZMQ_INSTALL_DIR/lib/libzmq.so.3" ; fi
     - if [ "$CXX" = "g++-4.8" ] ; then make orwell_coverage ; fi
