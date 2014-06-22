@@ -24,8 +24,8 @@ static void Application(orwell::Application::Parameters const & aParameters)
 
 int main()
 {
-	orwell::support::GlobalLogger::Create("agent", "test_agent.log", true);
-	log4cxx::NDC ndc("agent");
+	orwell::support::GlobalLogger::Create("test_agent", "test_agent.log", true);
+	log4cxx::NDC ndc("test_agent");
 	ORWELL_LOG_INFO("Test starts\n");
 
 	orwell::Application::Parameters aParameters;

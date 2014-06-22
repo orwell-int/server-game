@@ -19,8 +19,8 @@ static void Stopper()
 
 int main()
 {
-	orwell::support::GlobalLogger::Create("main", "test_main.log", true);
-	log4cxx::NDC ndc("main");
+	orwell::support::GlobalLogger::Create("test_main", "test_main.log", true);
+	log4cxx::NDC ndc("test_main");
 	ORWELL_LOG_INFO("Test starts\n");
 
 	std::thread aApplicationThread(Application);

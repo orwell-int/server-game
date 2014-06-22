@@ -3,12 +3,14 @@
 #include <stdio.h>
 #include <signal.h>
 
+#include <log4cxx/ndc.h>
+
 #include "orwell/Application.hpp"
 #include "orwell/support/GlobalLogger.hpp"
 
 static void signal_handler(int iSignum)
 {
-	std::cerr << "Signal received: " << iSignum << std::endl;
+	std::cerr << "In process " << getpid() << " ; Signal received: " << iSignum << std::endl;
 	// Stop the application whan a signal is received
 	orwell::Application::GetInstance().stop();
 }
@@ -25,6 +27,7 @@ int main(int argc, char *argv[])
 	if (orwell::Application::ReadParameters(argc, argv, aParameters))
 	{
 		//aErrorCode = orwell::Application::GetInstance().run(aParameters); todo
+		log4cxx::NDC ndc("main");
 		orwell::Application::GetInstance().run(aParameters);
 	}
 

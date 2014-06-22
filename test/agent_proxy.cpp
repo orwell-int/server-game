@@ -122,7 +122,7 @@ static void test_1(orwell::Application & ioApplication)
 
 int main()
 {
-	orwell::support::GlobalLogger::Create("aApplication_errors", "test_agent_proxy.log", true);
+	orwell::support::GlobalLogger::Create("test_agent_proxy", "test_agent_proxy.log", true);
 	log4cxx::NDC ndc("test_agent_proxy");
 	ORWELL_LOG_INFO("Test starts\n");
 	{

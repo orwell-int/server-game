@@ -411,8 +411,8 @@ team = Mathematicians
 
 int main()
 {
-	orwell::support::GlobalLogger::Create("application_errors", "test_application.log", true);
-	log4cxx::NDC ndc("application_errors");
+	orwell::support::GlobalLogger::Create("test_application", "test_application.log", true);
+	log4cxx::NDC ndc("test_application");
 
 	test_nothing();
 	test_wrong_port_range_publisher_1();

@@ -8,6 +8,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 
+#include <log4cxx/ndc.h>
+
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <stdio.h>
@@ -332,13 +334,19 @@ void Application::run(Parameters const & iParam)
 			switch (aChildProcess)
 			{
 				case 0:
+				{
+					log4cxx::NDC ndc("broadcast");
 					ORWELL_LOG_INFO("Child started");
 					m_broadcastServer->runBroadcastReceiver();
 					return;
+				}
 				default:
+				{
+					log4cxx::NDC ndc("server-game");
 					ORWELL_LOG_INFO("Father started, child's pid: " << aChildProcess);
 					m_server->loop();
 					break;
+				}
 			}
 
 			ORWELL_LOG_INFO("Father continued");
@@ -358,6 +366,7 @@ void Application::run(Parameters const & iParam)
 		}
 		else
 		{
+			log4cxx::NDC ndc("server-game");
 			m_server->loop();
 		}
 	}
