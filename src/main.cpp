@@ -35,6 +35,7 @@ int main(int argc, char *argv[])
 	orwell::Application::GetInstance().clean();
 
 	orwell::support::GlobalLogger::Clear();
+	std::cerr << "In process " << getpid() << " ; exit 0" << std::endl;
 	return 0;
 	//return aErrorCode; todo
 }

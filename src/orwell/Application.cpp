@@ -338,6 +338,7 @@ void Application::run(Parameters const & iParam)
 					log4cxx::NDC ndc("broadcast");
 					ORWELL_LOG_INFO("Child started");
 					m_broadcastServer->runBroadcastReceiver();
+					ORWELL_LOG_INFO("Exit from broadcast server.");
 					return;
 				}
 				default:
@@ -370,6 +371,7 @@ void Application::run(Parameters const & iParam)
 			m_server->loop();
 		}
 	}
+	ORWELL_LOG_INFO("Exit normally.");
 }
 
 bool Application::stop()
