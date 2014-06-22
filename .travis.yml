@@ -45,7 +45,7 @@ script:
     - cd ./build && cmake -DZMQ_INCLUDE_DIR="$ZMQ_INSTALL_DIR/include" -DZMQ_LIBRARY="$ZMQ_INSTALL_DIR/lib/libzmq.so.3" .. && make
     - netstat -l | grep '900[0-9]'
     - cd ./test
-    - ctest || netstat -l | grep '900[0-9]'
+    #- ctest || netstat -l | grep '900[0-9]'
     - ./test_main
     - netstat -l | grep '900[0-9]' && cd ..
     - if [ "$CXX" = "g++-4.8" ] ; then cd .. && mkdir -p build_coverage && cd build_coverage ; fi
