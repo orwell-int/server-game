@@ -5,6 +5,7 @@ compiler:
 
 before_install:
     - sudo apt-get install -qq libprotobuf-dev protobuf-compiler cmake libboost-all-dev liblog4cxx10-dev valgrind libgtest-dev google-mock
+    - sudo apt-get install -qq libzmq3 libzmq3-dbg libzmq3-dev
     - wget https://raw.github.com/zeromq/cppzmq/master/zmq.hpp -O ./include/zmq.hpp
     - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     - sudo apt-get update -qq
@@ -27,29 +28,33 @@ before_install:
     - export GTEST_ROOT=$(pwd)/gtest/
     - export GMOCK_ROOT=$(pwd)/
     - cd ..
-    - wget -nc --no-check-certificate http://download.zeromq.org/zeromq-4.0.4.tar.gz
-    - tar xzf zeromq-4.0.4.tar.gz
-    - cd zeromq-4.0.4
-    - mkdir build
-    - mkdir install
-    - export ZMQ_INSTALL_DIR=$(pwd)/install/
-    - cd build
-    - ../configure --prefix=$ZMQ_INSTALL_DIR
-    - make && make install
-    - cd ../../..
+    #- wget -nc --no-check-certificate http://download.zeromq.org/zeromq-4.0.4.tar.gz
+    #- tar xzf zeromq-4.0.4.tar.gz
+    #- cd zeromq-4.0.4
+    #- mkdir build
+    #- mkdir install
+    #- export ZMQ_INSTALL_DIR=$(pwd)/install/
+    #- cd build
+    #- ../configure --prefix=$ZMQ_INSTALL_DIR
+    #- make && make install
+    #- cd ../..
+    - cd ..
 
 script:
     - gcov -v | grep "4.8"
     - lcov --version | grep "1.10"
     - mkdir -p ./build
-    - cd ./build && cmake -DZMQ_INCLUDE_DIR="$ZMQ_INSTALL_DIR/include" -DZMQ_LIBRARY="$ZMQ_INSTALL_DIR/lib/libzmq.so.3" .. && make
+    #- cd ./build && cmake -DZMQ_INCLUDE_DIR="$ZMQ_INSTALL_DIR/include" -DZMQ_LIBRARY="$ZMQ_INSTALL_DIR/lib/libzmq.so.3" .. && make
+    - cd ./build && cmake .. && make
     - netstat -l | grep '900[0-9]'
     - cd ./test
     #- ctest || netstat -l | grep '900[0-9]'
     - ./test_main
+    - ps -fU$USER
     - netstat -l | grep '900[0-9]' && cd ..
     - if [ "$CXX" = "g++-4.8" ] ; then cd .. && mkdir -p build_coverage && cd build_coverage ; fi
-    - if [ "$CXX" = "g++-4.8" ] ; then cmake .. -DORWELL_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug -DZMQ_INCLUDE_DIR="$ZMQ_INSTALL_DIR/include" -DZMQ_LIBRARY="$ZMQ_INSTALL_DIR/lib/libzmq.so.3" ; fi
+    #- if [ "$CXX" = "g++-4.8" ] ; then cmake .. -DORWELL_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug -DZMQ_INCLUDE_DIR="$ZMQ_INSTALL_DIR/include" -DZMQ_LIBRARY="$ZMQ_INSTALL_DIR/lib/libzmq.so.3" ; fi
+    - if [ "$CXX" = "g++-4.8" ] ; then cmake .. -DORWELL_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug ; fi
     - if [ "$CXX" = "g++-4.8" ] ; then make orwell_coverage ; fi
 
 after_success:
