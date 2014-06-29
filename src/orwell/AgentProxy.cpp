@@ -195,9 +195,7 @@ void AgentProxy::listRobot(
 			aReply += "not ";
 		}
 		aReply += "registered ; ";
-		aReply += "video_port = " + boost::lexical_cast< std::string >(
-				aPair.second->getVideoPort()) + " ; ";
-		aReply += "video_address = " + aPair.second->getVideoAddress() + " ; ";
+		aReply += "video_url = " + aPair.second->getVideoUrl() + " ; ";
 		bool aHasPlayer(aPair.second->getPlayer());
 		if (aHasPlayer)
 		{
@@ -217,7 +215,7 @@ void AgentProxy::addRobot(
 		std::string const & iRobotName)
 {
 	ORWELL_LOG_INFO("add robot " << iRobotName);
-	m_application.accessServer()->accessContext().addRobot(iRobotName);
+	m_application.accessServer()->accessContext().addRobot(iRobotName, m_application.popPort());
 }
 
 void AgentProxy::removeRobot(
@@ -266,17 +264,13 @@ void AgentProxy::setRobot(
 	{
 		std::shared_ptr< orwell::game::Robot > aRobot =
 			m_application.accessServer()->accessContext().accessRobot(iRobotName);
-		if ("video_port" == iProperty)
+		if ("video_url" == iProperty)
 		{
-			aRobot->setVideoPort(boost::lexical_cast< uint32_t >(iValue));
-		}
-		else if ("video_address" == iProperty)
-		{
-			aRobot->setVideoAddress(iValue);
+			aRobot->setVideoUrl(iValue);
 		}
 		else
 		{
-			ORWELL_LOG_WARN("Unkown property for a robot: '" << iProperty << "'");
+			ORWELL_LOG_WARN("Unknown property for a robot: '" << iProperty << "'");
 		}
 	}
 	catch (std::exception const & anException)

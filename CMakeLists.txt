@@ -72,6 +72,7 @@ endif ()
 
 # Messages
 execute_process(COMMAND ln -fs ${CMAKE_SOURCE_DIR}/CMakeLists_messages.txt ${CMAKE_SOURCE_DIR}/messages/CMakeLists.txt)
+execute_process(COMMAND ln -fs ${CMAKE_SOURCE_DIR}/server-web ${CMAKE_CURRENT_BINARY_DIR}/server-web)
 #add_subdirectory(../messages "${CMAKE_CURRENT_BINARY_DIR}/messages")
 add_subdirectory(messages)
 

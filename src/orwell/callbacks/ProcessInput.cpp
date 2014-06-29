@@ -24,7 +24,7 @@ ProcessInput::ProcessInput(
 void ProcessInput::execute()
 {
 	std::string const & aDestination = getArgument("RoutingID").second;
-	orwell::messages::Input const & anInputMsg = static_cast<orwell::messages::Input const &>(*_msg);
+	orwell::messages::Input const & anInputMsg = static_cast<orwell::messages::Input const &>(*m_msg);
 
 	ORWELL_LOG_INFO("ProcessInput::execute : simple relay");
 
@@ -34,7 +34,7 @@ void ProcessInput::execute()
 	ORWELL_LOG_DEBUG("===End Input Message===");
 
 	RawMessage aReply(aDestination, "Input", anInputMsg.SerializeAsString());
-	_publisher->send( aReply );
+	m_publisher->send( aReply );
 }
 
 }}

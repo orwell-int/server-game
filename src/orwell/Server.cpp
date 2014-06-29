@@ -100,8 +100,8 @@ void Server::loopUntilOneMessageIsProcessed()
 		{
 			if ( not processMessageIfAvailable() )
 			{
-				// sleep 10 milliseconds
-				usleep(10 * 1000);
+				// sleep a fraction of ticduration
+				usleep( _ticDuration.total_milliseconds() / 10 );
 			}
 			else
 			{

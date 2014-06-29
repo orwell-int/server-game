@@ -19,7 +19,8 @@ class Robot
 public:
 	Robot(
 			std::string const & iName,
-			std::string const & iRobotId);
+			std::string const & iRobotId,
+			uint16_t const & iVideoRetransmissionPort);
 	~Robot();
 
 	void setHasRealRobot(bool const iHasRealRobot);
@@ -29,11 +30,17 @@ public:
 	std::shared_ptr< Player > const getPlayer() const;
 	bool const getHasPlayer() const;
 
-	void setVideoAddress(std::string const & iVideoAddress);
-	std::string const & getVideoAddress() const;
+	void setVideoUrl(std::string const & iVideoUrl);
+	std::string const & getVideoUrl() const;
 
-	void setVideoPort(uint32_t const iVideoPort);
-	uint32_t getVideoPort() const;
+	//setRetransmissionPort()
+	uint16_t getVideoRetransmissionPort() const;
+
+//	void setVideoAddress(std::string const & iVideoAddress);
+//	std::string const & getVideoAddress() const;
+//
+//	void setVideoPort(uint32_t const iVideoPort);
+//	uint32_t getVideoPort() const;
 
 	std::string const & getName() const;
 	std::string const & getRobotId() const;
@@ -45,8 +52,8 @@ public:
 private:
 	std::string m_name;
 	std::string m_robotId;
-	std::string m_videoAddress;
-	uint32_t m_videoPort;
+	std::string m_videoUrl; //the origin URL of the videofeed
+	uint16_t m_videoRetransmissionPort; // the port on which the python server retransmits the video feed
 	bool m_hasRealRobot;
 	std::weak_ptr< Player > m_player;
 };

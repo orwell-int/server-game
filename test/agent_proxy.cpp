@@ -19,8 +19,11 @@
 
 #include "Common.hpp"
 
+bool gOK;
+
 static void test_1(orwell::Application & ioApplication)
 {
+	gOK = false;
 	ORWELL_LOG_DEBUG("test_1");
 	orwell::com::Url aUrl("tcp", "0.0.0.0", 9005);
 	zmq::context_t aZmqContext(2);
@@ -56,7 +59,7 @@ static void test_1(orwell::Application & ioApplication)
 	aPuller.receiveString(aRobotList);
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
 	std::string aExpectedRobotList(R"(Robots:
-	Robot1 -> name = Robot1 ; not registered ; video_port = 0 ; video_address =  ; player = 
+	Robot1 -> name = Robot1 ; not registered ; video_url =  ; player = 
 )");
 	ASSERT_EQ(aExpectedRobotList, aRobotList) << "list robot KO";
 	// } list robot
@@ -70,13 +73,12 @@ static void test_1(orwell::Application & ioApplication)
 	aPuller.receiveString(aRobotList);
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
 	aExpectedRobotList = (R"(Robots:
-	Robot1 -> name = Robot1 ; registered ; video_port = 0 ; video_address =  ; player = 
+	Robot1 -> name = Robot1 ; registered ; video_url =  ; player = 
 )");
 	ASSERT_EQ(aExpectedRobotList, aRobotList) << "register KO";
 	// } register robot
 	// set robot {
-	assert(aAgentProxy.step("set robot Robot1 video_port 5"));
-	assert(aAgentProxy.step("set robot Robot1 video_address titi"));
+	assert(aAgentProxy.step("set robot Robot1 video_url titi"));
 	// } set robot
 	// unregister robot {
 	assert(aAgentProxy.step("unregister robot Robot1"));
@@ -88,7 +90,7 @@ static void test_1(orwell::Application & ioApplication)
 	aPuller.receiveString(aRobotList);
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
 	aExpectedRobotList = (R"(Robots:
-	Robot1 -> name = Robot1 ; not registered ; video_port = 5 ; video_address = titi ; player = 
+	Robot1 -> name = Robot1 ; not registered ; video_url = titi ; player = 
 )");
 	ASSERT_EQ(aExpectedRobotList, aRobotList) << "unregister KO";
 	// } unregister robot
@@ -115,6 +117,7 @@ static void test_1(orwell::Application & ioApplication)
 )");
 	ASSERT_EQ(aExpectedRobotList, aRobotList) << "empty robot KO";
 	assert(aAgentProxy.step("stop application"));
+	gOK = true;
 }
 
 
@@ -138,9 +141,8 @@ int main()
 		aApplication.run(aParameters);
 		//usleep(40 * 1000); // sleep for 0.040 s
 		test_1(aApplication);
+		assert(gOK);
 	}
-
 	orwell::support::GlobalLogger::Clear();
 	return 0;
 }
-

@@ -84,9 +84,9 @@ int main()
 			500);
 	ORWELL_LOG_INFO("server created");
 	std::vector< std::string > aRobots = {"Gipsy Danger", "Goldorak", "Securitron"};
-	aServer->accessContext().addRobot(aRobots[0]);
-	aServer->accessContext().addRobot(aRobots[1]);
-	aServer->accessContext().addRobot(aRobots[2]);
+	aServer->accessContext().addRobot(aRobots[0], 8001);
+	aServer->accessContext().addRobot(aRobots[1], 8002);
+	aServer->accessContext().addRobot(aRobots[2], 8003);
 	aServer->accessContext().accessRobot(aRobots[0])->setHasRealRobot(true);
 	aServer->accessContext().accessRobot(aRobots[1])->setHasRealRobot(true);
 	aServer->accessContext().accessRobot(aRobots[2])->setHasRealRobot(true);
