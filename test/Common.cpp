@@ -263,10 +263,7 @@ void Common::PingAndStop(uint16_t const iAgentPort)
 	zmq::context_t aZmqContext(1);
 	zmq::socket_t aReplySocket(aZmqContext, ZMQ_PULL);
 	aReplySocket.setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
-	orwell::com::Url aUrl;
-	aUrl.setProtocol("tcp");
-	aUrl.setHost("*");
-	aUrl.setPort(9004);
+	orwell::com::Url aUrl("tcp", "*", 9004);
 	usleep(20 * 1000);
 	ORWELL_LOG_DEBUG("Read reply on " << aUrl.toString());
 	aReplySocket.bind(aUrl.toString().c_str());
@@ -310,10 +307,7 @@ void Common::SendStopFromFakeAgent(
 	zmq::socket_t aAgentSocket(aZmqContext, ZMQ_PUB);
 	int const aLinger = 10;
 	aAgentSocket.setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
-	orwell::com::Url aUrl;
-	aUrl.setProtocol("tcp");
-	aUrl.setHost("localhost");
-	aUrl.setPort(iAgentPort);
+	orwell::com::Url aUrl("tcp", "localhost", iAgentPort);
 	ORWELL_LOG_DEBUG("send agent command to " << aUrl.toString());
 	aAgentSocket.connect(aUrl.toString().c_str());
 	usleep(20 * 1000); // sleep for 0.020 s

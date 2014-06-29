@@ -48,8 +48,8 @@ script:
     - cd ./build && cmake .. && make
     - netstat -l | grep '900[0-9]'
     - cd ./test
-    #- ctest || netstat -l | grep '900[0-9]'
-    - ./test_main
+    - ctest
+    #- ./test_main
     - ps -fU$USER
     - netstat -l | grep '900[0-9]' && cd ..
     - if [ "$CXX" = "g++-4.8" ] ; then cd .. && mkdir -p build_coverage && cd build_coverage ; fi

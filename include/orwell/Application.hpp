@@ -64,7 +64,11 @@ private:
 	Application & operator=(Application const & iRight);
 
 	// Initialization functions
-	bool initServer(Parameters const & iParam);
+
+	void initServer(Parameters const & iParam);
+
+	void initBroadcastServer(Parameters const & iParam);
+
 	static void TokenizeRobots(
 		std::string const & iRobotsString,
 		std::vector<std::string> & oRobotList);

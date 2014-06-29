@@ -307,70 +307,63 @@ void Application::run(Parameters const & iParam)
 		ORWELL_LOG_WARN("run can only be called when in state CREATED");
 		return;
 	}
-	/***************************************
-	 *  Run the server only if all is set  *
-	 ***************************************/
-	if (initServer(iParam))
+	if ((iParam.m_dryRun) and (*iParam.m_dryRun))
 	{
-		// temporary hack
-		for (auto aPair : iParam.m_robots)
-		{
-			this->m_server->accessContext().addRobot(
-					aPair.second.m_name,
-					aPair.first);
-		}
-		//m_state = State::INITIALISED;
+		initServer(iParam);
 		m_state = State::RUNNING;
-		if ((iParam.m_dryRun) and (*iParam.m_dryRun))
+		ORWELL_LOG_INFO("Exit without starting (dry-run).");
+		return;
+	}
+	if ((iParam.m_broadcast) and (*iParam.m_broadcast))
+	{
+		// Broadcast receiver and main loop are run in separated threads
+		pid_t aChildProcess = fork();
+
+		switch (aChildProcess)
 		{
-			ORWELL_LOG_INFO("Exit without starting (dry-run).");
-			return;
-		}
-		if ((iParam.m_broadcast) and (*iParam.m_broadcast))
-		{
-			// Broadcast receiver and main loop are run in separated threads
-			pid_t aChildProcess = fork();
-
-			switch (aChildProcess)
+			case 0:
 			{
-				case 0:
-				{
-					log4cxx::NDC ndc("broadcast");
-					ORWELL_LOG_INFO("Child started");
-					m_broadcastServer->runBroadcastReceiver();
-					ORWELL_LOG_INFO("Exit from broadcast server.");
-					exit(0);
-					//return;
-				}
-				default:
-				{
-					log4cxx::NDC ndc("server-game");
-					ORWELL_LOG_INFO("Father started, child's pid: " << aChildProcess);
-					m_server->loop();
-					break;
-				}
+				log4cxx::NDC ndc("broadcast");
+				ORWELL_LOG_INFO("Child started");
+				initBroadcastServer(iParam);
+				m_state = State::RUNNING;
+				m_broadcastServer->runBroadcastReceiver();
+				ORWELL_LOG_INFO("Exit from broadcast server.");
+				exit(0);
+				//return;
 			}
-
-			ORWELL_LOG_INFO("Father continued");
-
-			if (0 != kill(aChildProcess, SIGTERM))
+			default:
 			{
-				ORWELL_LOG_WARN("Try to abort child as terminate failed.");
-				kill(aChildProcess, SIGABRT);
-			}
-			// Here the father will be waiting for the child to be over
-			int aStatus;
-			while (waitpid(aChildProcess, &aStatus, WNOHANG) == 0)
-			{
-				ORWELL_LOG_INFO("Waiting for process: " << aChildProcess << " to be over");
-				sleep(1);
+				log4cxx::NDC ndc("server-game");
+				ORWELL_LOG_INFO("Father started, child's pid: " << aChildProcess);
+				initServer(iParam);
+				m_state = State::RUNNING;
+				m_server->loop();
+				break;
 			}
 		}
-		else
+
+		ORWELL_LOG_INFO("Father continued");
+
+		if (0 != kill(aChildProcess, SIGTERM))
 		{
-			log4cxx::NDC ndc("server-game");
-			m_server->loop();
+			ORWELL_LOG_WARN("Try to abort child as terminate failed.");
+			kill(aChildProcess, SIGABRT);
 		}
+		// Here the father will be waiting for the child to be over
+		int aStatus;
+		while (waitpid(aChildProcess, &aStatus, WNOHANG) == 0)
+		{
+			ORWELL_LOG_INFO("Waiting for process: " << aChildProcess << " to be over");
+			sleep(1);
+		}
+	}
+	else
+	{
+		log4cxx::NDC ndc("server-game");
+		initServer(iParam);
+		m_state = State::RUNNING;
+		m_server->loop();
 	}
 	ORWELL_LOG_INFO("Exit normally.");
 }
@@ -419,7 +412,7 @@ orwell::Server * Application::accessServer(bool const iUnsafe)
 }
 
 
-bool Application::initServer(Parameters const & iParam)
+void Application::initServer(Parameters const & iParam)
 {
 	ORWELL_LOG_INFO("Initialize server : publisher tcp://*:" << iParam.m_publisherPort << " puller tcp://*:" << iParam.m_pullerPort);
 
@@ -433,11 +426,26 @@ bool Application::initServer(Parameters const & iParam)
 			aPullerAddress,
 			aPublisherAddress,
 			iParam.m_tickInterval.get());
+
+	// temporary hack
+	for (auto aPair : iParam.m_robots)
+	{
+		m_server->accessContext().addRobot(
+				aPair.second.m_name,
+				aPair.first);
+	}
+}
+
+void Application::initBroadcastServer(Parameters const & iParam)
+{
 	if ((iParam.m_broadcast) and (*iParam.m_broadcast))
 	{
+		std::string aPublisherAddress =
+			"tcp://*:" + boost::lexical_cast< std::string >(*iParam.m_publisherPort);
+		std::string aPullerAddress =
+			"tcp://*:" + boost::lexical_cast< std::string >(*iParam.m_pullerPort);
 		m_broadcastServer = new orwell::BroadcastServer(aPullerAddress, aPublisherAddress);
 	}
-	return true;
 }
 
 void Application::TokenizeRobots(

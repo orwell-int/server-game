@@ -14,7 +14,10 @@ namespace com
 class Url
 {
 public:
-	explicit Url();
+	explicit Url(
+			std::string const & iProtocol,
+			std::string const & iHost,
+			uint16_t const iPort);
 	virtual ~Url();
 
 	void setProtocol(std::string const & iProtocol);
@@ -29,11 +32,11 @@ public:
 	uint16_t const & getPort() const;
 
 private:
-	std::string _protocol;
-	std::string _host;
-	uint16_t _port;
+	std::string m_protocol;
+	std::string m_host;
+	uint16_t m_port;
 
-	std::string _url;
+	std::string m_url;
 
 };
 }

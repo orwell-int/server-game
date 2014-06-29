@@ -22,9 +22,7 @@
 static void test_1(orwell::Application & ioApplication)
 {
 	ORWELL_LOG_DEBUG("test_1");
-	orwell::com::Url aUrl;
-	aUrl.setHost("0.0.0.0");
-	aUrl.setPort(9005);
+	orwell::com::Url aUrl("tcp", "0.0.0.0", 9005);
 	zmq::context_t aZmqContext(2);
 	orwell::com::Receiver aPuller(
 			aUrl.toString(),

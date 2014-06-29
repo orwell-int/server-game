@@ -208,9 +208,7 @@ void AgentProxy::listRobot(
 			aReply += "player = \n";
 		}
 	}
-	orwell::com::Url aUrl;
-	aUrl.setHost(iReplyAddress);
-	aUrl.setPort(iReplyPort);
+	orwell::com::Url aUrl("tcp", iReplyAddress, iReplyPort);
 	m_application.accessServer()->push(aUrl.toString(), aReply);
 }
 
@@ -309,9 +307,7 @@ void AgentProxy::listPlayer(
 			aReply += "robot = \n";
 		}
 	}
-	orwell::com::Url aUrl;
-	aUrl.setHost(iReplyAddress);
-	aUrl.setPort(iReplyPort);
+	orwell::com::Url aUrl("tcp", iReplyAddress, iReplyPort);
 	m_application.accessServer()->push(aUrl.toString(), aReply);
 }
 
