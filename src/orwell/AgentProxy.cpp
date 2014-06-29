@@ -217,8 +217,7 @@ void AgentProxy::addRobot(
 		std::string const & iRobotName)
 {
 	ORWELL_LOG_INFO("add robot " << iRobotName);
-	//todo fdiller here
-	m_application.accessServer()->accessContext().addRobot(iRobotName);
+	m_application.accessServer()->accessContext().addRobot(iRobotName, m_application.popPort());
 }
 
 void AgentProxy::removeRobot(

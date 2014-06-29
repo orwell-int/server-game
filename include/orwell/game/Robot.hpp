@@ -33,6 +33,9 @@ public:
 	void setVideoUrl(std::string const & iVideoUrl);
 	std::string const & getVideoUrl() const;
 
+	//setRetransmissionPort()
+	uint16_t getVideoRetransmissionPort() const;
+
 //	void setVideoAddress(std::string const & iVideoAddress);
 //	std::string const & getVideoAddress() const;
 //

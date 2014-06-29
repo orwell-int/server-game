@@ -59,9 +59,14 @@ std::string const & Robot::getVideoUrl() const
 	return m_videoUrl;
 }
 
-string const & Robot::getName() const
+std::string const & Robot::getName() const
 {
 	return m_name;
+}
+
+uint16_t Robot::getVideoRetransmissionPort() const
+{
+	return m_videoRetransmissionPort;
 }
 
 std::string const & Robot::getRobotId() const

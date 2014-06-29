@@ -83,6 +83,8 @@ private:
 	/// they send the same value again to send back the same information
 	/// the following times.
 	mutable std::map< std::string, std::string > m_registeredRobots;
+	/// stores the temp files containing the pids of the webservers, to kill them later
+	std::vector<std::string> m_tmpFiles;
 };
 
 }
