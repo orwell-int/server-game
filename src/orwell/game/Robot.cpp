@@ -11,9 +11,11 @@ namespace game {
 
 Robot::Robot(
 		string const & iName,
-		std::string const & iRobotId)
+		std::string const & iRobotId,
+		uint16_t const & iVideoRetransmissionPort)
 	: m_name(iName)
 	, m_robotId(iRobotId)
+	, m_videoRetransmissionPort(iVideoRetransmissionPort)
 	, m_hasRealRobot(false)
 {
 }

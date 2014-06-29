@@ -120,6 +120,7 @@ void Game::stop()
 
 bool Game::addRobot(
 		string const & iName,
+		uint16_t const iVideoRetransmissionPort,
 		std::string iRobotId)
 {
 	bool aAddedRobotSuccess = false;
@@ -134,7 +135,7 @@ bool Game::addRobot(
 		{
 			iRobotId = getNewRobotId();
 		}
-		shared_ptr<Robot> aRobot = make_shared<Robot>(iName, iRobotId);
+		shared_ptr<Robot> aRobot = make_shared<Robot>(iName, iRobotId, iVideoRetransmissionPort);
 		m_robots.insert( pair<string, shared_ptr<Robot> >( iName, aRobot ) );
 		ORWELL_LOG_DEBUG("new RobotContext added with internal ID=" << iName);
 		aAddedRobotSuccess = true;

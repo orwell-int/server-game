@@ -51,6 +51,7 @@ public:
 	//add empty RobotContext
 	bool addRobot(
 			std::string const & iName,
+			uint16_t const aVideoRetransmissionPort,
 			std::string iRobotId = "");
 
 	/// Remove a robot named #iName if found.

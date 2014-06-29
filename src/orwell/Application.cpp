@@ -283,7 +283,8 @@ bool Application::ParseParametersFromConfigFile(
 		ORWELL_LOG_DEBUG("video port range from config file = " << aBeginPortRange << " to " << aEndPortRange );
 		for (uint16_t i = aBeginPortRange ; i <= aEndPortRange ; ++i)
 		{
-			ioParam.m_videoPorts.push_back(i);
+			// insert ports in reverse order
+			ioParam.m_videoPorts.insert(ioParam.m_videoPorts.begin(), i);
 		}
 	}
 
@@ -368,11 +369,13 @@ void Application::run(Parameters const & iParam)
 	 ***************************************/
 	if (initServer(iParam))
 	{
+		m_availableVideoPorts = iParam.m_videoPorts;
 		// temporary hack
 		for (auto aPair : iParam.m_robots)
 		{
 			this->m_server->accessContext().addRobot(
 					aPair.second.m_name,
+					popPort(),
 					aPair.first);
 		}
 		//m_state = State::INITIALISED;
@@ -595,3 +598,17 @@ bool operator==(
 		and (iLeft.m_team == iRight.m_team));
 }
 
+uint16_t Application::popPort()
+{
+	if (not m_availableVideoPorts.empty())
+	{
+		uint16_t aReturnPort = m_availableVideoPorts.back();
+		m_availableVideoPorts.pop_back();
+		m_takenVideoPorts.push_back(aReturnPort);
+		return aReturnPort;
+	}
+	else
+	{
+		return 0;
+	}
+}

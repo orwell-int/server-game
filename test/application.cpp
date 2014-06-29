@@ -211,7 +211,7 @@ video-ports    = 9001:9003
 		2, // puller port
 		1, // publisher port
 		3, // agent port
-		{9001,9002,9003}, //video ports
+		{9003,9002,9001}, //video ports
 		666, // tick interval
 		aTempFile.m_fileName, // rc file path
 		boost::none, // game config file path
@@ -339,7 +339,7 @@ team = Mathematicians
 		2, // puller port
 		1, // publisher port
 		3, // agent port
-		{9001, 9002, 9003}, //video ports
+		{9003, 9002, 9001}, //video ports
 		666, // tick interval
 		aTechConfigFile.m_fileName, // rc file path
 		aTempFile.m_fileName, // game config file path
@@ -397,7 +397,7 @@ team = Mathematicians
 		2, // puller port
 		1, // publisher port
 		3, // agent port
-		{9001, 9002}, //video ports
+		{9002, 9001}, //video ports
 		666, // tick interval
 		aTechConfigFile.m_fileName, //orwellrc
 		aTempFile.m_fileName, // game config file path

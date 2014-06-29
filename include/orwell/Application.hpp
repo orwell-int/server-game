@@ -79,6 +79,8 @@ private:
 	static bool CheckParametersConsistency(Parameters const & iParam);
 	static void ParseGameConfigFromFile(
 			Parameters & ioParam);
+	///takes the last port of m_availableVideoPorts, returns it and put it in m_takenVideoPorts
+	uint16_t popPort();
 
 	// Instance of the server running
 	orwell::Server * m_server;
@@ -95,6 +97,8 @@ private:
 	};
 	State m_state;
 	orwell::AgentProxy m_agentProxy;
+	std::vector< uint16_t > m_availableVideoPorts;
+	std::vector< uint16_t > m_takenVideoPorts;
 };
 }
 
