@@ -21,6 +21,16 @@
 
 bool gOK;
 
+#define ORWELL_ASSERT(Expected, Received, Message) \
+{\
+	if (Expected != Received)\
+	{\
+		ORWELL_LOG_ERROR("expected: " << aExpectedPlayerList);\
+		ORWELL_LOG_ERROR(Message);\
+		return;\
+	}\
+}\
+
 static void test_1(orwell::Application & ioApplication)
 {
 	gOK = false;
@@ -42,26 +52,26 @@ static void test_1(orwell::Application & ioApplication)
 				"list player " + aUrl.getHost() + " "
 				+ boost::lexical_cast< std::string >(aUrl.getPort())));
 	std::string aPlayerList;
-	usleep(2 * 1000); // give enough time to zmq to forward the message
-	aPuller.receiveString(aPlayerList);
+	//usleep(2 * 1000); // give enough time to zmq to forward the message
+	aPuller.receiveString(aPlayerList, true);
 	ORWELL_LOG_DEBUG("aPlayerList = " << aPlayerList);
 	std::string aExpectedPlayerList(R"(Players:
 	Player1 -> name = Player1 ; robot = 
 )");
-	ASSERT_EQ(aExpectedPlayerList, aPlayerList) << "list player KO";
+	ORWELL_ASSERT(aExpectedPlayerList, aPlayerList, "list player KO");
 	// } list player
 	// list robot {
 	assert(aAgentProxy.step(
 				"list robot " + aUrl.getHost() + " "
 				+ boost::lexical_cast< std::string >(aUrl.getPort())));
 	std::string aRobotList;
-	usleep(2 * 1000); // give enough time to zmq to forward the message
-	aPuller.receiveString(aRobotList);
+	//usleep(2 * 1000); // give enough time to zmq to forward the message
+	aPuller.receiveString(aRobotList, true);
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
 	std::string aExpectedRobotList(R"(Robots:
 	Robot1 -> name = Robot1 ; not registered ; video_url =  ; player = 
 )");
-	ASSERT_EQ(aExpectedRobotList, aRobotList) << "list robot KO";
+	ORWELL_ASSERT(aExpectedRobotList, aRobotList, "list robot KO");
 	// } list robot
 	// register robot {
 	assert(aAgentProxy.step("register robot Robot1"));
@@ -69,13 +79,13 @@ static void test_1(orwell::Application & ioApplication)
 	assert(aAgentProxy.step(
 				"list robot " + aUrl.getHost() + " "
 				+ boost::lexical_cast< std::string >(aUrl.getPort())));
-	usleep(2 * 1000); // give enough time to zmq to forward the message
-	aPuller.receiveString(aRobotList);
+	//usleep(2 * 1000); // give enough time to zmq to forward the message
+	aPuller.receiveString(aRobotList, true);
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
 	aExpectedRobotList = (R"(Robots:
 	Robot1 -> name = Robot1 ; registered ; video_url =  ; player = 
 )");
-	ASSERT_EQ(aExpectedRobotList, aRobotList) << "register KO";
+	ORWELL_ASSERT(aExpectedRobotList, aRobotList, "register KO");
 	// } register robot
 	// set robot {
 	assert(aAgentProxy.step("set robot Robot1 video_url titi"));
@@ -86,13 +96,13 @@ static void test_1(orwell::Application & ioApplication)
 	assert(aAgentProxy.step(
 				"list robot " + aUrl.getHost() + " "
 				+ boost::lexical_cast< std::string >(aUrl.getPort())));
-	usleep(2 * 1000); // give enough time to zmq to forward the message
-	aPuller.receiveString(aRobotList);
+	//usleep(2 * 1000); // give enough time to zmq to forward the message
+	aPuller.receiveString(aRobotList, true);
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
 	aExpectedRobotList = (R"(Robots:
 	Robot1 -> name = Robot1 ; not registered ; video_url = titi ; player = 
 )");
-	ASSERT_EQ(aExpectedRobotList, aRobotList) << "unregister KO";
+	ORWELL_ASSERT(aExpectedRobotList, aRobotList, "unregister KO");
 	// } unregister robot
 	assert(aAgentProxy.step("start game"));
 	assert(aAgentProxy.step("stop game"));
@@ -101,21 +111,21 @@ static void test_1(orwell::Application & ioApplication)
 	assert(aAgentProxy.step(
 				"list player " + aUrl.getHost() + " "
 				+ boost::lexical_cast< std::string >(aUrl.getPort())));
-	usleep(2 * 1000); // give enough time to zmq to forward the message
-	aPuller.receiveString(aPlayerList);
+	//usleep(2 * 1000); // give enough time to zmq to forward the message
+	aPuller.receiveString(aPlayerList, true);
 	ORWELL_LOG_DEBUG("aPlayerList = " << aPlayerList);
 	aExpectedPlayerList = (R"(Players:
 )");
-	ASSERT_EQ(aExpectedPlayerList, aPlayerList) << "empty player KO";
+	ORWELL_ASSERT(aExpectedPlayerList, aPlayerList, "empty player KO");
 	assert(aAgentProxy.step(
 				"list robot " + aUrl.getHost() + " "
 				+ boost::lexical_cast< std::string >(aUrl.getPort())));
-	usleep(2 * 1000); // give enough time to zmq to forward the message
-	aPuller.receiveString(aRobotList);
+	//usleep(2 * 1000); // give enough time to zmq to forward the message
+	aPuller.receiveString(aRobotList, true);
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
 	aExpectedRobotList = (R"(Robots:
 )");
-	ASSERT_EQ(aExpectedRobotList, aRobotList) << "empty robot KO";
+	ORWELL_ASSERT(aExpectedRobotList, aRobotList, "empty robot KO");
 	assert(aAgentProxy.step("stop application"));
 	gOK = true;
 }
@@ -127,6 +137,7 @@ int main()
 	log4cxx::NDC ndc("test_agent_proxy");
 	ORWELL_LOG_INFO("Test starts\n");
 	{
+		usleep(2000 * Common::GetWaitLoops());
 		orwell::Application & aApplication = orwell::Application::GetInstance();
 
 		Arguments aArguments = Common::GetArguments(

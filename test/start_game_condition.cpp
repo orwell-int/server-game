@@ -39,27 +39,27 @@ static void ExpectGameState(
 	int const aMaxLoops = 100;
 	int aCurrentLoop = 0;
 
-	while ( not aGotWhatExpected)
+	while (not aGotWhatExpected)
 	{
-		if ( not Common::ExpectMessage("GameState", ioSubscriber, aResponse) )
+		if (not Common::ExpectMessage("GameState", ioSubscriber, aResponse))
 		{
-			ORWELL_LOG_DEBUG("Expected gamestate but we got something else /: " << aResponse._type);
+			ORWELL_LOG_DEBUG("Expected gamestate but we got something else : " << aResponse._type);
 		}
 		else
 		{
 			GameState aGameState;
 			aGameState.ParsePartialFromString(aResponse._payload);
 
-			if ( aGameState.playing() == iGameStarted)
+			if (aGameState.playing() == iGameStarted)
 			{
 				ORWELL_LOG_DEBUG("State of the game is what was expected :" << aGameState.playing());
 				aGotWhatExpected = true;
 			}
 		}
-		++ aCurrentLoop;
+		++aCurrentLoop;
 		if (aCurrentLoop > aMaxLoops)
 		{
-			ORWELL_LOG_ERROR("State of the game is not what was expected ");
+			ORWELL_LOG_ERROR("State of the game is not what was expected");
 			g_status = -1;
 			break;
 		}
@@ -82,9 +82,9 @@ static void client()
 	ExpectGameState(false, aSubscriber);
 
 	Hello aHelloMessage;
-	aHelloMessage.set_name( "playername" );
-	aHelloMessage.set_port( 80 );
-	aHelloMessage.set_ip( "localhost" );
+	aHelloMessage.set_name("playername");
+	aHelloMessage.set_port(80);
+	aHelloMessage.set_ip("localhost");
 	RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
 	aPusher.send(aMessage);
 
@@ -96,23 +96,32 @@ static void client()
 }
 
 
-static void const server(std::shared_ptr< orwell::Server > ioServer)
+static void const server(
+		std::shared_ptr< orwell::Server > ioServer,
+		int const iWaitLoops)
 {
 	log4cxx::NDC ndc("server");
 	ORWELL_LOG_INFO("server ...");
-	for (int i = 0 ; i < 2; ++i)
+	for (int i = 0 ; i < 2 ; ++i)
 	{
 		usleep(3 * 1000); // sleep for 3 ms
 		ORWELL_LOG_INFO("server loop " << i);
 		ioServer->loopUntilOneMessageIsProcessed();
 	}
+	ORWELL_LOG_INFO("dirty sleep to let python threads time to start.");
+	usleep(20000 * (1 + iWaitLoops));
 	ORWELL_LOG_INFO("quit server");
 }
 
 int main()
 {
-	orwell::support::GlobalLogger::Create("hello", "test_hello.log", true);
-	log4cxx::NDC ndc("hello");
+	orwell::support::GlobalLogger::Create(
+			"test_start_game_condition",
+			"test_start_game_condition.log",
+			true);
+	log4cxx::NDC ndc("test_start_game_condition");
+	int const aWaitLoops = Common::GetWaitLoops();
+	usleep(2000 * aWaitLoops);
 	FakeAgentProxy aFakeAgentProxy;
 	std::shared_ptr< orwell::Server > aServer =
 		std::make_shared< orwell::Server >(
@@ -120,13 +129,13 @@ int main()
 			"tcp://*:9003",
 			"tcp://*:9000",
 			"tcp://*:9001",
-			1);
+			1 + aWaitLoops * 10);
 	ORWELL_LOG_INFO("server created");
 	std::vector< std::string > aRobots = {"Gipsy Danger"};
-	aServer->accessContext().addRobot(aRobots[0], 8001,"robot1");
+	aServer->accessContext().addRobot(aRobots[0], 8001, "robot1");
 	aServer->accessContext().accessRobot(aRobots[0])->setHasRealRobot(true);
 	ORWELL_LOG_INFO("robot added 1");
-	std::thread aServerThread(server, aServer);
+	std::thread aServerThread(server, aServer, aWaitLoops);
 	std::thread aClientThread(client);
 	aClientThread.join();
 	aServerThread.join();

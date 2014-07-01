@@ -30,15 +30,21 @@ public :
 
 	~Receiver();
 
-	/// Try to get a message from the socket (non blocking).
+	/// Try to get a message from the socket (non blocking by default).
 	///
 	/// \param oMessage
 	///  This string will contain the received message if available.
 	///
+	/// \param iBlocking
+	///  If and only if set to true, make the call blocking.
+	///
 	/// \return
 	///  True if and only if a message was received.
 	///
-	bool receiveString(std::string & oMessage);
+	bool receiveString(
+			std::string & oMessage,
+			bool const iBlocking=false);
+
 	bool receive(RawMessage & oMessage);
 	std::string const & getUrl() const;
 
