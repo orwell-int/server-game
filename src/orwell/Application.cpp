@@ -213,6 +213,7 @@ bool Application::ParseParametersFromConfigFile(
 	catch (std::exception const & aExc)
 	{
 		ORWELL_LOG_ERROR("Could not read technical config file at " << *ioParam.m_rcFilePath);
+		ORWELL_LOG_DEBUG(aExc.what());
 		return false;
 	}
 
