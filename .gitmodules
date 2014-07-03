@@ -4,4 +4,4 @@
 	ignore = untracked
 [submodule "server-web"]
 	path = server-web
-	url = https://github.com/fdiller/server-web
+	url = https://github.com/orwell-int/server-web
