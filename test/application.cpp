@@ -149,6 +149,7 @@ video-ports    = 9001
 			aTempFile.m_fileName, // std::string("orwell.rc"), // orwellrc
 			boost::none, // game config file path
 			666, // tick interval
+			274, // game duration
 			false, // version
 			true, // debug log
 			true, // no broadcast
@@ -170,6 +171,7 @@ video-ports    = 9001
 		3, // agent port
 		{9001}, //video ports (useless here because not read from CL)
 		666, // tick interval
+		274, // game duration
 		aTempFile.m_fileName, // rc file path
 		boost::none, // game config file path
 		true, // dry run
@@ -186,6 +188,7 @@ video-ports    = 9001
 				aTempFile.m_fileName, // std::string("orwell.rc"), // orwellrc
 				boost::none, // game config file path
 				666, // tick interval
+				274, // game duration
 				false, // version
 				true, // debug log
 				true, // no broadcast
@@ -213,6 +216,7 @@ video-ports    = 9001:9003
 		3, // agent port
 		{9003,9002,9001}, //video ports
 		666, // tick interval
+		274, // game duration
 		aTempFile.m_fileName, // rc file path
 		boost::none, // game config file path
 		true, // dry run
@@ -229,6 +233,7 @@ video-ports    = 9001:9003
 				aTempFile.m_fileName, // orwellrc
 				boost::none, // game config file path
 				666, // tick interval
+				274, // game duration
 				false, // version
 				true, // debug log
 				true, // no broadcast
@@ -254,6 +259,7 @@ video-ports    = 9001
 		903, // agent port
 		{9001}, //video ports
 		50, // tick interval
+		300, // game duration
 		aTempFile.m_fileName, // rc file path
 		boost::none, // game config file path
 		false, // dry run
@@ -269,7 +275,8 @@ video-ports    = 9001
 				boost::none, // agent port
 				aTempFile.m_fileName, // orwellrc
 				boost::none, // game config file path
-				boost::none), // tick interval)
+				boost::none, // tick interval
+				boost::none), // game duration
 		aExpectedParameters);
 }
 
@@ -289,6 +296,7 @@ puller-port = 42
 		3, // agent port
 		{9001}, //video ports
 		666, // tick interval
+		274, // game duration
 		aTempFile.m_fileName, // rc file path
 		boost::none, // game config file path
 		true, // dry run
@@ -305,6 +313,7 @@ puller-port = 42
 				aTempFile.m_fileName, // orwellrc
 				boost::none, // game config file path
 				666, // tick interval
+				274, // game duration
 				false, // version
 				true, // debug log
 				true, // no broadcast
@@ -325,6 +334,7 @@ video-ports    = 9001:9003
 robots = robot_A | robot_B
 gametype = Problem
 gamename = Enigma
+duration = 999
 
 [robot_A]
 name = Aristotle
@@ -341,6 +351,7 @@ team = Mathematicians
 		3, // agent port
 		{9003, 9002, 9001}, //video ports
 		666, // tick interval
+		999, // game duration
 		aTechConfigFile.m_fileName, // rc file path
 		aTempFile.m_fileName, // game config file path
 		true, // dry run
@@ -362,6 +373,7 @@ team = Mathematicians
 				aTechConfigFile.m_fileName, //orwellrc
 				aTempFile.m_fileName, // game config file path
 				666, // tick interval
+				boost::none, // game duration
 				false, // version
 				true, // debug log
 				true, // no broadcast
@@ -399,6 +411,7 @@ team = Mathematicians
 		3, // agent port
 		{9002, 9001}, //video ports
 		666, // tick interval
+		274, // game duration
 		aTechConfigFile.m_fileName, //orwellrc
 		aTempFile.m_fileName, // game config file path
 		true, // dry run
@@ -423,6 +436,7 @@ team = Mathematicians
 					aTechConfigFile.m_fileName, //orwellrc
 					aTempFile.m_fileName, // game config file path
 					666, // tick interval
+					274, // game duration
 					false, // version
 					true, // debug log
 					true, // no broadcast
@@ -449,6 +463,7 @@ static void test_parse_command_line_and_file_6_badConfigFile()
 				std::string("thisfiledoesnotexist"), // orwellrc
 				boost::none, // game config file path
 				666, // tick interval
+				274, // game duration
 				false, // version
 				true, // debug log
 				true, // no broadcast
@@ -486,6 +501,7 @@ team = Mathematicians
 				3, // agent port
 				aTechConfigFile.m_fileName, // orwellrc
 				aGameConfigFile.m_fileName, // game config file path
+				274, // game duration
 				666, // tick interval
 				false, // version
 				true, // debug log

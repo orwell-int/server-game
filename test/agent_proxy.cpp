@@ -142,7 +142,7 @@ int main()
 
 		Arguments aArguments = Common::GetArguments(
 				false, 9001, 9000, 9003,
-				boost::none, boost::none, 500,
+				boost::none, boost::none, 500, 300,
 				false, true, true, true);
 		orwell::Application::Parameters aParameters;
 		orwell::Application::ReadParameters(

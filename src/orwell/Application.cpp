@@ -86,6 +86,11 @@ bool Application::ReadParameters(
 		oParam.m_tickInterval = 500;
 		ORWELL_LOG_DEBUG("by default, tick interval = " << oParam.m_tickInterval);
 	}
+	if (not oParam.m_gameDuration)
+	{
+		oParam.m_gameDuration = 300;
+		ORWELL_LOG_DEBUG("by default, game duration = " << oParam.m_gameDuration);
+	}
 	if (not oParam.m_broadcast)
 	{
 		oParam.m_broadcast = true;
@@ -114,6 +119,7 @@ bool Application::ParseParametersFromCommandLine(
 				("orwellrc,r",       value<std::string>(), "Load technical configuration from rc file")
 				("gamefile,g",       value<std::string>(), "Load game configuration from game file")
 				("tick-interval,T",  value<uint32_t>(),    "Interval in ticks between GameState messages")
+				("game-duration,D",  value<uint32_t>(),    "Override the game duration from the game configuration file (in seconds)")
 				("version,v",                              "Print version number and exits")
 				("debug-log,d",                            "Print debug logs on the console")
 				("no-broadcast",                           "Do not start the broadcast.")
@@ -182,6 +188,12 @@ bool Application::ParseParametersFromCommandLine(
 	{
 		oParam.m_tickInterval = aVariablesMap["tick-interval"].as<uint32_t>();
 		ORWELL_LOG_DEBUG("tick interval from command line = " << oParam.m_tickInterval);
+	}
+
+	if (aVariablesMap.count("game-duration"))
+	{
+		oParam.m_gameDuration = aVariablesMap["game-duration"].as< uint32_t >();
+		ORWELL_LOG_DEBUG("game duratin from command line = " << oParam.m_gameDuration);
 	}
 
 	if (aVariablesMap.count("dry-run"))
@@ -303,6 +315,10 @@ void Application::ParseGameConfigFromFile(
 
 	ioParam.m_gameType = aPtree.get_optional<std::string>("game.gametype");
 	ioParam.m_gameName = aPtree.get_optional<std::string>("game.gamename");
+	if (not ioParam.m_gameDuration)
+	{
+		ioParam.m_gameDuration = aPtree.get_optional< uint32_t >("game.duration");
+	}
 
 	// list of all robots to add
 	boost::optional<std::string> aGameRobots = aPtree.get_optional<std::string>("game.robots");
@@ -434,7 +450,10 @@ bool Application::stop()
 	bool aStopped = false;
 	if (State::RUNNING == m_state)
 	{
-		m_server->stop();
+		if (nullptr != m_server)
+		{
+			m_server->stop();
+		}
 		if (nullptr != m_broadcastServer)
 		{
 			m_broadcastServer->stop();
@@ -486,7 +505,8 @@ void Application::initServer(Parameters const & iParam)
 			aAgentAddress,
 			aPullerAddress,
 			aPublisherAddress,
-			iParam.m_tickInterval.get());
+			iParam.m_tickInterval.get(),
+			iParam.m_gameDuration.get());
 
 	m_availableVideoPorts = iParam.m_videoPorts;
 	// temporary hack

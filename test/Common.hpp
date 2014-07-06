@@ -50,6 +50,7 @@ public:
 			boost::optional< std::string > const iOrwellRc = boost::none,
 			boost::optional< std::string > const iGameConfig = boost::none,
 			boost::optional< int64_t > const iTicInterval = boost::none,
+			boost::optional< int32_t > const iGameDuration = boost::none,
 			bool const iVersion = false,
 			bool const iDebugLog = false,
 			bool const iNoBroadcast = false,

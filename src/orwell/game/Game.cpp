@@ -26,8 +26,9 @@ using std::make_shared;
 namespace orwell {
 namespace game {
 
-Game::Game()
+Game::Game(boost::posix_time::time_duration const & iGameDuration)
 	: m_isRunning(false)
+	, m_gameDuration(iGameDuration)
 {
 }
 
@@ -118,6 +119,7 @@ void Game::start()
 			m_tmpFiles.push_back( aTempName );
 		}
 		ORWELL_LOG_INFO( "game starts" );
+		m_startTime = boost::posix_time::microsec_clock::local_time();
 		m_isRunning = true;
 	}
 }
@@ -249,6 +251,19 @@ std::shared_ptr< Robot > Game::getRobotForPlayer(string const & iPlayer) const
 void Game::fillGameStateMessage(messages::GameState & oGameState)
 {
 	//todo
+}
+
+void Game::setTime(boost::posix_time::ptime const & iCurrentTime)
+{
+	m_time = iCurrentTime;
+}
+
+void Game::stopIfGameIsFinished()
+{
+	if (m_gameDuration <= m_startTime - m_time)
+	{
+		stop();
+	}
 }
 
 std::string Game::getNewRobotId() const

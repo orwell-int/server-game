@@ -38,7 +38,8 @@ Server::Server(
 		std::string const & iAgentUrl,
 		std::string const & iPullUrl,
 		std::string const & iPublishUrl,
-		long const iTicDuration)
+		long const iTicDuration,
+		uint32_t const iGameDuration)
 	: _zmqContext(1)
 	, m_agentProxy(ioAgentProxy)
 	, m_agentListener(std::make_shared< Receiver >(
@@ -59,7 +60,7 @@ Server::Server(
 				orwell::com::ConnectionMode::BIND,
 				_zmqContext,
 				0))
-	, _game()
+	, _game(boost::posix_time::milliseconds(iGameDuration))
 	, _decider(_game, _publisher)
 	, _ticDuration( boost::posix_time::milliseconds(iTicDuration) )
 	, _previousTic(boost::posix_time::microsec_clock::local_time())
@@ -95,6 +96,7 @@ void Server::loopUntilOneMessageIsProcessed()
 	while (not aMessageHasBeenProcessed)
 	{
 		aCurrentTic = boost::posix_time::microsec_clock::local_time();
+		_game.setTime(aCurrentTic);
 		aDuration = aCurrentTic - _previousTic;
 		if ( aDuration < _ticDuration )
 		{
@@ -125,13 +127,13 @@ void Server::loopUntilOneMessageIsProcessed()
 void Server::loop()
 {
 	_mainLoopRunning = true;
-	
+
 	while (_mainLoopRunning)
 	{
 		loopUntilOneMessageIsProcessed();
 	}
 }
-	
+
 void Server::stop()
 {
 	ORWELL_LOG_INFO("Terminating server main loop");
