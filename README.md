@@ -1,4 +1,4 @@
-[![Stories in Ready](https://badge.waffle.io/orwell-int/server-game.png?label=ready&title=Ready)](https://waffle.io/orwell-int/server-game)
+[![Build Status](https://travis-ci.org/orwell-int/server-game.svg?branch=master)](https://travis-ci.org/orwell-int/server-game) [![Stories in Ready](https://badge.waffle.io/orwell-int/server-game.png?label=ready&title=Ready)](https://waffle.io/orwell-int/server-game)
 server-game
 ===========
 
