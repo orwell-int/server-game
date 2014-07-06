@@ -59,13 +59,13 @@ public:
 	Argument const & getArgument(Key const & iKey);
 
 protected:
-    std::shared_ptr< com::Sender > _publisher;
+    std::shared_ptr< com::Sender > m_publisher;
 
-	google::protobuf::MessageLite * _msg;
+	google::protobuf::MessageLite * m_msg;
 
-	game::Game * _game;
+	game::Game * m_game;
 
-	DictionaryOfArguments _dictionary;
+	DictionaryOfArguments m_dictionary;
 
 };
 

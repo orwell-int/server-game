@@ -72,6 +72,7 @@ endif ()
 
 # Messages
 execute_process(COMMAND ln -fs ${CMAKE_SOURCE_DIR}/CMakeLists_messages.txt ${CMAKE_SOURCE_DIR}/messages/CMakeLists.txt)
+execute_process(COMMAND ln -fs ${CMAKE_SOURCE_DIR}/server-web ${CMAKE_CURRENT_BINARY_DIR}/server-web)
 #add_subdirectory(../messages "${CMAKE_CURRENT_BINARY_DIR}/messages")
 add_subdirectory(messages)
 
@@ -169,7 +170,7 @@ ELSE()
 	MESSAGE("Code coverage not considered")
 ENDIF()
 
-SET(DART_TESTING_TIMEOUT "5")
+SET(DART_TESTING_TIMEOUT "10")
 SET(MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --show-reachable=yes")
 
 # this might be a hack but it works

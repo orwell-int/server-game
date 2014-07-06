@@ -59,11 +59,18 @@ Receiver::~Receiver()
 	delete(m_zmqSocket);
 }
 
-bool Receiver::receiveString(std::string & oMessage)
+bool Receiver::receiveString(
+		std::string & oMessage,
+		bool const iBlocking)
 {
 	zmq::message_t aZmqMessage;
 
-	bool const aReceived = m_zmqSocket->recv(&aZmqMessage, ZMQ_NOBLOCK);
+	int aFlags = 0;
+	if (not iBlocking)
+	{
+		aFlags = ZMQ_NOBLOCK;
+	}
+	bool const aReceived = m_zmqSocket->recv(&aZmqMessage, aFlags);
 	if (aReceived)
 	{
 		ORWELL_LOG_DEBUG("message received");

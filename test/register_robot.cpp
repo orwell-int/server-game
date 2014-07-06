@@ -37,8 +37,7 @@ static void ExpectRegistered(
 {
 	Register aRegisterMessage;
 	aRegisterMessage.set_temporary_robot_id(iTemporaryRobotId);
-	aRegisterMessage.set_video_port(80);
-	aRegisterMessage.set_video_address("localhost");
+	aRegisterMessage.set_video_url("http://localhost:80");
 	RawMessage aMessage(
 			iTemporaryRobotId,
 			"Register",
@@ -117,8 +116,8 @@ static void const server(std::shared_ptr< orwell::Server > ioServer)
 
 int main()
 {
-	orwell::support::GlobalLogger::Create("register", "test_register_robot.log");
-	log4cxx::NDC ndc("register");
+	orwell::support::GlobalLogger::Create("test_register", "test_register_robot.log");
+	log4cxx::NDC ndc("test_register");
 	FakeAgentProxy aFakeAgentProxy;
 	std::shared_ptr< orwell::Server > aServer =
 		std::make_shared< orwell::Server >(
@@ -129,9 +128,9 @@ int main()
 			500);
 	ORWELL_LOG_INFO("server created");
 	std::vector< std::string > aRobots = {"Gipsy Danger", "Goldorak", "Securitron"};
-	aServer->accessContext().addRobot(aRobots[0], "robot1");
-	aServer->accessContext().addRobot(aRobots[1], "robot2");
-	aServer->accessContext().addRobot(aRobots[2], "robot3");
+	aServer->accessContext().addRobot(aRobots[0], 8001,"robot1");
+	aServer->accessContext().addRobot(aRobots[1], 8002,"robot2");
+	aServer->accessContext().addRobot(aRobots[2], 8003,"robot3");
 	std::thread aServerThread(server, aServer);
 	std::thread aClientThread(proxy);
 	aClientThread.join();

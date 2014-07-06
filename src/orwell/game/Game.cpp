@@ -2,6 +2,11 @@
 
 #include "orwell/game/Game.hpp"
 
+#include <stdlib.h>
+#include <sstream>
+#include <fstream>
+#include <signal.h>
+
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/game/Robot.hpp"
 #include "orwell/game/Player.hpp"
@@ -10,7 +15,6 @@
 #include <iostream>
 #include <zmq.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 
 using std::map;
@@ -84,8 +88,63 @@ bool Game::removePlayer(string const & iName)
 	return aRemovedPlayerSuccess;
 }
 
+bool Game::getIsRunning() const
+{
+	return m_isRunning;
+}
+
+void Game::start()
+{
+	if (not m_isRunning)
+	{
+		for ( auto const aPair : m_robots )
+		{
+			std::shared_ptr< Robot > aRobot = aPair.second;
+			std::stringstream aCommandLine;
+			if (aRobot->getVideoUrl().empty())
+			{
+				ORWELL_LOG_WARN("Robot " << aRobot->getName() << " has wrong connection parameters : url=" << aRobot->getVideoUrl());
+				continue;
+			}
+			char * aTempName = tmpnam(nullptr);
+			std::ofstream(aTempName).close();
+
+			aCommandLine << " cd server-web && make start ARGS='-u " << aRobot->getVideoUrl() << " -p " << aRobot->getVideoRetransmissionPort()
+					<< " --pid-file " << aTempName << "'";
+			ORWELL_LOG_INFO( "new tmp file : " << aTempName );
+			int aCode = system(aCommandLine.str().c_str());
+			ORWELL_LOG_INFO( "code at creation of webserver :" << aCode );
+
+			m_tmpFiles.push_back( aTempName );
+		}
+		ORWELL_LOG_INFO( "game starts" );
+		m_isRunning = true;
+	}
+}
+
+void Game::stop()
+{
+	for ( auto const aFileName: m_tmpFiles )
+	{
+		std::ifstream aFile(aFileName, std::ifstream::in);
+		int aPid = 0;
+		aFile >> aPid;
+		if (0 != aPid)
+		{
+			kill(aPid, SIGABRT);
+		}
+		else
+		{
+			ORWELL_LOG_ERROR("Could not kill a python web server.");
+		}
+	}
+	ORWELL_LOG_INFO( "game stops" );
+	m_isRunning = false;
+}
+
 bool Game::addRobot(
 		string const & iName,
+		uint16_t const iVideoRetransmissionPort,
 		std::string iRobotId)
 {
 	bool aAddedRobotSuccess = false;
@@ -100,7 +159,7 @@ bool Game::addRobot(
 		{
 			iRobotId = getNewRobotId();
 		}
-		shared_ptr<Robot> aRobot = make_shared<Robot>(iName, iRobotId);
+		shared_ptr<Robot> aRobot = make_shared<Robot>(iName, iRobotId, iVideoRetransmissionPort);
 		m_robots.insert( pair<string, shared_ptr<Robot> >( iName, aRobot ) );
 		ORWELL_LOG_DEBUG("new RobotContext added with internal ID=" << iName);
 		aAddedRobotSuccess = true;

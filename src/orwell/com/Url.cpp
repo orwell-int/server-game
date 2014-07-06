@@ -7,8 +7,15 @@
 using std::string;
 using namespace orwell::com;
 
-Url::Url() : _protocol("tcp"), _host("localhost"),_port(9000), _url("tcp://localhost:9000")
+Url::Url(
+		std::string const & iProtocol,
+		std::string const & iHost,
+		uint16_t const iPort)
+	: m_protocol(iProtocol)
+	, m_host(iHost)
+	, m_port(iPort)
 {
+	resetUrl();
 }
 
 Url::~Url()
@@ -17,20 +24,20 @@ Url::~Url()
 
 void Url::resetUrl()
 {
-	_url.clear();
-	_url += _protocol;
-	_url += "://";
-	_url += _host;
-	_url += ":";
-	_url += boost::lexical_cast<string>(_port);
-	//ORWELL_LOG_DEBUG("url = '" << _url << "'");
+	m_url.clear();
+	m_url += m_protocol;
+	m_url += "://";
+	m_url += m_host;
+	m_url += ":";
+	m_url += boost::lexical_cast<string>(m_port);
+	//ORWELL_LOG_DEBUG("url = '" << m_url << "'");
 }
 
 void Url::setProtocol(string const & iProtocol)
 {
 	if (!iProtocol.empty())
 	{
-		_protocol = iProtocol;
+		m_protocol = iProtocol;
 		resetUrl();
 	}
 }
@@ -39,29 +46,29 @@ void Url::setHost(string const & iHost)
 {
 	if (!iHost.empty())
 	{
-		_host = iHost;
+		m_host = iHost;
 		resetUrl();
 	}
 }
 
 void Url::setPort(uint16_t const iPort)
 {
-	_port = iPort;
+	m_port = iPort;
 	resetUrl();
 }
 
 string const & Url::toString() const
 {
-	return _url;
+	return m_url;
 }
 
 std::string const & Url::getHost() const
 {
-	return _host;
+	return m_host;
 }
 
 uint16_t const & Url::getPort() const
 {
-	return _port;
+	return m_port;
 }
 

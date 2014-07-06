@@ -5,6 +5,7 @@ message(CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR})
 # Get together all the source files and all the headers
 file(GLOB SOURCES Common.cpp)
 file(GLOB EXPORTABLEHEADERS *.hpp *.h)
+file(GLOB CONFIG ${CMAKE_SOURCE_DIR}/*.ini)
 
 # Required libraries
 find_package(Boost REQUIRED COMPONENTS system)
@@ -60,6 +61,9 @@ FUNCTION(add_orwell_test test_name file_name)
 		orwell_server_game
 		orwell_test)
 	add_test(${test_name} ${CMAKE_CURRENT_BINARY_DIR}/${test_name})
+	foreach(configFile ${CONFIG})
+    	add_custom_command(TARGET ${test_name} COMMAND ${CMAKE_COMMAND} -E copy ${configFile} ${CMAKE_CURRENT_BINARY_DIR})
+	endforeach(configFile) 
 ENDFUNCTION()
 
 add_orwell_test(test_input "input_to_robot.cpp")
@@ -70,6 +74,9 @@ add_orwell_test(broadcast_test "broadcast_test.cpp")
 add_orwell_test(test_agent_proxy "agent_proxy.cpp")
 add_orwell_test(test_agent "agent.cpp")
 add_orwell_test(test_register_robot "register_robot.cpp")
+add_orwell_test(test_start_game_condition "start_game_condition.cpp")
+add_orwell_test(test_main "main.cpp")
+add_dependencies(test_main server_main)
 
 get_property(VAR_ALL_TEST_TARGETS GLOBAL PROPERTY P_ALL_TEST_TARGETS)
 ADD_CUSTOM_TARGET(ctest

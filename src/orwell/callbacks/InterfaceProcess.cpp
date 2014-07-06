@@ -7,9 +7,9 @@ namespace callbacks {
 
 InterfaceProcess::InterfaceProcess(
 		std::shared_ptr< com::Sender > ioPublisher)
-	: _publisher(ioPublisher)
-	, _msg(nullptr)
-	, _game(nullptr)
+	: m_publisher(ioPublisher)
+	, m_msg(nullptr)
+	, m_game(nullptr)
 {
 
 }
@@ -19,7 +19,7 @@ InterfaceProcess::InterfaceProcess(
 		game::Game & ioGame)
 	: InterfaceProcess(ioPublisher)
 {
-	_game = &ioGame;
+	m_game = &ioGame;
 }
 
 InterfaceProcess::~InterfaceProcess()
@@ -28,24 +28,24 @@ InterfaceProcess::~InterfaceProcess()
 
 void InterfaceProcess::setGameContext(game::Game & ioGame)
 {
-	_game = &ioGame;
+	m_game = &ioGame;
 }
 
 void InterfaceProcess::init(
 		google::protobuf::MessageLite * ioMsg,
 		game::Game * ioGame)
 {
-	_msg = ioMsg;
+	m_msg = ioMsg;
 
 	if (ioGame /*!= nullptr*/)
 	{
-		_game = ioGame;
+		m_game = ioGame;
 	}
 }
 
 void InterfaceProcess::insertArgument(const Argument & iArgument)
 {
-	_dictionary.push_back(iArgument);
+	m_dictionary.push_back(iArgument);
 }
 
 void InterfaceProcess::insertArgument(
@@ -59,9 +59,9 @@ void InterfaceProcess::insertArgument(
 void InterfaceProcess::removeArgument(const Key & iKey)
 {
 	bool found(false);
-	auto anIterator = _dictionary.begin();
+	auto anIterator = m_dictionary.begin();
 
-	for (Argument const & anArgument: _dictionary)
+	for (Argument const & anArgument: m_dictionary)
 	{
 		if (anArgument.first == iKey)
 		{
@@ -73,13 +73,13 @@ void InterfaceProcess::removeArgument(const Key & iKey)
 
 	if (found)
 	{
-		_dictionary.erase(anIterator);
+		m_dictionary.erase(anIterator);
 	}
 }
 
 InterfaceProcess::Argument const & InterfaceProcess::getArgument(const Key & iKey)
 {
-	for (Argument const & anArgument: _dictionary)
+	for (Argument const & anArgument: m_dictionary)
 	{
 		if (anArgument.first == iKey)
 			return anArgument;
@@ -90,7 +90,7 @@ InterfaceProcess::Argument const & InterfaceProcess::getArgument(const Key & iKe
 
 InterfaceProcess::Argument & InterfaceProcess::accessArgument(const Key & iKey)
 {
-	for (Argument & anArgument: _dictionary)
+	for (Argument & anArgument: m_dictionary)
 	{
 		if (anArgument.first == iKey)
 			return anArgument;

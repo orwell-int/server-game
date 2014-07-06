@@ -8,10 +8,13 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 
+#include <log4cxx/ndc.h>
+
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <stdio.h>
 #include <signal.h>
+#include <sstream>
 
 using namespace orwell;
 using namespace boost::program_options;
@@ -43,7 +46,14 @@ bool Application::ReadParameters(
 	{
 		return false;
 	}
-	if (oParam.m_rcFilePath and (not (*oParam.m_rcFilePath).empty()))
+
+	if (not oParam.m_rcFilePath)
+	{
+		oParam.m_rcFilePath = "orwell-config.ini";
+		ORWELL_LOG_DEBUG("by default, config file = " << oParam.m_rcFilePath);
+	}
+
+	if (oParam.m_rcFilePath )
 	{
 		if ( not ParseParametersFromConfigFile(oParam) )
 		{
@@ -123,6 +133,7 @@ bool Application::ParseParametersFromCommandLine(
 
 	// do we log the debug information on the console ?
 	orwell::support::GlobalLogger::Create("server_game", "orwell.log", aVariablesMap.count("debug-log"));
+	ORWELL_LOG_INFO("Start application.\n");
 
 	if (aVariablesMap.count("orwellrc"))
 	{
@@ -195,7 +206,16 @@ bool Application::ParseParametersFromConfigFile(
 		Parameters & ioParam)
 {
 	ptree aPtree;
-	ini_parser::read_ini(*ioParam.m_rcFilePath, aPtree);
+	try
+	{
+		ini_parser::read_ini(*ioParam.m_rcFilePath, aPtree);
+	}
+	catch (std::exception const & aExc)
+	{
+		ORWELL_LOG_ERROR("Could not read technical config file at " << *ioParam.m_rcFilePath);
+		ORWELL_LOG_DEBUG(aExc.what());
+		return false;
+	}
 
 	if (not ioParam.m_publisherPort)
 	{
@@ -231,6 +251,44 @@ bool Application::ParseParametersFromConfigFile(
 		{
 			ioParam.m_tickInterval = aTickInterval;
 			ORWELL_LOG_DEBUG("tick interval from config file = " << ioParam.m_tickInterval );
+		}
+	}
+	if ( ioParam.m_videoPorts.empty() )
+	{
+		std::string aVideoPortRange;
+		try
+		{
+			aVideoPortRange = aPtree.get< std::string >("server.video-ports");
+		}
+		catch (std::exception const & iExc)
+		{
+			ORWELL_LOG_ERROR("video port has not been defined in config file");
+			return false;
+		}
+		std::istringstream aStream(aVideoPortRange);
+		uint16_t aBeginPortRange = 0;
+		char aSeparator;
+		uint16_t aEndPortRange = 0;
+		aStream >> aBeginPortRange;
+		aStream >> aSeparator;
+		aStream >> aEndPortRange;
+
+		if (aEndPortRange == 0)
+		{
+			aEndPortRange = aBeginPortRange;
+		}
+
+		if ( aBeginPortRange > aEndPortRange )
+		{
+			ORWELL_LOG_ERROR("bad video ports range");
+			return false;
+		}
+
+		ORWELL_LOG_DEBUG("video port range from config file = " << aBeginPortRange << " to " << aEndPortRange );
+		for (uint16_t i = aBeginPortRange ; i <= aEndPortRange ; ++i)
+		{
+			// insert ports in reverse order
+			ioParam.m_videoPorts.insert(ioParam.m_videoPorts.begin(), i);
 		}
 	}
 
@@ -287,6 +345,12 @@ bool Application::CheckParametersConsistency(Parameters const & iParam)
 		ORWELL_LOG_ERROR("Invalid port information. Ports are \n Puller=" << iParam.m_pullerPort << "\n Publisher=" << iParam.m_publisherPort);
 		return false;
 	}
+
+	if (iParam.m_videoPorts.size() < iParam.m_robots.size())
+	{
+		ORWELL_LOG_ERROR("Only " << iParam.m_videoPorts.size() << " ports for " << iParam.m_robots.size() << " robots");
+		return false;
+	}
 	return true;
 }
 
@@ -304,57 +368,65 @@ void Application::run(Parameters const & iParam)
 		ORWELL_LOG_WARN("run can only be called when in state CREATED");
 		return;
 	}
-	/***************************************
-	 *  Run the server only if all is set  *
-	 ***************************************/
-	if (initServer(iParam))
+	if ((iParam.m_dryRun) and (*iParam.m_dryRun))
 	{
-		// temporary hack
-		for (auto aPair : iParam.m_robots)
-		{
-			this->m_server->accessContext().addRobot(
-					aPair.second.m_name,
-					aPair.first);
-		}
-		//m_state = State::INITIALISED;
+		initServer(iParam);
 		m_state = State::RUNNING;
-		if ((iParam.m_dryRun) and (*iParam.m_dryRun))
-		{
-			ORWELL_LOG_INFO("Exit without starting (dry-run).");
-			return;
-		}
-		if ((iParam.m_broadcast) and (*iParam.m_broadcast))
-		{
-			// Broadcast receiver and main loop are run in separated threads
-			pid_t aChildProcess = fork();
+		ORWELL_LOG_INFO("Exit without starting (dry-run).");
+		return;
+	}
+	if ((iParam.m_broadcast) and (*iParam.m_broadcast))
+	{
+		// Broadcast receiver and main loop are run in separated threads
+		pid_t aChildProcess = fork();
 
-			switch (aChildProcess)
+		switch (aChildProcess)
+		{
+			case 0:
 			{
-				case 0:
-					ORWELL_LOG_INFO("Child started");
-					m_broadcastServer->runBroadcastReceiver();
-					return;
-				default:
-					ORWELL_LOG_INFO("Father started, child's pid: " << aChildProcess);
-					m_server->loop();
-					break;
+				log4cxx::NDC ndc("broadcast");
+				ORWELL_LOG_INFO("Child started");
+				initBroadcastServer(iParam);
+				m_state = State::RUNNING;
+				m_broadcastServer->runBroadcastReceiver();
+				ORWELL_LOG_INFO("Exit from broadcast server.");
+				exit(0);
+				//return;
 			}
-
-			ORWELL_LOG_INFO("Father continued");
-
-			// Here the father will be waiting for the child to be over
-			int aStatus;
-			while (waitpid(aChildProcess, &aStatus, WNOHANG) == 0)
+			default:
 			{
-				ORWELL_LOG_INFO("Waiting for process: " << aChildProcess << " to be over");
-				sleep(1);
+				log4cxx::NDC ndc("server-game");
+				ORWELL_LOG_INFO("Father started, child's pid: " << aChildProcess);
+				initServer(iParam);
+				m_state = State::RUNNING;
+				m_server->loop();
+				break;
 			}
 		}
-		else
+
+		ORWELL_LOG_INFO("Father continued");
+
+		if (0 != kill(aChildProcess, SIGTERM))
 		{
-			m_server->loop();
+			ORWELL_LOG_WARN("Try to abort child as terminate failed.");
+			kill(aChildProcess, SIGABRT);
+		}
+		// Here the father will be waiting for the child to be over
+		int aStatus;
+		while (waitpid(aChildProcess, &aStatus, WNOHANG) == 0)
+		{
+			ORWELL_LOG_INFO("Waiting for process: " << aChildProcess << " to be over");
+			sleep(1);
 		}
 	}
+	else
+	{
+		log4cxx::NDC ndc("server-game");
+		initServer(iParam);
+		m_state = State::RUNNING;
+		m_server->loop();
+	}
+	ORWELL_LOG_INFO("Exit normally.");
 }
 
 bool Application::stop()
@@ -401,7 +473,7 @@ orwell::Server * Application::accessServer(bool const iUnsafe)
 }
 
 
-bool Application::initServer(Parameters const & iParam)
+void Application::initServer(Parameters const & iParam)
 {
 	ORWELL_LOG_INFO("Initialize server : publisher tcp://*:" << iParam.m_publisherPort << " puller tcp://*:" << iParam.m_pullerPort);
 
@@ -415,11 +487,28 @@ bool Application::initServer(Parameters const & iParam)
 			aPullerAddress,
 			aPublisherAddress,
 			iParam.m_tickInterval.get());
+
+	m_availableVideoPorts = iParam.m_videoPorts;
+	// temporary hack
+	for (auto aPair : iParam.m_robots)
+	{
+		m_server->accessContext().addRobot(
+				aPair.second.m_name,
+				popPort(),
+				aPair.first);
+	}
+}
+
+void Application::initBroadcastServer(Parameters const & iParam)
+{
 	if ((iParam.m_broadcast) and (*iParam.m_broadcast))
 	{
+		std::string aPublisherAddress =
+			"tcp://*:" + boost::lexical_cast< std::string >(*iParam.m_publisherPort);
+		std::string aPullerAddress =
+			"tcp://*:" + boost::lexical_cast< std::string >(*iParam.m_pullerPort);
 		m_broadcastServer = new orwell::BroadcastServer(aPullerAddress, aPublisherAddress);
 	}
-	return true;
 }
 
 void Application::TokenizeRobots(
@@ -480,6 +569,7 @@ bool operator==(
 	return ((iLeft.m_pullerPort == iRight.m_pullerPort)
 		and (iLeft.m_publisherPort == iRight.m_publisherPort)
 		and (iLeft.m_agentPort == iRight.m_agentPort)
+		and (iLeft.m_videoPorts == iRight.m_videoPorts)
 		and (iLeft.m_tickInterval == iRight.m_tickInterval)
 		and (iLeft.m_rcFilePath == iRight.m_rcFilePath)
 		and (iLeft.m_gameFilePath == iRight.m_gameFilePath)
@@ -488,7 +578,8 @@ bool operator==(
 		and (aSameRobots)
 		and (iLeft.m_teams == iRight.m_teams)
 		and (iLeft.m_gameType == iRight.m_gameType)
-		and (iLeft.m_gameName == iRight.m_gameName));
+		and (iLeft.m_gameName == iRight.m_gameName)
+		);
 }
 
 std::ostream & operator<<(
@@ -498,6 +589,12 @@ std::ostream & operator<<(
 	ioOstream << "puller port [" << iParameters.m_pullerPort << "] ; ";
 	ioOstream << "publisher port [" << iParameters.m_publisherPort << "] ; ";
 	ioOstream << "agent port [" << iParameters.m_agentPort << "] ; ";
+	ioOstream << "available video ports [";
+	for (auto const aPort : iParameters.m_videoPorts)
+	{
+		ioOstream << aPort << ", ";
+	}
+	ioOstream << "] ; ";
 	ioOstream << "tick interval [" << iParameters.m_tickInterval << "] ; ";
 	ioOstream << "rc file path [" << iParameters.m_rcFilePath << "] ; ";
 	ioOstream << "game config file path [" << iParameters.m_gameFilePath << "] ; ";
@@ -528,3 +625,17 @@ bool operator==(
 		and (iLeft.m_team == iRight.m_team));
 }
 
+uint16_t Application::popPort()
+{
+	if (not m_availableVideoPorts.empty())
+	{
+		uint16_t aReturnPort = m_availableVideoPorts.back();
+		m_availableVideoPorts.pop_back();
+		m_takenVideoPorts.push_back(aReturnPort);
+		return aReturnPort;
+	}
+	else
+	{
+		return 0;
+	}
+}

@@ -109,13 +109,15 @@ static void const server(std::shared_ptr< orwell::Server > ioServer)
 		ORWELL_LOG_INFO("server loop " << i);
 		ioServer->loopUntilOneMessageIsProcessed();
 	}
+	usleep(100 * 1000);
+	ioServer->accessContext().stop();
 	ORWELL_LOG_INFO("quit server");
 }
 
 int main()
 {
-	orwell::support::GlobalLogger::Create("hello", "test_hello.log");
-	log4cxx::NDC ndc("hello");
+	orwell::support::GlobalLogger::Create("test_hello", "test_hello.log");
+	log4cxx::NDC ndc("test_hello");
 	FakeAgentProxy aFakeAgentProxy;
 	std::shared_ptr< orwell::Server > aServer =
 		std::make_shared< orwell::Server >(
@@ -126,12 +128,15 @@ int main()
 			500);
 	ORWELL_LOG_INFO("server created");
 	std::vector< std::string > aRobots = {"Gipsy Danger", "Goldorak", "Securitron"};
-	aServer->accessContext().addRobot(aRobots[0], "robot1");
-	aServer->accessContext().addRobot(aRobots[1], "robot2");
-	aServer->accessContext().addRobot(aRobots[2], "robot3");
+	aServer->accessContext().addRobot(aRobots[0], 8001, "robot1");
+	aServer->accessContext().addRobot(aRobots[1], 8002, "robot2");
+	aServer->accessContext().addRobot(aRobots[2], 8003, "robot3");
 	aServer->accessContext().accessRobot(aRobots[0])->setHasRealRobot(true);
+	aServer->accessContext().accessRobot(aRobots[0])->setVideoUrl("http://dummyurl.fr/8008");
 	aServer->accessContext().accessRobot(aRobots[1])->setHasRealRobot(true);
+	aServer->accessContext().accessRobot(aRobots[1])->setVideoUrl("http://dummyurl.fr/8008");
 	aServer->accessContext().accessRobot(aRobots[2])->setHasRealRobot(true);
+	aServer->accessContext().accessRobot(aRobots[2])->setVideoUrl("http://dummyurl.fr/8008");
 	ORWELL_LOG_INFO("robot added 3");
 	std::thread aServerThread(server, aServer);
 	std::thread aClientThread(client);

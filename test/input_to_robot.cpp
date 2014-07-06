@@ -72,8 +72,8 @@ static void const server(std::shared_ptr< orwell::Server > ioServer)
 
 int main()
 {
-	orwell::support::GlobalLogger::Create("input", "test_input.log");
-	log4cxx::NDC ndc("input");
+	orwell::support::GlobalLogger::Create("test_input", "test_input.log");
+	log4cxx::NDC ndc("test_input");
 	FakeAgentProxy aFakeAgentProxy;
 	std::shared_ptr< orwell::Server > aServer =
 		std::make_shared< orwell::Server >(
@@ -84,9 +84,9 @@ int main()
 			500);
 	ORWELL_LOG_INFO("server created");
 	std::vector< std::string > aRobots = {"Gipsy Danger", "Goldorak", "Securitron"};
-	aServer->accessContext().addRobot(aRobots[0]);
-	aServer->accessContext().addRobot(aRobots[1]);
-	aServer->accessContext().addRobot(aRobots[2]);
+	aServer->accessContext().addRobot(aRobots[0], 8001);
+	aServer->accessContext().addRobot(aRobots[1], 8002);
+	aServer->accessContext().addRobot(aRobots[2], 8003);
 	aServer->accessContext().accessRobot(aRobots[0])->setHasRealRobot(true);
 	aServer->accessContext().accessRobot(aRobots[1])->setHasRealRobot(true);
 	aServer->accessContext().accessRobot(aRobots[2])->setHasRealRobot(true);

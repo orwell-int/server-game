@@ -101,56 +101,6 @@ static void test_same_ports_puller_agent()
 	test_ReadParameters(Status::FAIL, Common::GetArguments(false, 41, 42, 42));
 }
 
-static void test_most_arguments()
-{
-	ORWELL_LOG_DEBUG("test_most_arguments");
-	test_ReadParameters(Status::PASS, Common::GetArguments(
-			false, // help
-			41, // publisher port
-			42, // puller port
-			43, // agent port
-			boost::none, // std::string("orwell.rc"), // orwellrc
-			boost::none, // game config file path
-			666, // tick interval
-			false, // version
-			true, // debug log
-			true, // no broadcast
-			false)); // dry run
-}
-
-static void test_parse_command_line()
-{
-	ORWELL_LOG_DEBUG("test_parse_command_line");
-	orwell::Application::Parameters aExpectedParameters = {
-		2, // puller port
-		1, // publisher port
-		3, // agent port
-		666, // tick interval
-		boost::none, // rc file path
-		boost::none, // game config file path
-		true, // dry run
-		false, // broadcast
-		//{}, // robot ids
-		{}, // robot descriptors
-		{}, // teams
-	};
-	test_ReadParameters(Status::PASS, Common::GetArguments(
-				false, // help
-				1, // publisher port
-				2, // puller port
-				3, // agent port
-				boost::none, // std::string("orwell.rc"), // orwellrc
-				boost::none, // game config file path
-				666, // tick interval
-				false, // version
-				true, // debug log
-				true, // no broadcast
-				true), // dry run
-			aExpectedParameters);
-}
-
-#include <stdio.h>
-
 struct TempFile
 {
 	std::string m_fileName;
@@ -168,7 +118,7 @@ TempFile::TempFile(std::string const & iContent)
 	size_t const aWritten = fputs(iContent.c_str(), aFile);
 	if (aWritten != iContent.size())
 	{
-		std::cerr << "Temporary file not create properly." << std::endl;
+		std::cerr << "Temporary file not created properly." << std::endl;
 	}
 	fclose(aFile);
 	m_fileName = std::string(aFileName);
@@ -183,6 +133,68 @@ TempFile::~TempFile()
 	}
 }
 
+static void test_most_arguments()
+{
+	TempFile aTempFile(std::string(R"(
+[server]
+video-ports    = 9001
+)"));
+
+	ORWELL_LOG_DEBUG("test_most_arguments");
+	test_ReadParameters(Status::PASS, Common::GetArguments(
+			false, // help
+			41, // publisher port
+			42, // puller port
+			43, // agent port
+			aTempFile.m_fileName, // std::string("orwell.rc"), // orwellrc
+			boost::none, // game config file path
+			666, // tick interval
+			false, // version
+			true, // debug log
+			true, // no broadcast
+			false)); // dry run
+}
+
+static void test_parse_command_line()
+{
+	ORWELL_LOG_DEBUG("test_parse_command_line");
+
+	TempFile aTempFile(std::string(R"(
+[server]
+video-ports    = 9001
+)"));
+
+	orwell::Application::Parameters aExpectedParameters = {
+		2, // puller port
+		1, // publisher port
+		3, // agent port
+		{9001}, //video ports (useless here because not read from CL)
+		666, // tick interval
+		aTempFile.m_fileName, // rc file path
+		boost::none, // game config file path
+		true, // dry run
+		false, // broadcast
+		//{}, // robot ids
+		{}, // robot descriptors
+		{}, // teams
+	};
+	test_ReadParameters(Status::PASS, Common::GetArguments(
+				false, // help
+				1, // publisher port
+				2, // puller port
+				3, // agent port
+				aTempFile.m_fileName, // std::string("orwell.rc"), // orwellrc
+				boost::none, // game config file path
+				666, // tick interval
+				false, // version
+				true, // debug log
+				true, // no broadcast
+				true), // dry run
+			aExpectedParameters);
+}
+
+#include <stdio.h>
+
 // command line has priority over the file
 static void test_parse_command_line_and_file_1()
 {
@@ -193,11 +205,13 @@ publisher-port = 19000
 puller-port    = 19001
 agent-port     = 19003
 tic-interval   = 1500
+video-ports    = 9001:9003
 )"));
 	orwell::Application::Parameters aExpectedParameters = {
 		2, // puller port
 		1, // publisher port
 		3, // agent port
+		{9003,9002,9001}, //video ports
 		666, // tick interval
 		aTempFile.m_fileName, // rc file path
 		boost::none, // game config file path
@@ -232,11 +246,13 @@ publisher-port = 900
 puller-port    = 901
 agent-port     = 903
 tic-interval   = 50
+video-ports    = 9001
 )"));
 	orwell::Application::Parameters aExpectedParameters = {
 		901, // puller port
 		900, // publisher port
 		903, // agent port
+		{9001}, //video ports
 		50, // tick interval
 		aTempFile.m_fileName, // rc file path
 		boost::none, // game config file path
@@ -263,6 +279,7 @@ static void test_parse_command_line_and_file_3()
 	ORWELL_LOG_DEBUG("test_parse_command_line_and_file_3");
 	TempFile aTempFile(std::string(R"(
 [server]
+video-ports = 9001
 [its a trap]
 puller-port = 42
 )"));
@@ -270,6 +287,7 @@ puller-port = 42
 		2, // puller port
 		1, // publisher port
 		3, // agent port
+		{9001}, //video ports
 		666, // tick interval
 		aTempFile.m_fileName, // rc file path
 		boost::none, // game config file path
@@ -298,6 +316,10 @@ puller-port = 42
 static void test_parse_command_line_and_file_4()
 {
 	ORWELL_LOG_DEBUG("test_parse_command_line_and_file_4");
+	TempFile aTechConfigFile(std::string(R"(
+[server]
+video-ports    = 9001:9003
+)"));
 	TempFile aTempFile(std::string(R"(
 [game]
 robots = robot_A | robot_B
@@ -317,8 +339,9 @@ team = Mathematicians
 		2, // puller port
 		1, // publisher port
 		3, // agent port
+		{9003, 9002, 9001}, //video ports
 		666, // tick interval
-		boost::none, // rc file path
+		aTechConfigFile.m_fileName, // rc file path
 		aTempFile.m_fileName, // game config file path
 		true, // dry run
 		false, // broadcast
@@ -336,7 +359,7 @@ team = Mathematicians
 				1, // publisher port
 				2, // puller port
 				3, // agent port
-				boost::none, // orwellrc
+				aTechConfigFile.m_fileName, //orwellrc
 				aTempFile.m_fileName, // game config file path
 				666, // tick interval
 				false, // version
@@ -350,6 +373,11 @@ team = Mathematicians
 static void test_parse_command_line_and_file_5()
 {
 	ORWELL_LOG_DEBUG("test_parse_command_line_and_file_5");
+	TempFile aTechConfigFile(std::string(R"(
+[server]
+video-ports    = 9001:9002
+)"));
+
 	TempFile aTempFile(std::string(R"(
 [game]
 robots = robot_A | robot_B
@@ -369,15 +397,16 @@ team = Mathematicians
 		2, // puller port
 		1, // publisher port
 		3, // agent port
+		{9002, 9001}, //video ports
 		666, // tick interval
-		boost::none, // rc file path
+		aTechConfigFile.m_fileName, //orwellrc
 		aTempFile.m_fileName, // game config file path
 		true, // dry run
 		false, // broadcast
 		//{"robot_A", "robot_B"}, // robot ids
 		{
 			{"robot_A", {"Aristotle", "Philosophers"}},
-			{"robot_B", {"Bourbaki", "Mistake!!!"}}, // voluntary mistake
+			{"robot_B", {"Bourbaki", "Mistake!!"}}, // voluntary mistake
 		}, // robot descriptors
 		{"Mathematicians", "Philosophers"}, // teams
 		std::string("Problem"), // game type
@@ -391,7 +420,7 @@ team = Mathematicians
 					1, // publisher port
 					2, // puller port
 					3, // agent port
-					boost::none, // orwellrc
+					aTechConfigFile.m_fileName, //orwellrc
 					aTempFile.m_fileName, // game config file path
 					666, // tick interval
 					false, // version
@@ -408,11 +437,67 @@ team = Mathematicians
 	assert(aThrown);
 }
 
+static void test_parse_command_line_and_file_6_badConfigFile()
+{
+	ORWELL_LOG_DEBUG("test_parse_command_line_and_file_6_badConfigFile");
+
+	test_ReadParameters(Status::FAIL, Common::GetArguments(
+				false, // help
+				1, // publisher port
+				2, // puller port
+				3, // agent port
+				std::string("thisfiledoesnotexist"), // orwellrc
+				boost::none, // game config file path
+				666, // tick interval
+				false, // version
+				true, // debug log
+				true, // no broadcast
+				true) // dry run
+			);
+}
+
+static void test_parse_command_line_and_file_7_moreRobotsThanVideoPorts()
+{
+	ORWELL_LOG_DEBUG("test_parse_command_line_and_file_7_moreRobotsThanVideoPorts");
+	TempFile aTechConfigFile(std::string(R"(
+[server]
+video-ports    = 9001
+)"));
+
+	TempFile aGameConfigFile(std::string(R"(
+[game]
+robots = robot_A | robot_B
+gametype = Problem
+gamename = Enigma
+
+[robot_A]
+name = Aristotle
+team = Philosophers
+
+[robot_B]
+name = Bourbaki
+team = Mathematicians
+)"));
+
+	test_ReadParameters(Status::FAIL, Common::GetArguments(
+				false, // help
+				1, // publisher port
+				2, // puller port
+				3, // agent port
+				aTechConfigFile.m_fileName, // orwellrc
+				aGameConfigFile.m_fileName, // game config file path
+				666, // tick interval
+				false, // version
+				true, // debug log
+				true, // no broadcast
+				true) // dry run
+			);
+}
 
 int main()
 {
-	orwell::support::GlobalLogger::Create("application_errors", "test_application.log", true);
-	log4cxx::NDC ndc("application_errors");
+	orwell::support::GlobalLogger::Create("test_application", "test_application.log", true);
+	log4cxx::NDC ndc("test_application");
 
 	test_nothing();
 	test_wrong_port_range_publisher_1();
@@ -428,6 +513,8 @@ int main()
 	test_parse_command_line_and_file_3();
 	test_parse_command_line_and_file_4();
 	test_parse_command_line_and_file_5();
+	test_parse_command_line_and_file_6_badConfigFile();
+	test_parse_command_line_and_file_7_moreRobotsThanVideoPorts();
 
 	orwell::support::GlobalLogger::Clear();
 	return 0;

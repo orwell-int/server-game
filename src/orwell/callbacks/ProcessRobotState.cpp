@@ -25,12 +25,12 @@ ProcessRobotState::ProcessRobotState(
 void ProcessRobotState::execute()
 {
 	std::string const & aDestination = getArgument("RoutingID").second;
-	orwell::messages::RobotState const & aRobotStateMsg = static_cast<orwell::messages::RobotState const & >(*_msg);
+	orwell::messages::RobotState const & aRobotStateMsg = static_cast<orwell::messages::RobotState const & >(*m_msg);
 
 	ORWELL_LOG_INFO("ProcessRobotState::execute : simple relay");
 
 	RawMessage aForward(aDestination, "RobotState", aRobotStateMsg.SerializeAsString());
-	_publisher->send( aForward );
+	m_publisher->send( aForward );
 }
 
 }}

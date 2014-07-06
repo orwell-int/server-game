@@ -100,8 +100,8 @@ void Server::loopUntilOneMessageIsProcessed()
 		{
 			if ( not processMessageIfAvailable() )
 			{
-				// sleep 10 milliseconds
-				usleep(10 * 1000);
+				// sleep a fraction of ticduration
+				usleep( _ticDuration.total_milliseconds() / 10 );
 			}
 			else
 			{
@@ -150,7 +150,7 @@ void Server::feedAgentProxy()
 	ORWELL_LOG_DEBUG("Try to read agent command ...");
 	if (m_agentListener->receiveString(aMessage))
 	{
-		ORWELL_LOG_DEBUG("command received: " << aMessage);
+		ORWELL_LOG_DEBUG("command received: '" << aMessage << "'");
 		m_agentProxy.step(aMessage);
 	}
 }

@@ -192,9 +192,9 @@ void simulateServer()
 
 int main(int argc, const char * argv [])
 {
-	orwell::support::GlobalLogger::Create("broadcast", "broadcast_test.log");
+	orwell::support::GlobalLogger::Create("test_broadcast", "broadcast_test.log");
 	ORWELL_LOG_INFO("\nmain");
-	log4cxx::NDC ndc("broadcast");
+	log4cxx::NDC ndc("test_broadcast");
 	int aRc(0);
 
 	std::string const aPullerUrl("tcp://*:9800");

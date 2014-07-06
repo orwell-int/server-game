@@ -27,10 +27,10 @@ void ProcessTimer::execute()
 	ORWELL_LOG_DEBUG("ProcessTimer::execute : broadcast Gamestate");
 
 	GameState aGameState;
-	aGameState.set_playing(false);
+	aGameState.set_playing(m_game->getIsRunning());
 
     RawMessage aMessage("all_clients", "GameState", aGameState.SerializeAsString());
-    _publisher->send( aMessage );
+    m_publisher->send( aMessage );
 }
 
 }
