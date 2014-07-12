@@ -199,7 +199,7 @@ bool Common::ExpectMessage(
 		{
 			if (aReceivedAnyMessage)
 			{
-				ORWELL_LOG_DEBUG("Discarded message of type " << iType);
+				ORWELL_LOG_DEBUG("Discarded message of type " << oReceived._type);
 			}
 			usleep( 10 );
 		}
@@ -317,6 +317,28 @@ void Common::SendStopFromFakeAgent(
 	// for some reason messages are lost without the sleep
 	usleep(2000 * Common::GetWaitLoops());
 	ORWELL_LOG_DEBUG("send command: " << aMessage);
+	aAgentSocket.send(aZmqMessage);
+}
+
+void Common::SendAgentCommand(
+		std::string const & iCommand,
+		uint16_t const iAgentPort,
+		uint64_t const iExtraSleep)
+{
+	usleep(iExtraSleep);
+	zmq::context_t aZmqContext(1);
+	zmq::socket_t aAgentSocket(aZmqContext, ZMQ_PUB);
+	int const aLinger = 10;
+	aAgentSocket.setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
+	orwell::com::Url aUrl("tcp", "localhost", iAgentPort);
+	ORWELL_LOG_DEBUG("send agent command to " << aUrl.toString());
+	aAgentSocket.connect(aUrl.toString().c_str());
+	usleep(20 * 1000); // sleep for 0.020 s
+	zmq::message_t aZmqMessage(iCommand.size());
+	memcpy((void *) aZmqMessage.data(), iCommand.c_str(), iCommand.size());
+	// for some reason messages are lost without the sleep
+	usleep(2000 * Common::GetWaitLoops());
+	ORWELL_LOG_DEBUG("send command: " << iCommand);
 	aAgentSocket.send(aZmqMessage);
 }
 

@@ -1,49 +1,44 @@
-
-#include "orwell/com/RawMessage.hpp"
-
 #include <zmq.hpp>
-#include <string>
 
-#include "controller.pb.h"
-
-#include "orwell/support/GlobalLogger.hpp"
-#include "orwell/com/Sender.hpp"
-#include "orwell/com/Receiver.hpp"
-#include "orwell/Server.hpp"
-#include "orwell/game/Robot.hpp"
-
-#include "Common.hpp"
-
-#include "MissingFromTheStandard.hpp"
-
-#include <cassert>
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <thread>
 
 #include <log4cxx/ndc.h>
 
+#include "controller.pb.h"
 
-#include <unistd.h>
-#include <mutex>
-#include <thread>
+#include "orwell/Application.hpp"
+#include "orwell/support/GlobalLogger.hpp"
+#include "orwell/com/Sender.hpp"
+#include "orwell/com/Receiver.hpp"
+#include "orwell/com/RawMessage.hpp"
 
-using namespace log4cxx;
+#include <boost/lexical_cast.hpp>
+#include <boost/call_traits.hpp>
 
-using namespace orwell::com;
-using namespace orwell::messages;
-using std::string;
+#include "Common.hpp"
 
-int g_status = 0;
+bool gOK;
 
-static void const client()
+static void const ClientSendsInput(int32_t iServerPullerPort, int32_t iServerPublisherPort)
 {
+	using namespace orwell::com;
+	using namespace orwell::messages;
 	log4cxx::NDC ndc("client");
 	zmq::context_t aContext(1);
+
+	std::string aPusherUrl = "tcp://127.0.0.1:" + boost::lexical_cast<std::string>(iServerPullerPort);
+	std::string aSubscriberUrl = "tcp://127.0.0.1:" + boost::lexical_cast<std::string>(iServerPublisherPort);
+
 	usleep(6 * 1000);
-	Sender aPusher("tcp://127.0.0.1:9000", ZMQ_PUSH, orwell::com::ConnectionMode::CONNECT, aContext);
-	Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB, orwell::com::ConnectionMode::CONNECT, aContext);
+	Sender aPusher(aPusherUrl , ZMQ_PUSH, orwell::com::ConnectionMode::CONNECT, aContext);
+	Receiver aSubscriber(aSubscriberUrl, ZMQ_SUB, orwell::com::ConnectionMode::CONNECT, aContext);
 	usleep(6 * 1000);
 
 	Input aInputMessage;
-
 	aInputMessage.mutable_move()->set_left(1);
 	aInputMessage.mutable_move()->set_right(1);
 	aInputMessage.mutable_fire()->set_weapon1(false);
@@ -52,49 +47,78 @@ static void const client()
 	ORWELL_LOG_INFO("message built (size=" << aInputMessage.ByteSize() << ")");
 	ORWELL_LOG_INFO("message built : left" << aInputMessage.move().left() << "-right" << aInputMessage.move().right());
 	ORWELL_LOG_INFO("message built : w1:" << aInputMessage.fire().weapon1() << "-w2:" << aInputMessage.fire().weapon2());
-
-	string aType = "Input";
+	std::string aType = "Input";
 	RawMessage aMessage("TANK_0", "Input", aInputMessage.SerializeAsString());
 	aPusher.send(aMessage);
-
-	if ( not Common::ExpectMessage(aType, aSubscriber, aMessage) )
+	if ( not Common::ExpectMessage(aType, aSubscriber, aMessage, 100) )
 	{
-		g_status = -1;
+		gOK = false;
+	}
+	else
+	{
+		gOK = true;
 	}
 }
 
-
-static void const server(std::shared_ptr< orwell::Server > ioServer)
+static void Application(orwell::Application::Parameters const & aParameters)
 {
-	log4cxx::NDC ndc("server");
-	ioServer->loopUntilOneMessageIsProcessed();
+	orwell::Application & aApplication = orwell::Application::GetInstance();
+	ORWELL_LOG_INFO("application gonna start\n");
+	aApplication.run(aParameters);
+}
+
+static void execAgent(std::string const & iCmd, int32_t iPort)
+{
+	std::thread aAgentThread(
+			Common::SendAgentCommand,
+			iCmd,
+			iPort, 0);
+	aAgentThread.join();
 }
 
 int main()
 {
-	orwell::support::GlobalLogger::Create("test_input", "test_input.log");
+	orwell::support::GlobalLogger::Create("test_input", "test_input.log", true);
 	log4cxx::NDC ndc("test_input");
-	FakeAgentProxy aFakeAgentProxy;
-	std::shared_ptr< orwell::Server > aServer =
-		std::make_shared< orwell::Server >(
-			aFakeAgentProxy,
-			"tcp://*:9003",
-			"tcp://*:9000",
-			"tcp://*:9001",
-			500);
-	ORWELL_LOG_INFO("server created");
-	std::vector< std::string > aRobots = {"Gipsy Danger", "Goldorak", "Securitron"};
-	aServer->accessContext().addRobot(aRobots[0], 8001);
-	aServer->accessContext().addRobot(aRobots[1], 8002);
-	aServer->accessContext().addRobot(aRobots[2], 8003);
-	aServer->accessContext().accessRobot(aRobots[0])->setHasRealRobot(true);
-	aServer->accessContext().accessRobot(aRobots[1])->setHasRealRobot(true);
-	aServer->accessContext().accessRobot(aRobots[2])->setHasRealRobot(true);
-	std::thread aServerThread(server, aServer);
-	std::thread aClientThread(client);
-	aClientThread.join();
-	aServerThread.join();
-	orwell::support::GlobalLogger::Clear();
-	return g_status;
-}
+	ORWELL_LOG_INFO("Test starts\n");
+	orwell::Application::Parameters aParameters;
+	Arguments aArguments = Common::GetArguments(
+			false,
+			9000,
+			9001,
+			9004,
+			boost::none,
+			boost::none,
+			1,
+			false,
+			true,
+			true,
+			false);
+	orwell::Application::ReadParameters(
+			aArguments.m_argc,
+			aArguments.m_argv,
+			aParameters);
+	std::thread aApplicationThread(Application, aParameters);
 
+	std::thread aClientSendsInputThread(ClientSendsInput, *aParameters.m_pullerPort, *aParameters.m_publisherPort );
+	aClientSendsInputThread.join();
+	assert(gOK == false); // because the game is not started yet, the Input message must be dropped by the server
+
+	execAgent("start game", *aParameters.m_agentPort);
+
+	std::thread aClientSendsInputThread2(ClientSendsInput, *aParameters.m_pullerPort, *aParameters.m_publisherPort );
+	aClientSendsInputThread2.join();
+	assert(gOK == true);
+
+	execAgent("stop game", *aParameters.m_agentPort);
+
+	std::thread aClientSendsInputThread3(ClientSendsInput, *aParameters.m_pullerPort, *aParameters.m_publisherPort );
+	aClientSendsInputThread3.join();
+	assert(gOK == false); //because the game has been stopped, input messages no longer go through
+
+	execAgent("stop application", *aParameters.m_agentPort);
+	aApplicationThread.join();
+	ORWELL_LOG_INFO("Test end\n");
+	orwell::support::GlobalLogger::Clear();
+	return 0;
+}

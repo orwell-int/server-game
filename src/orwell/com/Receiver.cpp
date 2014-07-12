@@ -73,7 +73,7 @@ bool Receiver::receiveString(
 	bool const aReceived = m_zmqSocket->recv(&aZmqMessage, aFlags);
 	if (aReceived)
 	{
-		ORWELL_LOG_DEBUG("message received");
+		ORWELL_LOG_TRACE("message received");
 		oMessage = string(static_cast<char*>(aZmqMessage.data()), aZmqMessage.size());
 	}
 	return aReceived;
@@ -106,7 +106,7 @@ bool Receiver::receive(RawMessage & oMessage)
 		oMessage._type = aType;
 		oMessage._routingId = aDest;
 		oMessage._payload = aPayload;
-		ORWELL_LOG_DEBUG("Received " << aZmqMessage.size() << " bytes : type=" << aType << "- dest=" << aDest << "-");
+		ORWELL_LOG_TRACE("Received " << aZmqMessage.size() << " bytes : type=" << aType << "- dest=" << aDest << "-");
 	}
 	return aReceived;
 }

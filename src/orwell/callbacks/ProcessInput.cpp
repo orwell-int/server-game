@@ -33,8 +33,16 @@ void ProcessInput::execute()
 	ORWELL_LOG_DEBUG("Fire : w1=" << anInputMsg.fire().weapon1() << ",w2=" <<  anInputMsg.fire().weapon2() << "-");
 	ORWELL_LOG_DEBUG("===End Input Message===");
 
-	RawMessage aReply(aDestination, "Input", anInputMsg.SerializeAsString());
-	m_publisher->send( aReply );
+	if (m_game->getIsRunning())
+	{
+		RawMessage aReply(aDestination, "Input", anInputMsg.SerializeAsString());
+		m_publisher->send( aReply );
+	}
+	else
+	{
+		ORWELL_LOG_DEBUG("cannot relay input because game is not running");
+	}
+
 }
 
 }}

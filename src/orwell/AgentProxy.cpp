@@ -323,11 +323,13 @@ void AgentProxy::removePlayer(
 void AgentProxy::startGame()
 {
 	ORWELL_LOG_INFO("start game");
+	m_application.accessServer()->accessContext().start();
 }
 
 void AgentProxy::stopGame()
 {
 	ORWELL_LOG_INFO("stop game");
+	m_application.accessServer()->accessContext().stop();
 }
 
 // protected

@@ -24,7 +24,7 @@ ProcessTimer::ProcessTimer(
 
 void ProcessTimer::execute()
 {
-	ORWELL_LOG_DEBUG("ProcessTimer::execute : broadcast Gamestate");
+	ORWELL_LOG_TRACE("ProcessTimer::execute : broadcast Gamestate");
 
 	GameState aGameState;
 	aGameState.set_playing(m_game->getIsRunning());

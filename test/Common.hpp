@@ -68,6 +68,11 @@ public:
 	static void SendStopFromFakeAgent(
 			uint16_t const iAgentPort,
 			uint64_t const iExtraSleep = 0);
+
+	static void SendAgentCommand(
+			std::string const & iCommand,
+			uint16_t const iAgentPort,
+			uint64_t const iExtraSleep = 0);
 };
 
 class FakeAgentProxy : public orwell::IAgentProxy

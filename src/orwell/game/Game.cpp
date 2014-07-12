@@ -69,7 +69,7 @@ bool Game::addPlayer(string const & iName)
 		//create playercontext and append
 		std::shared_ptr< Player > aPlayer = std::make_shared< Player >(iName);
 		m_players.insert(std::make_pair(iName, aPlayer));
-		ORWELL_LOG_DEBUG("new PlayerContext added with internalId=" << iName);
+		ORWELL_LOG_INFO("new PlayerContext added with internalId=" << iName);
 		aAddedPlayerSuccess = true;
 	}
 
@@ -95,6 +95,7 @@ bool Game::getIsRunning() const
 
 void Game::start()
 {
+	ORWELL_LOG_INFO( "GAME STARTS");
 	if (not m_isRunning)
 	{
 		for ( auto const aPair : m_robots )
@@ -124,6 +125,8 @@ void Game::start()
 
 void Game::stop()
 {
+	ORWELL_LOG_INFO( "GAME STOP");
+	// kill all the video webservers
 	for ( auto const aFileName: m_tmpFiles )
 	{
 		std::ifstream aFile(aFileName, std::ifstream::in);
@@ -135,7 +138,7 @@ void Game::stop()
 		}
 		else
 		{
-			ORWELL_LOG_ERROR("Could not kill a python web server.");
+			ORWELL_LOG_ERROR("Could not kill a python web server");
 		}
 	}
 	ORWELL_LOG_INFO( "game stops" );
@@ -161,7 +164,7 @@ bool Game::addRobot(
 		}
 		shared_ptr<Robot> aRobot = make_shared<Robot>(iName, iRobotId, iVideoRetransmissionPort);
 		m_robots.insert( pair<string, shared_ptr<Robot> >( iName, aRobot ) );
-		ORWELL_LOG_DEBUG("new RobotContext added with internal ID=" << iName);
+		ORWELL_LOG_INFO("new RobotContext added with internal ID=" << iName);
 		aAddedRobotSuccess = true;
 	}
 	return aAddedRobotSuccess;

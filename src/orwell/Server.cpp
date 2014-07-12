@@ -147,7 +147,7 @@ orwell::game::Game & Server::accessContext()
 void Server::feedAgentProxy()
 {
 	std::string aMessage;
-	ORWELL_LOG_DEBUG("Try to read agent command ...");
+	ORWELL_LOG_TRACE("Try to read agent command ...");
 	if (m_agentListener->receiveString(aMessage))
 	{
 		ORWELL_LOG_DEBUG("command received: '" << aMessage << "'");
