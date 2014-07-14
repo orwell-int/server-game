@@ -36,8 +36,6 @@ static void ExpectWelcome(
 {
 	Hello aHelloMessage;
 	aHelloMessage.set_name( iPlayerName );
-	aHelloMessage.set_port( 80 );
-	aHelloMessage.set_ip( "localhost" );
 	RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
 	ioPusher.send(aMessage);
 
@@ -84,8 +82,6 @@ static void client()
 	// this tests the case where there is no longer any available robot
 	Hello aHelloMessage2;
 	aHelloMessage2.set_name("rutabagas");
-	aHelloMessage2.set_port( 80 );
-	aHelloMessage2.set_ip( "localhost" );
 
 	RawMessage aMessage2("randomid", "Hello", aHelloMessage2.SerializeAsString());
 	aPusher.send(aMessage2);

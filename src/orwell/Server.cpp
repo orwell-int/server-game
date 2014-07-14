@@ -139,6 +139,7 @@ void Server::stop()
 	ORWELL_LOG_INFO("Terminating server main loop");
 	_forcedStop = true;
 	_mainLoopRunning = false;
+	_game.stop();
 }
 
 orwell::game::Game & Server::accessContext()

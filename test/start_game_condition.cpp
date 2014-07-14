@@ -83,8 +83,6 @@ static void client()
 
 	Hello aHelloMessage;
 	aHelloMessage.set_name("playername");
-	aHelloMessage.set_port(80);
-	aHelloMessage.set_ip("localhost");
 	RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
 	aPusher.send(aMessage);
 
