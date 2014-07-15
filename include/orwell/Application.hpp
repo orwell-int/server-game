@@ -33,8 +33,11 @@ public :
 		boost::optional<uint16_t> m_agentPort;
 		std::vector< uint16_t > m_videoPorts;
 		boost::optional<int64_t> m_tickInterval;
-		boost::optional<std::string> m_rcFilePath;		// path to technical configuration file
-		boost::optional<std::string> m_gameFilePath;	// path to game configuration file
+		boost::optional< int32_t > m_gameDuration;
+		/// path to technical configuration file
+		boost::optional<std::string> m_rcFilePath;
+		/// path to game configuration file
+		boost::optional<std::string> m_gameFilePath;
 		boost::optional<bool> m_dryRun;
 		boost::optional<bool> m_broadcast;
 		std::map<std::string, Robot> m_robots;

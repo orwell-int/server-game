@@ -22,6 +22,7 @@
 #define ARG_ORWELLRC "-r"
 #define ARG_GAMECONFIG "-g"
 #define ARG_TIC_INTERVAL "-T"
+#define ARG_GAME_DURATION "-D"
 #define ARG_VERSION "-v"
 #define ARG_DEBUG_LOG "-d"
 #define ARG_NO_BROADCAST "--no-broadcast"
@@ -123,6 +124,7 @@ Arguments Common::GetArguments(
 		boost::optional< std::string > const iOrwellRc,
 		boost::optional< std::string > const iGameConfigPath,
 		boost::optional< int64_t > const iTicInterval,
+		boost::optional< int32_t > const iGameDuration,
 		bool const iVersion,
 		bool const iDebugLog,
 		bool const iNoBroadcast,
@@ -157,6 +159,10 @@ Arguments Common::GetArguments(
 	if (iTicInterval)
 	{
 		BuildIntArgument(ARG_TIC_INTERVAL, *iTicInterval, arguments);
+	}
+	if (iGameDuration)
+	{
+		BuildIntArgument(ARG_GAME_DURATION, *iGameDuration, arguments);
 	}
 	if (iVersion)
 	{

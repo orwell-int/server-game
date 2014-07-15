@@ -29,12 +29,18 @@ class IAgentProxy;
 class Server
 {
 public:
+	/// \param iTicDuration
+	///  Time in milliseconds between to GameState.
+	///
+	/// \param iGameDuration
+	///  Duration of the game in seconds.
 	Server(
 			orwell::IAgentProxy & ioAgentProxy,
 			std::string const & iAgentUrl =  "tcp://*:9003",
 			std::string const & iPullUrl = "tcp://*:9000",
 			std::string const & iPublishUrl = "tcp://*:9001",
-			long const iTicDuration = 500); //milliseconds
+			long const iTicDuration = 500,
+			uint32_t const iGameDuration = 300);
 
 	~Server();
 
@@ -70,7 +76,7 @@ private:
 
 	boost::posix_time::time_duration const _ticDuration;
 	boost::posix_time::ptime _previousTic;
-	
+
 	bool _mainLoopRunning;
 	bool _forcedStop;
 };
