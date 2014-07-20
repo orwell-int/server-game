@@ -34,7 +34,7 @@ static void const ClientSendsInput(int32_t iServerPullerPort, int32_t iServerPub
 	std::string aSubscriberUrl = "tcp://127.0.0.1:" + boost::lexical_cast<std::string>(iServerPublisherPort);
 
 	usleep(6 * 1000);
-	Sender aPusher(aPusherUrl , ZMQ_PUSH, orwell::com::ConnectionMode::CONNECT, aContext);
+	Sender aPusher(aPusherUrl, ZMQ_PUSH, orwell::com::ConnectionMode::CONNECT, aContext);
 	Receiver aSubscriber(aSubscriberUrl, ZMQ_SUB, orwell::com::ConnectionMode::CONNECT, aContext);
 	usleep(6 * 1000);
 
@@ -67,19 +67,11 @@ static void Application(orwell::Application::Parameters const & aParameters)
 	aApplication.run(aParameters);
 }
 
-static void execAgent(std::string const & iCmd, int32_t iPort)
-{
-	Common::SendAgentCommand(
-			iCmd,
-			iPort, 0 * 1000);
-}
-
 int main()
 {
 	orwell::support::GlobalLogger::Create("test_input", "test_input.log", true);
 	log4cxx::NDC ndc("test_input");
 	ORWELL_LOG_INFO("Test starts\n");
-	usleep(2000 * Common::GetWaitLoops());
 	orwell::Application::Parameters aParameters;
 	Arguments aArguments = Common::GetArguments(
 			false,
@@ -98,21 +90,25 @@ int main()
 			aArguments.m_argc,
 			aArguments.m_argv,
 			aParameters);
+	TestAgent aTestAgent(aParameters.m_agentPort.get());
+	//usleep(2000 * Common::GetWaitLoops());
+	uint64_t aLoops = Common::GetWaitLoops();
+	usleep(2000 * (40 + aLoops));
 
 	std::thread aApplicationThread(Application, aParameters);
 
 	std::thread aClientSendsInputThread(ClientSendsInput, *aParameters.m_pullerPort, *aParameters.m_publisherPort);
 	aClientSendsInputThread.join();
-	assert(gOK == false); // because the game is not started yet, the Input message must be dropped by the server
-
-	execAgent("start game", *aParameters.m_agentPort);
-
+	assert(not gOK); // because the game is not started yet, the Input message must be dropped by the server
+	aTestAgent.sendCommand("start game");
+	usleep(2000 * (1 + aLoops));
 	ClientSendsInput(*aParameters.m_pullerPort, *aParameters.m_publisherPort);
 	assert(gOK);
-	execAgent("stop game", *aParameters.m_agentPort);
+	aTestAgent.sendCommand("stop game");
+	usleep(2000 * (1 + aLoops));
 	ClientSendsInput(*aParameters.m_pullerPort, *aParameters.m_publisherPort);
 	assert(not gOK);
-	execAgent("stop application", *aParameters.m_agentPort);
+	aTestAgent.sendCommand("stop application");
 	aApplicationThread.join();
 	ORWELL_LOG_INFO("Test ends\n");
 	orwell::support::GlobalLogger::Clear();

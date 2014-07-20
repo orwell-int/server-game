@@ -11,8 +11,6 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-#include <zmq.hpp>
-
 #include <unistd.h>
 
 #define ARG_HELP "-h"
@@ -321,30 +319,35 @@ void Common::SendStopFromFakeAgent(
 	zmq::message_t aZmqMessage(aMessage.size());
 	memcpy((void *) aZmqMessage.data(), aMessage.c_str(), aMessage.size());
 	// for some reason messages are lost without the sleep
-	usleep(2000 * Common::GetWaitLoops());
+	usleep(2000 * (2 + Common::GetWaitLoops()));
 	ORWELL_LOG_DEBUG("send command: " << aMessage);
 	aAgentSocket.send(aZmqMessage);
 }
 
-void Common::SendAgentCommand(
-		std::string const & iCommand,
-		uint16_t const iAgentPort,
-		uint64_t const iExtraSleep)
+TestAgent::TestAgent(uint16_t const & iPort) :
+		m_zmqContext(1),
+		m_agentSocket(m_zmqContext, ZMQ_PUB)
 {
-	usleep(iExtraSleep);
-	zmq::context_t aZmqContext(1);
-	zmq::socket_t aAgentSocket(aZmqContext, ZMQ_PUB);
 	int const aLinger = 10;
-	aAgentSocket.setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
-	orwell::com::Url aUrl("tcp", "localhost", iAgentPort);
-	aAgentSocket.connect(aUrl.toString().c_str());
-	//usleep(2000 * 1000); // sleep for 2 s
-	zmq::message_t aZmqMessage(iCommand.size());
-	memcpy((void *) aZmqMessage.data(), iCommand.c_str(), iCommand.size());
+	m_agentSocket.setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
+	orwell::com::Url aUrl("tcp", "localhost", iPort);
+	m_agentSocket.connect(aUrl.toString().c_str());
+	ORWELL_LOG_DEBUG("connect agent to " << aUrl.toString());
+	//usleep(1000 *500);
+}
+
+TestAgent::~TestAgent()
+{
+
+}
+
+void TestAgent::sendCommand(std::string const & iCmd)
+{
+	zmq::message_t aZmqMessage(iCmd.size());
+	memcpy((void *) aZmqMessage.data(), iCmd.c_str(), iCmd.size());
 	// for some reason messages are lost without the sleep
-	usleep(2000 * (4 + Common::GetWaitLoops()));
-	ORWELL_LOG_DEBUG("send agent command \"" << iCommand << "\" to " << aUrl.toString());
-	//ORWELL_LOG_DEBUG("send command: " << iCommand);
-	aAgentSocket.send(aZmqMessage);
+	//usleep(2000 * Common::GetWaitLoops());
+	ORWELL_LOG_DEBUG("send command: " << iCmd);
+	m_agentSocket.send(aZmqMessage);
 }
 
