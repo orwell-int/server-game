@@ -52,6 +52,7 @@ static void DispatchArgument(
 
 bool AgentProxy::step(std::string const & iCommand)
 {
+	ORWELL_LOG_DEBUG("batman= '" << iCommand << "'");
 	bool aResult = false;
 	std::string iAction;
 	using std::placeholders::_1;

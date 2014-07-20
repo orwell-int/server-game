@@ -75,8 +75,9 @@ bool Receiver::receiveString(
 	bool const aReceived = m_zmqSocket->recv(&aZmqMessage, aFlags);
 	if (aReceived)
 	{
-		ORWELL_LOG_TRACE("message received");
+		ORWELL_LOG_DEBUG("message received");
 		oMessage = string(static_cast<char*>(aZmqMessage.data()), aZmqMessage.size());
+		ORWELL_LOG_DEBUG("batman received " << oMessage);
 	}
 	return aReceived;
 }

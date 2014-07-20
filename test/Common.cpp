@@ -219,7 +219,7 @@ bool Common::ExpectMessage(
 	{
 		if (aDuration >= aTrueTimeout)
 		{
-			ORWELL_LOG_DEBUG("Excpected message not received ; timeout ("
+			ORWELL_LOG_DEBUG("Expected message not received ; timeout ("
 					<< aTrueTimeout << ") exceeded: " << aDuration);
 		}
 	}
@@ -337,7 +337,7 @@ void Common::SendAgentCommand(
 	int const aLinger = 10;
 	aAgentSocket.setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
 	orwell::com::Url aUrl("tcp", "localhost", iAgentPort);
-	ORWELL_LOG_DEBUG("send agent command to " << aUrl.toString());
+	ORWELL_LOG_DEBUG("send agent command \"" << iCommand << "\" to " << aUrl.toString());
 	aAgentSocket.connect(aUrl.toString().c_str());
 	usleep(20 * 1000); // sleep for 0.020 s
 	zmq::message_t aZmqMessage(iCommand.size());

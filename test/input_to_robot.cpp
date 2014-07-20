@@ -89,7 +89,8 @@ int main()
 			9004,
 			boost::none,
 			boost::none,
-			1,
+			100,
+			200,
 			false,
 			true,
 			true,
@@ -98,14 +99,21 @@ int main()
 			aArguments.m_argc,
 			aArguments.m_argv,
 			aParameters);
+
 	std::thread aApplicationThread(Application, aParameters);
 
 	std::thread aClientSendsInputThread(ClientSendsInput, *aParameters.m_pullerPort, *aParameters.m_publisherPort );
 	aClientSendsInputThread.join();
 	assert(gOK == false); // because the game is not started yet, the Input message must be dropped by the server
 
+	usleep(1000 * 3000);
+	execAgent("start game", *aParameters.m_agentPort);
+	usleep(1000 * 3000);
+	execAgent("start game", *aParameters.m_agentPort);
+	usleep(1000 * 3000);
 	execAgent("start game", *aParameters.m_agentPort);
 
+		/*
 	std::thread aClientSendsInputThread2(ClientSendsInput, *aParameters.m_pullerPort, *aParameters.m_publisherPort );
 	aClientSendsInputThread2.join();
 	assert(gOK == true);
@@ -120,5 +128,8 @@ int main()
 	aApplicationThread.join();
 	ORWELL_LOG_INFO("Test end\n");
 	orwell::support::GlobalLogger::Clear();
+*/
+	usleep(1000 * 5000);
+	ORWELL_LOG_INFO("Test ends\n");
 	return 0;
 }

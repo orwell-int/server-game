@@ -96,7 +96,7 @@ bool Game::getIsRunning() const
 
 void Game::start()
 {
-	ORWELL_LOG_INFO( "GAME STARTS");
+	ORWELL_LOG_DEBUG( "Game::start");
 	if (not m_isRunning)
 	{
 		for ( auto const aPair : m_robots )
