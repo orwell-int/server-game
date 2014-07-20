@@ -13,8 +13,10 @@
 
 using std::string;
 
-namespace orwell {
-namespace com {
+namespace orwell
+{
+namespace com
+{
 
 Receiver::Receiver(
 		std::string const & iUrl,
@@ -81,7 +83,6 @@ bool Receiver::receiveString(
 
 bool Receiver::receive(RawMessage & oMessage)
 {
-	zmq::message_t aZmqMessage;
 	string aType;
 	string aPayload;
 	string aDest;
@@ -106,7 +107,7 @@ bool Receiver::receive(RawMessage & oMessage)
 		oMessage._type = aType;
 		oMessage._routingId = aDest;
 		oMessage._payload = aPayload;
-		ORWELL_LOG_TRACE("Received " << aZmqMessage.size() << " bytes : type=" << aType << "- dest=" << aDest << "-");
+		ORWELL_LOG_DEBUG("Received message : type=" << aType << "- dest=" << aDest << "-");
 	}
 	return aReceived;
 }
@@ -116,5 +117,6 @@ std::string const & Receiver::getUrl() const
 	return m_url;
 }
 
-}}
+}
+}
 

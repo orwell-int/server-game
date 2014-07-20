@@ -3,6 +3,8 @@
 #include <map>
 #include <memory>
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 #include "orwell/game/Player.hpp"
 #include "orwell/game/Team.hpp"
 
@@ -21,7 +23,7 @@ class Robot;
 class Game
 {
 public:
-	Game();
+	Game(boost::posix_time::time_duration const & iGameDuration);
 	~Game();
 
 //	std::shared_ptr< com::Sender > getPublisher();
@@ -65,7 +67,11 @@ public:
 			std::string const & iTemporaryRobotId) const;
 	std::shared_ptr< Robot > getRobotForPlayer(std::string const & iPlayer) const;
 	std::shared_ptr<Robot> getAvailableRobot() const;
-	void fillGameStateMessage( messages::GameState & oGameState);
+	void fillGameStateMessage(messages::GameState & oGameState);
+
+	void setTime(boost::posix_time::ptime const & iCurrentTime);
+
+	void stopIfGameIsFinished();
 
 private:
 	/// \return
@@ -85,6 +91,9 @@ private:
 	mutable std::map< std::string, std::string > m_registeredRobots;
 	/// stores the temp files containing the pids of the webservers, to kill them later
 	std::vector<std::string> m_tmpFiles;
+	boost::posix_time::ptime m_time;
+	boost::posix_time::ptime m_startTime;
+	boost::posix_time::time_duration m_gameDuration;
 };
 
 }

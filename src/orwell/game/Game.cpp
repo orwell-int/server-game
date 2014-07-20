@@ -26,8 +26,9 @@ using std::make_shared;
 namespace orwell {
 namespace game {
 
-Game::Game()
+Game::Game(boost::posix_time::time_duration const & iGameDuration)
 	: m_isRunning(false)
+	, m_gameDuration(iGameDuration)
 {
 }
 
@@ -110,15 +111,18 @@ void Game::start()
 			char * aTempName = tmpnam(nullptr);
 			std::ofstream(aTempName).close();
 
-			aCommandLine << " cd server-web && make start ARGS='-u " << aRobot->getVideoUrl() << " -p " << aRobot->getVideoRetransmissionPort()
-					<< " --pid-file " << aTempName << "'";
-			ORWELL_LOG_INFO( "new tmp file : " << aTempName );
+			aCommandLine << " cd server-web && make start ARGS='-u \"" <<
+				aRobot->getVideoUrl() << "\" -p " <<
+				aRobot->getVideoRetransmissionPort() <<
+				" --pid-file " << aTempName << "'";
+			ORWELL_LOG_INFO("new tmp file : " << aTempName);
 			int aCode = system(aCommandLine.str().c_str());
-			ORWELL_LOG_INFO( "code at creation of webserver :" << aCode );
+			ORWELL_LOG_INFO("code at creation of webserver :" << aCode);
 
-			m_tmpFiles.push_back( aTempName );
+			m_tmpFiles.push_back(aTempName);
 		}
-		ORWELL_LOG_INFO( "game starts" );
+		ORWELL_LOG_INFO("game starts");
+		m_startTime = boost::posix_time::microsec_clock::local_time();
 		m_isRunning = true;
 	}
 }
@@ -126,23 +130,25 @@ void Game::start()
 void Game::stop()
 {
 	ORWELL_LOG_INFO( "GAME STOP");
-	// kill all the video webservers
-	for ( auto const aFileName: m_tmpFiles )
+	if (m_isRunning)
 	{
-		std::ifstream aFile(aFileName, std::ifstream::in);
-		int aPid = 0;
-		aFile >> aPid;
-		if (0 != aPid)
+		for ( auto const aFileName: m_tmpFiles )
 		{
-			kill(aPid, SIGABRT);
+			std::ifstream aFile(aFileName, std::ifstream::in);
+			int aPid = 0;
+			aFile >> aPid;
+			if (0 != aPid)
+			{
+				kill(aPid, SIGABRT);
+			}
+			else
+			{
+				ORWELL_LOG_ERROR("Could not kill a python web server.");
+			}
 		}
-		else
-		{
-			ORWELL_LOG_ERROR("Could not kill a python web server");
-		}
+		ORWELL_LOG_INFO( "game stops" );
+		m_isRunning = false;
 	}
-	ORWELL_LOG_INFO( "game stops" );
-	m_isRunning = false;
 }
 
 bool Game::addRobot(
@@ -252,6 +258,19 @@ std::shared_ptr< Robot > Game::getRobotForPlayer(string const & iPlayer) const
 void Game::fillGameStateMessage(messages::GameState & oGameState)
 {
 	//todo
+}
+
+void Game::setTime(boost::posix_time::ptime const & iCurrentTime)
+{
+	m_time = iCurrentTime;
+}
+
+void Game::stopIfGameIsFinished()
+{
+	if (m_gameDuration <= m_startTime - m_time)
+	{
+		stop();
+	}
 }
 
 std::string Game::getNewRobotId() const
