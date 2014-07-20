@@ -48,7 +48,7 @@ int main()
 			aParameters);
 	std::thread aApplicationThread(Application, aParameters);
 	std::thread aAgentThread(
-			Common::SendAgentCommand, "stop application",  *aParameters.m_agentPort, 0);
+			Common::SendStopFromFakeAgent,  *aParameters.m_agentPort, 0);
 	aApplicationThread.join();
 	aAgentThread.join();
 	orwell::support::GlobalLogger::Clear();

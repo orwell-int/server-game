@@ -6,6 +6,8 @@
 #include <boost/optional.hpp>
 #include <boost/none.hpp>
 
+#include <zmq.hpp>
+
 #include "orwell/IAgentProxy.hpp"
 
 #include "gmock/gmock.h"
@@ -69,11 +71,6 @@ public:
 	static void SendStopFromFakeAgent(
 			uint16_t const iAgentPort,
 			uint64_t const iExtraSleep = 0);
-
-	static void SendAgentCommand(
-			std::string const & iCommand,
-			uint16_t const iAgentPort,
-			uint64_t const iExtraSleep = 0);
 };
 
 class FakeAgentProxy : public orwell::IAgentProxy
@@ -111,6 +108,18 @@ public :
 	MOCK_METHOD0(startGame, void());
 
 	MOCK_METHOD0(stopGame, void());
+};
+
+class TestAgent
+{
+public:
+	TestAgent(uint16_t const & iPort);
+	~TestAgent();
+
+	void sendCommand(std::string const & iCmd);
+private:
+	zmq::context_t m_zmqContext;
+	zmq::socket_t m_agentSocket;
 };
 
 std::ostream & operator<<(
