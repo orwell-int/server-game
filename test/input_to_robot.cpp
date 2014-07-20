@@ -69,11 +69,9 @@ static void Application(orwell::Application::Parameters const & aParameters)
 
 static void execAgent(std::string const & iCmd, int32_t iPort)
 {
-	std::thread aAgentThread(
-			Common::SendAgentCommand,
+	Common::SendAgentCommand(
 			iCmd,
-			iPort, 0);
-	aAgentThread.join();
+			iPort, 0 * 1000);
 }
 
 int main()
@@ -81,6 +79,7 @@ int main()
 	orwell::support::GlobalLogger::Create("test_input", "test_input.log", true);
 	log4cxx::NDC ndc("test_input");
 	ORWELL_LOG_INFO("Test starts\n");
+	usleep(2000 * Common::GetWaitLoops());
 	orwell::Application::Parameters aParameters;
 	Arguments aArguments = Common::GetArguments(
 			false,
@@ -89,7 +88,7 @@ int main()
 			9004,
 			boost::none,
 			boost::none,
-			100,
+			10,
 			200,
 			false,
 			true,
@@ -102,34 +101,20 @@ int main()
 
 	std::thread aApplicationThread(Application, aParameters);
 
-	std::thread aClientSendsInputThread(ClientSendsInput, *aParameters.m_pullerPort, *aParameters.m_publisherPort );
+	std::thread aClientSendsInputThread(ClientSendsInput, *aParameters.m_pullerPort, *aParameters.m_publisherPort);
 	aClientSendsInputThread.join();
 	assert(gOK == false); // because the game is not started yet, the Input message must be dropped by the server
 
-	usleep(1000 * 3000);
-	execAgent("start game", *aParameters.m_agentPort);
-	usleep(1000 * 3000);
-	execAgent("start game", *aParameters.m_agentPort);
-	usleep(1000 * 3000);
 	execAgent("start game", *aParameters.m_agentPort);
 
-		/*
-	std::thread aClientSendsInputThread2(ClientSendsInput, *aParameters.m_pullerPort, *aParameters.m_publisherPort );
-	aClientSendsInputThread2.join();
-	assert(gOK == true);
-
+	ClientSendsInput(*aParameters.m_pullerPort, *aParameters.m_publisherPort);
+	assert(gOK);
 	execAgent("stop game", *aParameters.m_agentPort);
-
-	std::thread aClientSendsInputThread3(ClientSendsInput, *aParameters.m_pullerPort, *aParameters.m_publisherPort );
-	aClientSendsInputThread3.join();
-	assert(gOK == false); //because the game has been stopped, input messages no longer go through
-
+	ClientSendsInput(*aParameters.m_pullerPort, *aParameters.m_publisherPort);
+	assert(not gOK);
 	execAgent("stop application", *aParameters.m_agentPort);
 	aApplicationThread.join();
-	ORWELL_LOG_INFO("Test end\n");
-	orwell::support::GlobalLogger::Clear();
-*/
-	usleep(1000 * 5000);
 	ORWELL_LOG_INFO("Test ends\n");
+	orwell::support::GlobalLogger::Clear();
 	return 0;
 }

@@ -337,14 +337,14 @@ void Common::SendAgentCommand(
 	int const aLinger = 10;
 	aAgentSocket.setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
 	orwell::com::Url aUrl("tcp", "localhost", iAgentPort);
-	ORWELL_LOG_DEBUG("send agent command \"" << iCommand << "\" to " << aUrl.toString());
 	aAgentSocket.connect(aUrl.toString().c_str());
-	usleep(20 * 1000); // sleep for 0.020 s
+	//usleep(2000 * 1000); // sleep for 2 s
 	zmq::message_t aZmqMessage(iCommand.size());
 	memcpy((void *) aZmqMessage.data(), iCommand.c_str(), iCommand.size());
 	// for some reason messages are lost without the sleep
-	usleep(2000 * Common::GetWaitLoops());
-	ORWELL_LOG_DEBUG("send command: " << iCommand);
+	usleep(2000 * (4 + Common::GetWaitLoops()));
+	ORWELL_LOG_DEBUG("send agent command \"" << iCommand << "\" to " << aUrl.toString());
+	//ORWELL_LOG_DEBUG("send command: " << iCommand);
 	aAgentSocket.send(aZmqMessage);
 }
 
