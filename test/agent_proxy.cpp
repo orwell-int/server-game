@@ -106,7 +106,6 @@ int main()
 	log4cxx::NDC ndc("test_agent_proxy");
 	ORWELL_LOG_INFO("Test starts\n");
 	{
-		usleep(2000 * Common::GetWaitLoops());
 		orwell::Application & aApplication = orwell::Application::GetInstance();
 
 		Arguments aArguments = Common::GetArguments(

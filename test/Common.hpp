@@ -64,14 +64,6 @@ public:
 			orwell::com::Receiver & iSubscriber,
 			orwell::com::RawMessage & oReceived,
 			unsigned int const iTimeout = 500);
-
-	static uint16_t GetWaitLoops();
-	
-	static void PingAndStop(uint16_t const iAgentPort);
-
-	static void SendStopFromFakeAgent(
-			uint16_t const iAgentPort,
-			uint64_t const iExtraSleep = 0);
 };
 
 class FakeAgentProxy : public orwell::IAgentProxy

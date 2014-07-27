@@ -91,9 +91,6 @@ int main()
 			aArguments.m_argv,
 			aParameters);
 	TestAgent aTestAgent(aParameters.m_agentPort.get());
-	//usleep(2000 * Common::GetWaitLoops());
-	uint64_t aLoops = Common::GetWaitLoops();
-	//usleep(2000 * (40 + aLoops));
 	usleep(100);
 
 	std::string aReply;
@@ -104,11 +101,9 @@ int main()
 	aClientSendsInputThread.join();
 	assert(not gOK); // because the game is not started yet, the Input message must be dropped by the server
 	aReply = aTestAgent.sendCommand("start game");
-	//usleep(2000 * (1 + aLoops));
 	ClientSendsInput(*aParameters.m_pullerPort, *aParameters.m_publisherPort);
 	assert(gOK);
 	aReply = aTestAgent.sendCommand("stop game");
-	//usleep(2000 * (1 + aLoops));
 	ClientSendsInput(*aParameters.m_pullerPort, *aParameters.m_publisherPort);
 	assert(not gOK);
 	aReply = aTestAgent.sendCommand("stop application");

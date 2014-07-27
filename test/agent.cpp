@@ -47,12 +47,9 @@ int main()
 			aArguments.m_argv,
 			aParameters);
 	TestAgent aTestAgent(aParameters.m_agentPort.get());
-	uint64_t aLoops = Common::GetWaitLoops();
 	std::thread aApplicationThread(Application, aParameters);
-	//usleep(2000 * (100 + aLoops));
 	std::string aReply;
 	aReply = aTestAgent.sendCommand("stop application");
-	//usleep(2000 * (1 + aLoops));
 	aApplicationThread.join();
 	orwell::support::GlobalLogger::Clear();
 	return 0;
