@@ -20,17 +20,16 @@ public :
 
 	/// \return
 	///  True if and only if the command was successfully parsed.
-	bool step(std::string const & iCommand) override;
+	bool step(
+			std::string const & iCommand,
+			std::string & ioReply) override;
 
 	/// stop application
 	void stopApplication() override;
 
 	/// List all the robots present.
-	/// The reply is sent to <iReplyAddress>:<iReplyPort>.
 	///
-	void listRobot(
-			std::string const & iReplyAddress,
-			uint16_t const iReplyPort) override;
+	void listRobot(std::string & ioReply) override;
 
 	/// add robot <name>
 	void addRobot(std::string const & iRobotName) override;
@@ -51,11 +50,8 @@ public :
 			std::string const & iValue) override;
 
 	/// List all the players present.
-	/// The reply is sent to <iReplyAddress>:<iReplyPort>.
 	///
-	void listPlayer(
-			std::string const & iReplyAddress,
-			uint16_t const iReplyPort) override;
+	void listPlayer(std::string & ioReply) override;
 
 	/// add player <name>
 	void addPlayer(std::string const & iPlayerName) override;

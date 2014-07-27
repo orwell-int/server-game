@@ -14,7 +14,9 @@ static void Application()
 
 static void Stopper()
 {
-	Common::PingAndStop(9003);
+	TestAgent aTestAgent(9003);
+	aTestAgent.sendCommand("ping", "pong");
+	aTestAgent.sendCommand("stop application");
 }
 
 int main()

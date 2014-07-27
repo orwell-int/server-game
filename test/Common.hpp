@@ -9,6 +9,7 @@
 #include <zmq.hpp>
 
 #include "orwell/IAgentProxy.hpp"
+#include "orwell/com/Socket.hpp"
 
 #include "gmock/gmock.h"
 
@@ -76,13 +77,13 @@ public:
 class FakeAgentProxy : public orwell::IAgentProxy
 {
 public :
-	MOCK_METHOD1(step, bool(std::string const & iCommand));
+	MOCK_METHOD2(step, bool(
+				std::string const & iCommand,
+				std::string & ioReply));
 
 	MOCK_METHOD0(stopApplication, void());
 	
-	MOCK_METHOD2(listRobot, void(
-				std::string const & iReplyAddress,
-				uint16_t const iReplyPort));
+	MOCK_METHOD1(listRobot, void(std::string & ioReply));
 
 	MOCK_METHOD1(addRobot, void(std::string const & iRobotName));
 
@@ -97,9 +98,7 @@ public :
 			std::string const & iProperty,
 			std::string const & iValue));
 
-	MOCK_METHOD2(listPlayer, void(
-				std::string const & iReplyAddress,
-				uint16_t const iReplyPort));
+	MOCK_METHOD1(listPlayer, void(std::string & ioReply));
 
 	MOCK_METHOD1(addPlayer, void(std::string const & iPlayerName));
 
@@ -116,12 +115,17 @@ public:
 	TestAgent(uint16_t const & iPort);
 	~TestAgent();
 
-	void sendCommand(std::string const & iCmd);
+	std::string sendCommand(
+			std::string const & iCmd,
+			std::string const & iExpectedReply = "OK");
+
+	void reset();
 private:
 	zmq::context_t m_zmqContext;
-	zmq::socket_t m_agentSocket;
+	orwell::com::Socket m_agentSocket;
 };
 
 std::ostream & operator<<(
 		std::ostream & ioOstream,
 		Arguments const & iArguments);
+

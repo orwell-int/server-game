@@ -68,7 +68,7 @@ public:
 private:
 	zmq::context_t _zmqContext;
 	orwell::IAgentProxy & m_agentProxy;
-	std::shared_ptr< com::Receiver > m_agentListener;
+	std::shared_ptr< com::Socket > m_agentSocket;
 	std::shared_ptr< com::Receiver > _puller;
 	std::shared_ptr< com::Sender > _publisher;
 	orwell::game::Game _game;

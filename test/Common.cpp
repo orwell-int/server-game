@@ -302,38 +302,15 @@ void Common::PingAndStop(uint16_t const iAgentPort)
 	aAgentSocket.send(aZmqMessage);
 }
 
-void Common::SendStopFromFakeAgent(
-		uint16_t const iAgentPort,
-		uint64_t const iExtraSleep)
-{
-	usleep(iExtraSleep);
-	zmq::context_t aZmqContext(1);
-	zmq::socket_t aAgentSocket(aZmqContext, ZMQ_PUB);
-	int const aLinger = 10;
-	aAgentSocket.setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
-	orwell::com::Url aUrl("tcp", "localhost", iAgentPort);
-	ORWELL_LOG_DEBUG("send agent command to " << aUrl.toString());
-	aAgentSocket.connect(aUrl.toString().c_str());
-	usleep(20 * 1000); // sleep for 0.020 s
-	std::string aMessage("stop application");
-	zmq::message_t aZmqMessage(aMessage.size());
-	memcpy((void *) aZmqMessage.data(), aMessage.c_str(), aMessage.size());
-	// for some reason messages are lost without the sleep
-	usleep(2000 * (2 + Common::GetWaitLoops()));
-	ORWELL_LOG_DEBUG("send command: " << aMessage);
-	aAgentSocket.send(aZmqMessage);
-}
-
 TestAgent::TestAgent(uint16_t const & iPort) :
 		m_zmqContext(1),
-		m_agentSocket(m_zmqContext, ZMQ_PUB)
+		m_agentSocket(
+				orwell::com::Url("tcp", "localhost", iPort).toString().c_str(),
+				ZMQ_REQ,
+				orwell::com::ConnectionMode::CONNECT,
+				m_zmqContext,
+				0)
 {
-	int const aLinger = 10;
-	m_agentSocket.setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
-	orwell::com::Url aUrl("tcp", "localhost", iPort);
-	m_agentSocket.connect(aUrl.toString().c_str());
-	ORWELL_LOG_DEBUG("connect agent to " << aUrl.toString());
-	//usleep(1000 *500);
 }
 
 TestAgent::~TestAgent()
@@ -341,13 +318,30 @@ TestAgent::~TestAgent()
 
 }
 
-void TestAgent::sendCommand(std::string const & iCmd)
+std::string TestAgent::sendCommand(
+		std::string const & iCmd,
+		std::string const & iExpectedReply)
 {
-	zmq::message_t aZmqMessage(iCmd.size());
-	memcpy((void *) aZmqMessage.data(), iCmd.c_str(), iCmd.size());
-	// for some reason messages are lost without the sleep
-	//usleep(2000 * Common::GetWaitLoops());
 	ORWELL_LOG_DEBUG("send command: " << iCmd);
-	m_agentSocket.send(aZmqMessage);
+	std::string aReply;
+	while (true)
+	{
+		m_agentSocket.sendString(iCmd);
+		m_agentSocket.receiveString(aReply, true);
+		ORWELL_LOG_INFO("reply = '" << aReply << "'");
+		if (iExpectedReply == aReply)
+		{
+			break;
+		}
+		ORWELL_LOG_INFO("try again to send command");
+		reset();
+		usleep(50);
+	}
+	return aReply;
+}
+
+void TestAgent::reset()
+{
+	m_agentSocket.reset();
 }
 

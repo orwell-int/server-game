@@ -16,15 +16,15 @@ public :
 	/// \return
 	///  True if and only if the command was successfully parsed.
 	///
-	virtual bool step(std::string const & iCommand) = 0;
+	virtual bool step(
+			std::string const & iCommand,
+			std::string & ioReply) = 0;
 
 	/// stop application
 	virtual void stopApplication() = 0;
 
 	/// get the list of robots
-	virtual void listRobot(
-			std::string const & iReplyAddress,
-			uint16_t const iReplyPort) = 0;
+	virtual void listRobot(std::string & ioReply) = 0;
 
 	/// add robot <name>
 	virtual void addRobot(std::string const & iRobotName) = 0;
@@ -45,9 +45,7 @@ public :
 			std::string const & iValue) = 0;
 
 	/// get the list of players
-	virtual void listPlayer(
-			std::string const & iReplyAddress,
-			uint16_t const iReplyPort) = 0;
+	virtual void listPlayer(std::string & ioReply) = 0;
 
 	/// add player <name>
 	virtual void addPlayer(std::string const & iPlayerName) = 0;
