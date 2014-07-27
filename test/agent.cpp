@@ -46,11 +46,12 @@ int main()
 			aArguments.m_argc,
 			aArguments.m_argv,
 			aParameters);
+	TestAgent aTestAgent(aParameters.m_agentPort.get());
+	uint64_t aLoops = Common::GetWaitLoops();
 	std::thread aApplicationThread(Application, aParameters);
-	std::thread aAgentThread(
-			Common::SendStopFromFakeAgent,  *aParameters.m_agentPort, 0);
+	usleep(2000 * (100 + aLoops));
+	aTestAgent.sendCommand("stop application");
 	aApplicationThread.join();
-	aAgentThread.join();
 	orwell::support::GlobalLogger::Clear();
 	return 0;
 }
