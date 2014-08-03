@@ -2,19 +2,16 @@
 
 #include <string>
 
-#include "orwell/com/ConnectionMode.hpp"
+#include "orwell/com/Socket.hpp"
 
-namespace zmq {
-class context_t;
-class socket_t;
-}
-
-namespace orwell {
-namespace com {
+namespace orwell
+{
+namespace com
+{
 
 class RawMessage;
 
-class Sender
+class Sender : private Socket
 {
 public:
 
@@ -38,18 +35,15 @@ public:
 			unsigned int const iSleep = 0);
 	~Sender();
 
-	void sendString(std::string const & iMessage);
+	using Socket::sendString;
 
-	void send( RawMessage const & iMessage );
-	std::string const & getUrl() const;
+	using Socket::send;
 
 
 private:
-	Sender(Sender const & iOther);
-
-	zmq::socket_t * m_zmqSocket;
-	std::string m_url;
+	Sender(Sender const & iOther) = delete;
 };
 
-}}
+}
+}
 

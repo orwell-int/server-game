@@ -2,19 +2,16 @@
 
 #include <string>
 
-#include "orwell/com/ConnectionMode.hpp"
+#include "orwell/com/Socket.hpp"
 
-namespace zmq {
-class context_t;
-class socket_t;
-}
-
-namespace orwell {
-namespace com {
+namespace orwell
+{
+namespace com
+{
 
 class RawMessage;
 
-class Receiver
+class Receiver : private Socket
 {
 
 public :
@@ -30,31 +27,16 @@ public :
 
 	~Receiver();
 
-	/// Try to get a message from the socket (non blocking by default).
-	///
-	/// \param oMessage
-	///  This string will contain the received message if available.
-	///
-	/// \param iBlocking
-	///  If and only if set to true, make the call blocking.
-	///
-	/// \return
-	///  True if and only if a message was received.
-	///
-	bool receiveString(
-			std::string & oMessage,
-			bool const iBlocking=false);
+	using Socket::receiveString;
 
-	bool receive(RawMessage & oMessage);
-	std::string const & getUrl() const;
+	using Socket::receive;
 
 private :
-	Receiver(Receiver const & iOther);
+	Receiver(Receiver const & iOther) = delete;
 
-	zmq::socket_t * m_zmqSocket;
-	std::string m_url;
 
 };
 
-}}
+}
+}
 

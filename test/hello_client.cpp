@@ -133,7 +133,7 @@ int main()
 	aServer->accessContext().accessRobot(aRobots[1])->setVideoUrl("http://dummyurl.fr/8008");
 	aServer->accessContext().accessRobot(aRobots[2])->setHasRealRobot(true);
 	aServer->accessContext().accessRobot(aRobots[2])->setVideoUrl("http://dummyurl.fr/8008");
-	ORWELL_LOG_INFO("robot added 3");
+	ORWELL_LOG_INFO("number of robots added: 3");
 	std::thread aServerThread(server, aServer);
 	std::thread aClientThread(client);
 	aClientThread.join();

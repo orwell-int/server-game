@@ -11,8 +11,6 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-#include <zmq.hpp>
-
 #include <unistd.h>
 
 #define ARG_HELP "-h"
@@ -205,7 +203,7 @@ bool Common::ExpectMessage(
 		{
 			if (aReceivedAnyMessage)
 			{
-				ORWELL_LOG_DEBUG("Discarded message of type " << iType);
+				ORWELL_LOG_DEBUG("Discarded message of type " << oReceived._type);
 			}
 			usleep( 10 );
 		}
@@ -219,110 +217,53 @@ bool Common::ExpectMessage(
 	{
 		if (aDuration >= aTrueTimeout)
 		{
-			ORWELL_LOG_DEBUG("Excpected message not received ; timeout ("
+			ORWELL_LOG_DEBUG("Expected message not received ; timeout ("
 					<< aTrueTimeout << ") exceeded: " << aDuration);
 		}
 	}
 	return aReceivedExpectedMessage;
 }
 
-uint16_t Common::GetWaitLoops()
+TestAgent::TestAgent(uint16_t const & iPort) :
+		m_zmqContext(1),
+		m_agentSocket(
+				orwell::com::Url("tcp", "localhost", iPort).toString().c_str(),
+				ZMQ_REQ,
+				orwell::com::ConnectionMode::CONNECT,
+				m_zmqContext,
+				0)
 {
-	ORWELL_LOG_DEBUG("GetWaitLoops");
-	zmq::context_t aZmqContext(1);
-	orwell::com::Receiver aReceiver(
-			"tcp://*:9999",
-			ZMQ_PULL,
-			orwell::com::ConnectionMode::BIND,
-			aZmqContext,
-			0);
-	orwell::com::Sender aSender(
-			"tcp://127.0.0.1:9999",
-			ZMQ_PUSH,
-			orwell::com::ConnectionMode::CONNECT,
-			aZmqContext,
-			0);
-	boost::posix_time::ptime aBeginTime(boost::posix_time::microsec_clock::local_time());
-	aSender.sendString("test");
-	std::string aMessage;
-	ORWELL_LOG_DEBUG("GetWaitLoops ; start");
-	uint16_t aLoops = 0;
-	while (not aReceiver.receiveString(aMessage))
-	{
-		ORWELL_LOG_DEBUG("GetWaitLoops ; sleep");
-		usleep(10);
-		++aLoops;
-	}
-	boost::posix_time::ptime aEndTime(boost::posix_time::microsec_clock::local_time());
-	boost::posix_time::time_duration const aDuration = aEndTime - aBeginTime;
-	ORWELL_LOG_DEBUG("GetWaitLoops ; aLoops = " << aLoops);
-	ORWELL_LOG_DEBUG("GetWaitLoops ; aDuration = " << aDuration.total_milliseconds() << "ms");
-	bool const aIsSlow(aDuration > boost::posix_time::milliseconds(100));
-	ORWELL_LOG_DEBUG("GetWaitLoops ; aIsSlow = " << aIsSlow);
-	return aLoops;
 }
 
-void Common::PingAndStop(uint16_t const iAgentPort)
+TestAgent::~TestAgent()
 {
-	usleep(2000 * Common::GetWaitLoops());
-	int const aLinger = 10;
-	zmq::context_t aZmqContext(1);
-	zmq::socket_t aReplySocket(aZmqContext, ZMQ_PULL);
-	aReplySocket.setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
-	orwell::com::Url aUrl("tcp", "*", 9004);
-	usleep(20 * 1000);
-	ORWELL_LOG_DEBUG("Read reply on " << aUrl.toString());
-	aReplySocket.bind(aUrl.toString().c_str());
-	std::string aMessage("list player 127.0.0.1 9004");
-	zmq::message_t aZmqReply;
-	bool aReceived = false;
-	aUrl.setHost("localhost");
-	aUrl.setPort(iAgentPort);
-	ORWELL_LOG_DEBUG("send agent command to " << aUrl.toString());
-	zmq::socket_t aAgentSocket(aZmqContext, ZMQ_PUB);
-	aAgentSocket.setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
-	aAgentSocket.connect(aUrl.toString().c_str());
-	usleep(20 * 1000);
-	while (not aReceived)
+
+}
+
+std::string TestAgent::sendCommand(
+		std::string const & iCmd,
+		std::string const & iExpectedReply)
+{
+	ORWELL_LOG_DEBUG("send command: " << iCmd);
+	std::string aReply;
+	while (true)
 	{
-		ORWELL_LOG_DEBUG("send command: " << aMessage);
-		zmq::message_t aZmqMessage(aMessage.size());
-		memcpy((void *) aZmqMessage.data(), aMessage.c_str(), aMessage.size());
-		aAgentSocket.send(aZmqMessage);
-		aReceived = aReplySocket.recv(&aZmqReply, ZMQ_NOBLOCK);
-		if (not aReceived)
+		m_agentSocket.sendString(iCmd);
+		m_agentSocket.receiveString(aReply, true);
+		ORWELL_LOG_INFO("reply = '" << aReply << "'");
+		if (iExpectedReply == aReply)
 		{
-			usleep(20 * 1000);
-			aReceived = aReplySocket.recv(&aZmqReply, ZMQ_NOBLOCK);
+			break;
 		}
+		ORWELL_LOG_INFO("try again to send command");
+		reset();
+		usleep(50);
 	}
-	ORWELL_LOG_DEBUG("ping / pong");
-	aMessage = "stop application";
-	zmq::message_t aZmqMessage(aMessage.size());
-	memcpy((void *) aZmqMessage.data(), aMessage.c_str(), aMessage.size());
-	ORWELL_LOG_DEBUG("send command: " << aMessage);
-	aAgentSocket.send(aZmqMessage);
+	return aReply;
 }
 
-void Common::SendStopFromFakeAgent(
-		uint16_t const iAgentPort,
-		uint64_t const iExtraSleep)
+void TestAgent::reset()
 {
-	usleep(iExtraSleep);
-	zmq::context_t aZmqContext(1);
-	zmq::socket_t aAgentSocket(aZmqContext, ZMQ_PUB);
-	int const aLinger = 10;
-	aAgentSocket.setsockopt(ZMQ_LINGER, &aLinger, sizeof(aLinger));
-	orwell::com::Url aUrl("tcp", "localhost", iAgentPort);
-	ORWELL_LOG_DEBUG("send agent command to " << aUrl.toString());
-	aAgentSocket.connect(aUrl.toString().c_str());
-	usleep(20 * 1000); // sleep for 0.020 s
-	std::string aMessage("stop application");
-	zmq::message_t aZmqMessage(aMessage.size());
-	memcpy((void *) aZmqMessage.data(), aMessage.c_str(), aMessage.size());
-	// for some reason messages are lost without the sleep
-	usleep(2000 * Common::GetWaitLoops());
-	ORWELL_LOG_DEBUG("send command: " << aMessage);
-	aAgentSocket.send(aZmqMessage);
+	m_agentSocket.reset();
 }
 

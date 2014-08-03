@@ -42,9 +42,9 @@ Server::Server(
 		uint32_t const iGameDuration)
 	: _zmqContext(1)
 	, m_agentProxy(ioAgentProxy)
-	, m_agentListener(std::make_shared< Receiver >(
+	, m_agentSocket(std::make_shared< orwell::com::Socket >(
 				iAgentUrl,
-				ZMQ_SUB,
+				ZMQ_REP,
 				orwell::com::ConnectionMode::BIND,
 				_zmqContext,
 				0))
@@ -150,11 +150,14 @@ orwell::game::Game & Server::accessContext()
 void Server::feedAgentProxy()
 {
 	std::string aMessage;
-	ORWELL_LOG_DEBUG("Try to read agent command ...");
-	if (m_agentListener->receiveString(aMessage))
+	ORWELL_LOG_TRACE("Try to read agent command ...");
+	std::string aReply("KO");
+	if (m_agentSocket->receiveString(aMessage))
 	{
 		ORWELL_LOG_DEBUG("command received: '" << aMessage << "'");
-		m_agentProxy.step(aMessage);
+		m_agentProxy.step(aMessage, aReply);
+		ORWELL_LOG_TRACE("Reply to the client ...");
+		m_agentSocket->sendString(aReply);
 	}
 }
 

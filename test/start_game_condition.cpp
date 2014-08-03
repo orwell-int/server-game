@@ -72,12 +72,12 @@ static void client()
 	log4cxx::NDC ndc("client");
 	ORWELL_LOG_INFO("client ...");
 	zmq::context_t aContext(1);
-	usleep(6 * 1000);
+	usleep(1 * 1000);
 	ORWELL_LOG_INFO("create pusher");
 	Sender aPusher("tcp://127.0.0.1:9000", ZMQ_PUSH, orwell::com::ConnectionMode::CONNECT, aContext);
 	ORWELL_LOG_INFO("create subscriber");
 	Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB, orwell::com::ConnectionMode::CONNECT, aContext);
-	usleep(6 * 1000);
+	usleep(1 * 1000);
 
 	ExpectGameState(false, aSubscriber);
 
@@ -95,8 +95,7 @@ static void client()
 
 
 static void const server(
-		std::shared_ptr< orwell::Server > ioServer,
-		int const iWaitLoops)
+		std::shared_ptr< orwell::Server > ioServer)
 {
 	log4cxx::NDC ndc("server");
 	ORWELL_LOG_INFO("server ...");
@@ -107,7 +106,7 @@ static void const server(
 		ioServer->loopUntilOneMessageIsProcessed();
 	}
 	ORWELL_LOG_INFO("dirty sleep to let python threads time to start.");
-	usleep(20000 * (1 + iWaitLoops));
+	usleep(2000);
 	ORWELL_LOG_INFO("quit server");
 }
 
@@ -118,22 +117,19 @@ int main()
 			"test_start_game_condition.log",
 			true);
 	log4cxx::NDC ndc("test_start_game_condition");
-	int const aWaitLoops = Common::GetWaitLoops();
-	usleep(2000 * aWaitLoops);
 	FakeAgentProxy aFakeAgentProxy;
 	std::shared_ptr< orwell::Server > aServer =
 		std::make_shared< orwell::Server >(
 			aFakeAgentProxy,
 			"tcp://*:9003",
 			"tcp://*:9000",
-			"tcp://*:9001",
-			1 + aWaitLoops * 10);
+			"tcp://*:9001");
 	ORWELL_LOG_INFO("server created");
 	std::vector< std::string > aRobots = {"Gipsy Danger"};
 	aServer->accessContext().addRobot(aRobots[0], 8001, "robot1");
 	aServer->accessContext().accessRobot(aRobots[0])->setHasRealRobot(true);
 	ORWELL_LOG_INFO("robot added 1");
-	std::thread aServerThread(server, aServer, aWaitLoops);
+	std::thread aServerThread(server, aServer);
 	std::thread aClientThread(client);
 	aClientThread.join();
 	aServerThread.join();
