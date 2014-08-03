@@ -10,6 +10,8 @@
 #include <iostream>
 #include <unistd.h>
 
+#include <boost/lexical_cast.hpp>
+
 #include <zmq.hpp>
 
 #include "MissingFromTheStandard.hpp"
@@ -60,7 +62,7 @@ Server::Server(
 				orwell::com::ConnectionMode::BIND,
 				_zmqContext,
 				0))
-	, _game(boost::posix_time::milliseconds(iGameDuration))
+	, _game(boost::posix_time::milliseconds(iGameDuration), *this)
 	, _decider(_game, _publisher)
 	, _ticDuration( boost::posix_time::milliseconds(iTicDuration) )
 	, _previousTic(boost::posix_time::microsec_clock::local_time())
@@ -171,6 +173,31 @@ void Server::push(
 			orwell::com::ConnectionMode::CONNECT,
 			_zmqContext);
 	aPusher.sendString(iMessage);
+}
+
+
+void Server::addServerCommandSocket(
+		std::string const & iAssociatedRobotId,
+		uint16_t const iPort)
+{
+	m_serverCommandSockets[iAssociatedRobotId] = std::make_shared< orwell::com::Socket >(
+			"tcp://localhost:" + boost::lexical_cast<std::string>(iPort),
+			ZMQ_REQ,
+			orwell::com::ConnectionMode::CONNECT,
+			_zmqContext,
+			0);
+}
+
+void Server::sendServerCommand(std::string const & iRobotId)
+{
+	m_serverCommandSockets[iRobotId]->sendString("capture");
+}
+
+bool Server::receiveCommandResponse(
+		std::string const & iRobotId,
+		std::string & oMessage)
+{
+	return m_serverCommandSockets[iRobotId]->receiveString(oMessage, false);
 }
 
 }

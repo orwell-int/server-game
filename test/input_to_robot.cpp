@@ -41,7 +41,7 @@ static void const ClientSendsInput(int32_t iServerPullerPort, int32_t iServerPub
 	Input aInputMessage;
 	aInputMessage.mutable_move()->set_left(1);
 	aInputMessage.mutable_move()->set_right(1);
-	aInputMessage.mutable_fire()->set_weapon1(false);
+	aInputMessage.mutable_fire()->set_weapon1(true);
 	aInputMessage.mutable_fire()->set_weapon2(false);
 
 	ORWELL_LOG_INFO("message built (size=" << aInputMessage.ByteSize() << ")");
@@ -100,6 +100,9 @@ int main()
 	std::thread aClientSendsInputThread(ClientSendsInput, *aParameters.m_pullerPort, *aParameters.m_publisherPort);
 	aClientSendsInputThread.join();
 	assert(not gOK); // because the game is not started yet, the Input message must be dropped by the server
+	aReply = aTestAgent.sendCommand("add robot toto");
+	aReply = aTestAgent.sendCommand("set robot toto video_url http://24.172.104.226/axis-cgi/mjpg/video.cgi?resolution=CIF&dummy=1405190505386");
+//	aReply = aTestAgent.sendCommand("add player titi");
 	aReply = aTestAgent.sendCommand("start game");
 	ClientSendsInput(*aParameters.m_pullerPort, *aParameters.m_publisherPort);
 	assert(gOK);

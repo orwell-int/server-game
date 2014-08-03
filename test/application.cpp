@@ -208,13 +208,13 @@ publisher-port = 19000
 puller-port    = 19001
 agent-port     = 19003
 tic-interval   = 1500
-video-ports    = 9001:9003
+video-ports    = 9001:9004
 )"));
 	orwell::Application::Parameters aExpectedParameters = {
 		2, // puller port
 		1, // publisher port
 		3, // agent port
-		{9003,9002,9001}, //video ports
+		{9004, 9003, 9002, 9001}, //video ports
 		666, // tick interval
 		274, // game duration
 		aTempFile.m_fileName, // rc file path
@@ -327,7 +327,7 @@ static void test_parse_command_line_and_file_4()
 	ORWELL_LOG_DEBUG("test_parse_command_line_and_file_4");
 	TempFile aTechConfigFile(std::string(R"(
 [server]
-video-ports    = 9001:9003
+video-ports    = 9001:9004
 )"));
 	TempFile aTempFile(std::string(R"(
 [game]
@@ -349,7 +349,7 @@ team = Mathematicians
 		2, // puller port
 		1, // publisher port
 		3, // agent port
-		{9003, 9002, 9001}, //video ports
+		{9004, 9003, 9002, 9001}, //video ports
 		666, // tick interval
 		999, // game duration
 		aTechConfigFile.m_fileName, // rc file path
@@ -387,7 +387,7 @@ static void test_parse_command_line_and_file_5()
 	ORWELL_LOG_DEBUG("test_parse_command_line_and_file_5");
 	TempFile aTechConfigFile(std::string(R"(
 [server]
-video-ports    = 9001:9002
+video-ports    = 9001:9004
 )"));
 
 	TempFile aTempFile(std::string(R"(
@@ -409,7 +409,7 @@ team = Mathematicians
 		2, // puller port
 		1, // publisher port
 		3, // agent port
-		{9002, 9001}, //video ports
+		{9004, 9003, 9002, 9001}, //video ports
 		666, // tick interval
 		274, // game duration
 		aTechConfigFile.m_fileName, //orwellrc

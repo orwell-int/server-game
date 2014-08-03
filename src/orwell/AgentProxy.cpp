@@ -261,7 +261,7 @@ void AgentProxy::listRobot(std::string & ioReply)
 void AgentProxy::addRobot(std::string const & iRobotName)
 {
 	ORWELL_LOG_INFO("add robot " << iRobotName);
-	m_application.accessServer()->accessContext().addRobot(iRobotName, m_application.popPort());
+	m_application.accessServer()->accessContext().addRobot(iRobotName, m_application.popPort(), m_application.popPort());
 }
 
 void AgentProxy::removeRobot(std::string const & iRobotName)

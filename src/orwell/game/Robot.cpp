@@ -12,10 +12,12 @@ namespace game {
 Robot::Robot(
 		string const & iName,
 		std::string const & iRobotId,
-		uint16_t const & iVideoRetransmissionPort)
+		uint16_t const & iVideoRetransmissionPort,
+		uint16_t const & iServerCommandPort)
 	: m_name(iName)
 	, m_robotId(iRobotId)
 	, m_videoRetransmissionPort(iVideoRetransmissionPort)
+	, m_serverCommandPort(iServerCommandPort)
 	, m_hasRealRobot(false)
 {
 }
@@ -67,6 +69,11 @@ std::string const & Robot::getName() const
 uint16_t Robot::getVideoRetransmissionPort() const
 {
 	return m_videoRetransmissionPort;
+}
+
+uint16_t Robot::getServerCommandPort() const
+{
+	return m_serverCommandPort;
 }
 
 std::string const & Robot::getRobotId() const

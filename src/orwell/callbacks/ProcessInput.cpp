@@ -36,6 +36,10 @@ void ProcessInput::execute()
 	if (m_game->getIsRunning())
 	{
 		RawMessage aReply(aDestination, "Input", anInputMsg.SerializeAsString());
+		if (anInputMsg.fire().weapon1())
+		{
+			m_game->fire(aDestination);
+		}
 		m_publisher->send( aReply );
 	}
 	else
