@@ -147,7 +147,24 @@ void Game::stop()
 		}
 		for ( auto const aFileName: m_tmpFiles )
 		{
-			std::ifstream aFile(aFileName, std::ifstream::in);
+			// This is a bit of a hack to wait for the processes to write in the pid file
+			// (this only happens when exiting very quickly, like in tests)
+			size_t aSize;
+			while (true)
+			{
+				 std::ifstream aInput(aFileName, std::ifstream::ate | std::ifstream::binary);
+				 aSize = aInput.tellg();
+				 ORWELL_LOG_DEBUG("pid file size = " << aSize);
+				 if (aSize > 0)
+				 {
+					 break;
+				 }
+				 else
+				 {
+					 usleep(1000 * 50);
+				 }
+			}
+			std::ifstream aFile(aFileName, std::ifstream::in | std::ifstream::binary);
 			int aPid = 0;
 			aFile >> aPid;
 			if (0 != aPid)
@@ -156,7 +173,7 @@ void Game::stop()
 			}
 			else
 			{
-				ORWELL_LOG_ERROR("Could not kill a python web server.");
+				ORWELL_LOG_ERROR("Could not kill a python web server ; from file " << aFileName);
 			}
 		}
 		ORWELL_LOG_INFO( "game stops" );
