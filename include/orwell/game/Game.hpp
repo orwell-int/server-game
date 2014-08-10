@@ -91,6 +91,8 @@ private:
 	bool m_isRunning;
 	/// Each connected robot has a robotContext in this map. The key is the robot name.
 	std::map<std::string, std::shared_ptr<Robot> > m_robots;
+	/// Same as #m_robots except that the kid is the ID instead of the name
+	std::map< std::string, std::shared_ptr< Robot > > m_robotsById;
 	/// Each connected controller has a playerContext in this map. The key is the player name.
 	std::map< std::string, std::shared_ptr< Player > > m_players;
 	/// Each connected controller has a playerContext in this map. The key is the team name.

@@ -102,14 +102,14 @@ void Server::loopUntilOneMessageIsProcessed()
 		aDuration = aCurrentTic - _previousTic;
 		if ( aDuration < _ticDuration )
 		{
-			if ( not processMessageIfAvailable() )
+			if (processMessageIfAvailable())
 			{
-				// sleep a fraction of ticduration
-				usleep( _ticDuration.total_milliseconds() / 10 );
+				aMessageHasBeenProcessed = true;
 			}
 			else
 			{
-				aMessageHasBeenProcessed = true;
+				// sleep a fraction of ticduration
+				usleep(_ticDuration.total_milliseconds() / 10);
 			}
 		}
 		else if (_forcedStop)
@@ -119,6 +119,7 @@ void Server::loopUntilOneMessageIsProcessed()
 		else
 		{
 			feedAgentProxy();
+			_game.readImages();
 			ProcessTimer aProcessTimer(_publisher, _game);
 			aProcessTimer.execute();
 			_previousTic = aCurrentTic;
@@ -180,6 +181,9 @@ void Server::addServerCommandSocket(
 		std::string const & iAssociatedRobotId,
 		uint16_t const iPort)
 {
+	ORWELL_LOG_DEBUG("addServerCommandSocket(" <<
+			"robotID=" << iAssociatedRobotId <<
+			", port=" << iPort << ")");
 	m_serverCommandSockets[iAssociatedRobotId] = std::make_shared< orwell::com::Socket >(
 			"tcp://localhost:" + boost::lexical_cast<std::string>(iPort),
 			ZMQ_REQ,
@@ -188,9 +192,14 @@ void Server::addServerCommandSocket(
 			0);
 }
 
-void Server::sendServerCommand(std::string const & iRobotId)
+void Server::sendServerCommand(
+		std::string const & iRobotId,
+		std::string const & iCommand)
 {
-	m_serverCommandSockets[iRobotId]->sendString("capture");
+	ORWELL_LOG_DEBUG("sendServerCommand(" <<
+			"robotID=" << iRobotId <<
+			", command=" << iCommand << ")");
+	m_serverCommandSockets[iRobotId]->sendString(iCommand);
 }
 
 bool Server::receiveCommandResponse(

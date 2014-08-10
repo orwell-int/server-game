@@ -44,6 +44,12 @@ public :
 			std::string const & iProperty,
 			std::string const & iValue) = 0;
 
+	/// get property <property> of robot <name>
+	virtual void getRobot(
+			std::string const & iRobotName,
+			std::string const & iProperty,
+			std::string & oValue) = 0;
+
 	/// get the list of players
 	virtual void listPlayer(std::string & ioReply) = 0;
 

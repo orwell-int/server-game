@@ -69,7 +69,9 @@ public:
 			std::string const & iAssociatedRobotId,
 			uint16_t const iPort);
 
-	void sendServerCommand(std::string const & iRobotId);
+	void sendServerCommand(
+			std::string const & iRobotId,
+			std::string const & iCommand);
 
 	bool receiveCommandResponse(
 			std::string const & iRobotId,

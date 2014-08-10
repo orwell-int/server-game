@@ -13,6 +13,12 @@
 
 #include "gmock/gmock.h"
 
+#if defined(WIN32) || defined(_WIN32)
+#  define PATH_SEPARATOR "\\"
+#else
+#  define PATH_SEPARATOR "/"
+#endif
+
 namespace orwell
 {
 namespace com
@@ -90,6 +96,11 @@ public :
 			std::string const & iProperty,
 			std::string const & iValue));
 
+	MOCK_METHOD3(getRobot, void(
+			std::string const & iRobotName,
+			std::string const & iProperty,
+			std::string & oValue));
+
 	MOCK_METHOD1(listPlayer, void(std::string & ioReply));
 
 	MOCK_METHOD1(addPlayer, void(std::string const & iPlayerName));
@@ -109,7 +120,7 @@ public:
 
 	std::string sendCommand(
 			std::string const & iCmd,
-			std::string const & iExpectedReply = "OK");
+			boost::optional< std::string > const & iExpectedReply = std::string("OK"));
 
 	void reset();
 private:

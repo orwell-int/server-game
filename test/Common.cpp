@@ -242,7 +242,7 @@ TestAgent::~TestAgent()
 
 std::string TestAgent::sendCommand(
 		std::string const & iCmd,
-		std::string const & iExpectedReply)
+		boost::optional< std::string > const & iExpectedReply)
 {
 	ORWELL_LOG_DEBUG("send command: " << iCmd);
 	std::string aReply;
@@ -251,7 +251,7 @@ std::string TestAgent::sendCommand(
 		m_agentSocket.sendString(iCmd);
 		m_agentSocket.receiveString(aReply, true);
 		ORWELL_LOG_INFO("reply = '" << aReply << "'");
-		if (iExpectedReply == aReply)
+		if ((not iExpectedReply) or (*iExpectedReply == aReply))
 		{
 			break;
 		}

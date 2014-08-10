@@ -85,6 +85,7 @@ message(CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR})
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.cc)
 file(GLOB_RECURSE EXPORTABLEHEADERS include/*.hpp include/*.h)
 file(GLOB CONFIG *.ini)
+file(GLOB IMAGES ${CMAKE_SOURCE_DIR}/test/*.part)
 
 # Required libraries
 find_package(Boost REQUIRED COMPONENTS system program_options)
@@ -112,8 +113,11 @@ install(TARGETS orwell_server_game LIBRARY DESTINATION lib)
 install(FILES ${EXPORTABLEHEADERS} DESTINATION include)
 install(FILES ${PROTO_HDRS} DESTINATION include)
 foreach(configFile ${CONFIG})
-    add_custom_command(TARGET orwell_server_game COMMAND ${CMAKE_COMMAND} -E copy ${configFile} ${CMAKE_BINARY_DIR})
-endforeach(configFile) 
+	add_custom_command(TARGET orwell_server_game COMMAND ${CMAKE_COMMAND} -E copy ${configFile} ${CMAKE_BINARY_DIR})
+endforeach(configFile)
+foreach(image ${IMAGES})
+	add_custom_command(TARGET orwell_server_game  COMMAND ${CMAKE_COMMAND} -E copy ${image} ${CMAKE_CURRENT_BINARY_DIR})
+endforeach(image)
 
 
 include_directories(

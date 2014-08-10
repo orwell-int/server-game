@@ -137,9 +137,14 @@ void Game::start()
 
 void Game::stop()
 {
-	ORWELL_LOG_INFO( "GAME STOP");
+	ORWELL_LOG_INFO("GAME STOP");
 	if (m_isRunning)
 	{
+		for (auto const aPair : m_robots)
+		{
+			std::shared_ptr< Robot > aRobot = aPair.second;
+			m_server.sendServerCommand(aRobot->getRobotId(), "stop");
+		}
 		for ( auto const aFileName: m_tmpFiles )
 		{
 			std::ifstream aFile(aFileName, std::ifstream::in);
@@ -172,14 +177,16 @@ bool Game::addRobot(
 	}
 	else
 	{
-		// create RobotContext with that index
+		// create Robot with that index
 		if (iRobotId.empty())
 		{
 			iRobotId = getNewRobotId();
 		}
 		shared_ptr<Robot> aRobot = make_shared<Robot>(iName, iRobotId, iVideoRetransmissionPort, iServerCommandPort);
 		m_robots.insert( pair<string, shared_ptr<Robot> >( iName, aRobot ) );
-		ORWELL_LOG_INFO("new RobotContext added with internal ID=" << iName);
+		m_robotsById.insert(pair< string, shared_ptr< Robot > >(iRobotId, aRobot));
+		ORWELL_LOG_INFO("new Robot added with name='" << iName << "', " <<
+			"ID='" << iRobotId << "'");
 		aAddedRobotSuccess = true;
 	}
 	return aAddedRobotSuccess;
@@ -199,20 +206,29 @@ bool Game::removeRobot(string const & iName)
 
 void Game::fire(std::string const & iRobotId)
 {
-	if (m_robots.end() != m_robots.find(iRobotId))
+	ORWELL_LOG_DEBUG("Try fire from robot: " << iRobotId);
+	if (m_robotsById.end() != m_robotsById.find(iRobotId))
 	{
-		m_server.sendServerCommand(iRobotId);
+		m_server.sendServerCommand(iRobotId, "capture");
 		m_pendingImage.insert(iRobotId);
+	}
+	else
+	{
+		ORWELL_LOG_INFO("Try to fire from missing robot: " << iRobotId);
 	}
 }
 
 void Game::readImages()
 {
-	for (auto aRobotId : m_pendingImage)
+	std::set< std::string >::iterator aPending = m_pendingImage.begin();
+	while (m_pendingImage.end() != aPending)
 	{
+		std::set< std::string >::iterator aCurrent = aPending++;
+		std::string const & aRobotId = *aCurrent;
 		std::string aImage;
 		if (m_server.receiveCommandResponse(aRobotId, aImage))
 		{
+			m_pendingImage.erase(aCurrent);
 			ORWELL_LOG_INFO("Image received to be processed (FIRE1)");
 		}
 	}
