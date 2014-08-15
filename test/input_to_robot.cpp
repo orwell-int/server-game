@@ -116,42 +116,28 @@ int main()
 	std::string aFullPath = std::string(aPath) + PATH_SEPARATOR + "master.part";
 	ORWELL_LOG_INFO("Path to stream file: " + aFullPath);
 	aReply = aTestAgent.sendCommand("set robot toto video_url " + aFullPath);
-//	aReply = aTestAgent.sendCommand("add player titi");
 	aReply = aTestAgent.sendCommand("start game");
-	// this cannot work as the call to read in the video server is only made when sending the video
-	//{
-		//aReply = aTestAgent.sendCommand("get robot toto video_url", boost::none);
-		//size_t aIndex = aReply.rfind(":");
-		//uint16_t aPort = boost::lexical_cast< uint16_t >(aReply.substr(aIndex + 1));
-
-		//usleep(2000000);
-		//TestAgent aTestClient(aPort);
-		//aTestClient.sendCommand("ping", std::string("pong"));
-	//}
-	//if (false)
 	{
 		aReply = aTestAgent.sendCommand("get robot toto video_port", boost::none);
 		std::string aCommand("cd server-web && make client ARGS='-u http://127.0.0.1:" + aReply + " -l 9020'");
 		int aCode = system(aCommand.c_str());
 		ORWELL_LOG_INFO("fake client started (return code is " << aCode << ").");
-		//usleep(200000);
 	}
 	TestAgent aFakeClientConnector(9020);
 	aFakeClientConnector.sendCommand("ping", std::string("pong"));
 	{
 		aReply = aTestAgent.sendCommand("get robot toto video_command_port", boost::none);
-		ORWELL_LOG_INFO("DEBUG/=");
 		size_t aIndex = aReply.rfind(":");
 		uint16_t aPort = boost::lexical_cast< uint16_t >(aReply.substr(aIndex + 1));
 
-		//usleep(200000);
 		TestAgent aTestClient(aPort);
-		ORWELL_LOG_INFO("DEBUG/ping video server");
+		ORWELL_LOG_INFO("ping video server");
 		aTestClient.sendCommand("ping", std::string("pong"));
 		ClientSendsInput(
 				*aParameters.m_pullerPort,
 				*aParameters.m_publisherPort,
 				aRobotId);
+		ORWELL_LOG_INFO("make sure one image was captured.");
 		aTestClient.sendCommand("status", std::string("captured = 1"));
 	}
 
@@ -166,6 +152,6 @@ int main()
 	aReply = aTestAgent.sendCommand("stop application");
 	aApplicationThread.join();
 	ORWELL_LOG_INFO("Test ends\n");
-	//orwell::support::GlobalLogger::Clear();
+	orwell::support::GlobalLogger::Clear();
 	return 0;
 }
