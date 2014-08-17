@@ -124,9 +124,9 @@ int main()
 			500);
 	ORWELL_LOG_INFO("server created");
 	std::vector< std::string > aRobots = {"Gipsy Danger", "Goldorak", "Securitron"};
-	aServer->accessContext().addRobot(aRobots[0], 8001, "robot1");
-	aServer->accessContext().addRobot(aRobots[1], 8002, "robot2");
-	aServer->accessContext().addRobot(aRobots[2], 8003, "robot3");
+	aServer->accessContext().addRobot(aRobots[0], 8001, 8004, "robot1");
+	aServer->accessContext().addRobot(aRobots[1], 8002, 8005, "robot2");
+	aServer->accessContext().addRobot(aRobots[2], 8003, 8006, "robot3");
 	aServer->accessContext().accessRobot(aRobots[0])->setHasRealRobot(true);
 	aServer->accessContext().accessRobot(aRobots[0])->setVideoUrl("http://dummyurl.fr/8008");
 	aServer->accessContext().accessRobot(aRobots[1])->setHasRealRobot(true);

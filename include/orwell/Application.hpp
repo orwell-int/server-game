@@ -104,8 +104,8 @@ private:
 	};
 	State m_state;
 	orwell::AgentProxy m_agentProxy;
-	std::vector< uint16_t > m_availableVideoPorts;
-	std::vector< uint16_t > m_takenVideoPorts;
+	std::vector< uint16_t > m_availablePorts;
+	std::vector< uint16_t > m_takenPorts;
 };
 }
 

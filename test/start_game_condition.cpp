@@ -126,7 +126,7 @@ int main()
 			"tcp://*:9001");
 	ORWELL_LOG_INFO("server created");
 	std::vector< std::string > aRobots = {"Gipsy Danger"};
-	aServer->accessContext().addRobot(aRobots[0], 8001, "robot1");
+	aServer->accessContext().addRobot(aRobots[0], 8001, 8002, "robot1");
 	aServer->accessContext().accessRobot(aRobots[0])->setHasRealRobot(true);
 	ORWELL_LOG_INFO("robot added 1");
 	std::thread aServerThread(server, aServer);

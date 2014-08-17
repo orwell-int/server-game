@@ -4,12 +4,13 @@ compiler:
     - gcc
 
 before_install:
-    - sudo apt-get install -qq libprotobuf-dev protobuf-compiler cmake libboost-all-dev liblog4cxx10-dev valgrind libgtest-dev google-mock
-    - sudo apt-get install -qq libzmq3 libzmq3-dbg libzmq3-dev
-    - wget https://raw.github.com/zeromq/cppzmq/master/zmq.hpp -O ./include/zmq.hpp
     - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     - sudo apt-get update -qq
     - sudo apt-get install -qq g++-4.8
+    - sudo apt-get install -qq libprotobuf-dev protobuf-compiler cmake libboost-all-dev liblog4cxx10-dev valgrind libgtest-dev google-mock
+    - sudo apt-get install -qq libzmq3 libzmq3-dbg libzmq3-dev
+    - sudo apt-get install python-virtualenv
+    - wget https://raw.github.com/zeromq/cppzmq/master/zmq.hpp -O ./include/zmq.hpp
     - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
     - sudo apt-get install -qq python2.7 lcov -y
     - sudo easy_install gcovr
@@ -34,7 +35,9 @@ script:
     - gcov -v | grep "4.8"
     - lcov --version | grep "1.10"
     - mkdir -p ./build
-    - cd ./build && cmake .. && make && cd ./test && ctest
+    - cd ./build && cmake .. && make && cd ./test
+    - cd server-web ; make develop ; cd -
+    - ctest -V
     - cd ..
     - if [ "$CXX" = "g++-4.8" ] ; then cd .. && mkdir -p build_coverage && cd build_coverage ; fi
     - if [ "$CXX" = "g++-4.8" ] ; then cmake .. -DORWELL_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug ; fi

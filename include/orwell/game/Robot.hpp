@@ -20,7 +20,8 @@ public:
 	Robot(
 			std::string const & iName,
 			std::string const & iRobotId,
-			uint16_t const & iVideoRetransmissionPort);
+			uint16_t const & iVideoRetransmissionPort,
+			uint16_t const & iServerCommandPort);
 	~Robot();
 
 	void setHasRealRobot(bool const iHasRealRobot);
@@ -33,8 +34,9 @@ public:
 	void setVideoUrl(std::string const & iVideoUrl);
 	std::string const & getVideoUrl() const;
 
-	//setRetransmissionPort()
 	uint16_t getVideoRetransmissionPort() const;
+
+	uint16_t getServerCommandPort() const;
 
 //	void setVideoAddress(std::string const & iVideoAddress);
 //	std::string const & getVideoAddress() const;
@@ -54,6 +56,7 @@ private:
 	std::string m_robotId;
 	std::string m_videoUrl; //the origin URL of the videofeed
 	uint16_t m_videoRetransmissionPort; // the port on which the python server retransmits the video feed
+	uint16_t m_serverCommandPort; // the port used to give instructions to the retransmitter.
 	bool m_hasRealRobot;
 	std::weak_ptr< Player > m_player;
 };

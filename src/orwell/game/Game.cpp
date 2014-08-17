@@ -11,6 +11,7 @@
 #include "orwell/game/Robot.hpp"
 #include "orwell/game/Player.hpp"
 #include "orwell/com/Sender.hpp"
+#include "orwell/Server.hpp"
 
 #include <iostream>
 #include <zmq.hpp>
@@ -26,9 +27,12 @@ using std::make_shared;
 namespace orwell {
 namespace game {
 
-Game::Game(boost::posix_time::time_duration const & iGameDuration)
+Game::Game(
+		boost::posix_time::time_duration const & iGameDuration,
+		Server & ioServer)
 	: m_isRunning(false)
 	, m_gameDuration(iGameDuration)
+	, m_server(ioServer)
 {
 }
 
@@ -112,14 +116,18 @@ void Game::start()
 			std::ofstream(aTempName).close();
 
 			aCommandLine << " cd server-web && make start ARGS='-u \"" <<
-				aRobot->getVideoUrl() << "\" -p " <<
-				aRobot->getVideoRetransmissionPort() <<
+				aRobot->getVideoUrl() <<
+				"\" -p " << aRobot->getVideoRetransmissionPort() <<
+				" -l " <<  aRobot->getServerCommandPort() <<
 				" --pid-file " << aTempName << "'";
 			ORWELL_LOG_INFO("new tmp file : " << aTempName);
+			ORWELL_LOG_DEBUG("command line : " << aCommandLine.str());
 			int aCode = system(aCommandLine.str().c_str());
-			ORWELL_LOG_INFO("code at creation of webserver :" << aCode);
+			ORWELL_LOG_INFO("code at creation of webserver: " << aCode);
 
 			m_tmpFiles.push_back(aTempName);
+
+			m_server.addServerCommandSocket(aRobot->getRobotId(), aRobot->getServerCommandPort());
 		}
 		ORWELL_LOG_INFO("game starts");
 		m_startTime = boost::posix_time::microsec_clock::local_time();
@@ -129,12 +137,34 @@ void Game::start()
 
 void Game::stop()
 {
-	ORWELL_LOG_INFO( "GAME STOP");
+	ORWELL_LOG_INFO("GAME STOP");
 	if (m_isRunning)
 	{
+		for (auto const aPair : m_robots)
+		{
+			std::shared_ptr< Robot > aRobot = aPair.second;
+			m_server.sendServerCommand(aRobot->getRobotId(), "stop");
+		}
 		for ( auto const aFileName: m_tmpFiles )
 		{
-			std::ifstream aFile(aFileName, std::ifstream::in);
+			// This is a bit of a hack to wait for the processes to write in the pid file
+			// (this only happens when exiting very quickly, like in tests)
+			size_t aSize;
+			while (true)
+			{
+				 std::ifstream aInput(aFileName, std::ifstream::ate | std::ifstream::binary);
+				 aSize = aInput.tellg();
+				 ORWELL_LOG_DEBUG("pid file size = " << aSize);
+				 if (aSize > 0)
+				 {
+					 break;
+				 }
+				 else
+				 {
+					 usleep(1000 * 50);
+				 }
+			}
+			std::ifstream aFile(aFileName, std::ifstream::in | std::ifstream::binary);
 			int aPid = 0;
 			aFile >> aPid;
 			if (0 != aPid)
@@ -143,7 +173,7 @@ void Game::stop()
 			}
 			else
 			{
-				ORWELL_LOG_ERROR("Could not kill a python web server.");
+				ORWELL_LOG_ERROR("Could not kill a python web server ; from file " << aFileName);
 			}
 		}
 		ORWELL_LOG_INFO( "game stops" );
@@ -154,6 +184,7 @@ void Game::stop()
 bool Game::addRobot(
 		string const & iName,
 		uint16_t const iVideoRetransmissionPort,
+		uint16_t const iServerCommandPort,
 		std::string iRobotId)
 {
 	bool aAddedRobotSuccess = false;
@@ -163,14 +194,16 @@ bool Game::addRobot(
 	}
 	else
 	{
-		// create RobotContext with that index
+		// create Robot with that index
 		if (iRobotId.empty())
 		{
 			iRobotId = getNewRobotId();
 		}
-		shared_ptr<Robot> aRobot = make_shared<Robot>(iName, iRobotId, iVideoRetransmissionPort);
+		shared_ptr<Robot> aRobot = make_shared<Robot>(iName, iRobotId, iVideoRetransmissionPort, iServerCommandPort);
 		m_robots.insert( pair<string, shared_ptr<Robot> >( iName, aRobot ) );
-		ORWELL_LOG_INFO("new RobotContext added with internal ID=" << iName);
+		m_robotsById.insert(pair< string, shared_ptr< Robot > >(iRobotId, aRobot));
+		ORWELL_LOG_INFO("new Robot added with name='" << iName << "', " <<
+			"ID='" << iRobotId << "'");
 		aAddedRobotSuccess = true;
 	}
 	return aAddedRobotSuccess;
@@ -186,6 +219,36 @@ bool Game::removeRobot(string const & iName)
 		aRemovedRobotSuccess = true;
 	}
 	return aRemovedRobotSuccess;
+}
+
+void Game::fire(std::string const & iRobotId)
+{
+	ORWELL_LOG_DEBUG("Try fire from robot: " << iRobotId);
+	if (m_robotsById.end() != m_robotsById.find(iRobotId))
+	{
+		m_server.sendServerCommand(iRobotId, "capture");
+		m_pendingImage.insert(iRobotId);
+	}
+	else
+	{
+		ORWELL_LOG_INFO("Try to fire from missing robot: " << iRobotId);
+	}
+}
+
+void Game::readImages()
+{
+	std::set< std::string >::iterator aPending = m_pendingImage.begin();
+	while (m_pendingImage.end() != aPending)
+	{
+		std::set< std::string >::iterator aCurrent = aPending++;
+		std::string const & aRobotId = *aCurrent;
+		std::string aImage;
+		if (m_server.receiveCommandResponse(aRobotId, aImage))
+		{
+			m_pendingImage.erase(aCurrent);
+			ORWELL_LOG_INFO("Image received to be processed (FIRE1)");
+		}
+	}
 }
 
 std::shared_ptr< Robot > Game::getRobotWithoutRealRobot(

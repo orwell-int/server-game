@@ -362,7 +362,8 @@ bool Application::CheckParametersConsistency(Parameters const & iParam)
 		return false;
 	}
 
-	if (iParam.m_videoPorts.size() < iParam.m_robots.size())
+	//each robot needs 1 port for the video retransmission and 1 port to send commands to the associated server
+	if (iParam.m_videoPorts.size() < 2 * iParam.m_robots.size())
 	{
 		ORWELL_LOG_ERROR("Only " << iParam.m_videoPorts.size() << " ports for " << iParam.m_robots.size() << " robots");
 		return false;
@@ -508,12 +509,13 @@ void Application::initServer(Parameters const & iParam)
 			iParam.m_tickInterval.get(),
 			iParam.m_gameDuration.get());
 
-	m_availableVideoPorts = iParam.m_videoPorts;
+	m_availablePorts = iParam.m_videoPorts;
 	// temporary hack
 	for (auto aPair : iParam.m_robots)
 	{
 		m_server->accessContext().addRobot(
 				aPair.second.m_name,
+				popPort(),
 				popPort(),
 				aPair.first);
 	}
@@ -647,11 +649,11 @@ bool operator==(
 
 uint16_t Application::popPort()
 {
-	if (not m_availableVideoPorts.empty())
+	if (not m_availablePorts.empty())
 	{
-		uint16_t aReturnPort = m_availableVideoPorts.back();
-		m_availableVideoPorts.pop_back();
-		m_takenVideoPorts.push_back(aReturnPort);
+		uint16_t aReturnPort = m_availablePorts.back();
+		m_availablePorts.pop_back();
+		m_takenPorts.push_back(aReturnPort);
 		return aReturnPort;
 	}
 	else

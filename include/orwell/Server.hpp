@@ -65,6 +65,18 @@ public:
 			std::string const & iUrl,
 			std::string const & iMessage);
 
+	void addServerCommandSocket(
+			std::string const & iAssociatedRobotId,
+			uint16_t const iPort);
+
+	void sendServerCommand(
+			std::string const & iRobotId,
+			std::string const & iCommand);
+
+	bool receiveCommandResponse(
+			std::string const & iRobotId,
+			std::string & oMessage);
+
 private:
 	zmq::context_t _zmqContext;
 	orwell::IAgentProxy & m_agentProxy;
@@ -73,6 +85,8 @@ private:
 	std::shared_ptr< com::Sender > _publisher;
 	orwell::game::Game _game;
 	orwell::callbacks::ProcessDecider _decider;
+
+	std::map< std::string, std::shared_ptr< com::Socket > > m_serverCommandSockets;
 
 	boost::posix_time::time_duration const _ticDuration;
 	boost::posix_time::ptime _previousTic;

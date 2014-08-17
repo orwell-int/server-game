@@ -36,7 +36,13 @@ void ProcessInput::execute()
 	if (m_game->getIsRunning())
 	{
 		RawMessage aReply(aDestination, "Input", anInputMsg.SerializeAsString());
-		m_publisher->send( aReply );
+		if (anInputMsg.fire().weapon1())
+		{
+			ORWELL_LOG_DEBUG("FIRE");
+			m_game->fire(aDestination);
+		}
+		ORWELL_LOG_DEBUG("Forward Input message");
+		m_publisher->send(aReply);
 	}
 	else
 	{

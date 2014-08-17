@@ -15,7 +15,7 @@ static void Application()
 static void Stopper()
 {
 	TestAgent aTestAgent(9003);
-	aTestAgent.sendCommand("ping", "pong");
+	aTestAgent.sendCommand("ping", std::string("pong"));
 	aTestAgent.sendCommand("stop application");
 }
 

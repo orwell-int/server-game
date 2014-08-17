@@ -60,13 +60,12 @@ bool AgentProxy::step(
 		std::string const & iCommand,
 		std::string & ioReply)
 {
-	ORWELL_LOG_DEBUG("batman= '" << iCommand << "'");
 	bool aResult = false;
-	std::string iAction;
+	std::string aAction;
 	using std::placeholders::_1;
 	std::istringstream aStream(iCommand);
-	aStream >> iAction;
-	if ("list" == iAction)
+	aStream >> aAction;
+	if ("list" == aAction)
 	{
 		std::string aObject;
 		aStream >> aObject;
@@ -88,7 +87,7 @@ bool AgentProxy::step(
 			}
 		}
 	}
-	else if ("start" == iAction)
+	else if ("start" == aAction)
 	{
 		std::string aObject;
 		aStream >> aObject;
@@ -101,7 +100,7 @@ bool AgentProxy::step(
 					ioReply);
 		}
 	}
-	else if ("stop" == iAction)
+	else if ("stop" == aAction)
 	{
 		std::string aObject;
 		aStream >> aObject;
@@ -122,7 +121,7 @@ bool AgentProxy::step(
 					ioReply);
 		}
 	}
-	else if ("add" == iAction)
+	else if ("add" == aAction)
 	{
 		std::string aObject;
 		aStream >> aObject;
@@ -143,7 +142,7 @@ bool AgentProxy::step(
 					ioReply);
 		}
 	}
-	else if ("remove" == iAction)
+	else if ("remove" == aAction)
 	{
 		std::string aObject;
 		aStream >> aObject;
@@ -164,7 +163,7 @@ bool AgentProxy::step(
 					ioReply);
 		}
 	}
-	else if ("register" == iAction)
+	else if ("register" == aAction)
 	{
 		std::string aObject;
 		aStream >> aObject;
@@ -177,7 +176,7 @@ bool AgentProxy::step(
 					ioReply);
 		}
 	}
-	else if ("unregister" == iAction)
+	else if ("unregister" == aAction)
 	{
 		std::string aObject;
 		aStream >> aObject;
@@ -190,7 +189,7 @@ bool AgentProxy::step(
 					ioReply);
 		}
 	}
-	if ("set" == iAction)
+	else if ("set" == aAction)
 	{
 		std::string aObject;
 		aStream >> aObject;
@@ -209,7 +208,21 @@ bool AgentProxy::step(
 					ioReply);
 		}
 	}
-	else if ("ping" == iAction)
+	else if ("get" == aAction)
+	{
+		std::string aObject;
+		aStream >> aObject;
+		std::string aName;
+		aStream >> aName;
+		std::string aProperty;
+		aStream >> aProperty;
+		if ("robot" == aObject)
+		{
+			getRobot(aName, aProperty, ioReply);
+			aResult = true;
+		}
+	}
+	else if ("ping" == aAction)
 	{
 		ioReply = "pong";
 		aResult = true;
@@ -261,7 +274,7 @@ void AgentProxy::listRobot(std::string & ioReply)
 void AgentProxy::addRobot(std::string const & iRobotName)
 {
 	ORWELL_LOG_INFO("add robot " << iRobotName);
-	m_application.accessServer()->accessContext().addRobot(iRobotName, m_application.popPort());
+	m_application.accessServer()->accessContext().addRobot(iRobotName, m_application.popPort(), m_application.popPort());
 }
 
 void AgentProxy::removeRobot(std::string const & iRobotName)
@@ -315,6 +328,47 @@ void AgentProxy::setRobot(
 		}
 		else
 		{
+			ORWELL_LOG_WARN("Unknown property for a robot: '" << iProperty << "'");
+		}
+	}
+	catch (std::exception const & anException)
+	{
+		ORWELL_LOG_ERROR(anException.what());
+	}
+}
+
+void AgentProxy::getRobot(
+		std::string const & iRobotName,
+		std::string const & iProperty,
+		std::string & oValue)
+{
+	ORWELL_LOG_INFO("get robot " << iRobotName << " " << iProperty);
+	try
+	{
+		std::shared_ptr< orwell::game::Robot > aRobot =
+			m_application.accessServer()->accessContext().accessRobot(iRobotName);
+		if ("id" == iProperty)
+		{
+			oValue = aRobot->getRobotId();
+			ORWELL_LOG_INFO("id = " << oValue);
+		}
+		else if ("video_url" == iProperty)
+		{
+			oValue = aRobot->getVideoUrl();
+		}
+		else if ("video_port" == iProperty)
+		{
+			oValue = boost::lexical_cast< std::string >(aRobot->getVideoRetransmissionPort());
+			ORWELL_LOG_INFO("video retransmission port = " << oValue);
+		}
+		else if ("video_command_port" == iProperty)
+		{
+			oValue = boost::lexical_cast< std::string >(aRobot->getServerCommandPort());
+			ORWELL_LOG_INFO("video retransmission port = " << oValue);
+		}
+		else
+		{
+			oValue = "KO";
 			ORWELL_LOG_WARN("Unknown property for a robot: '" << iProperty << "'");
 		}
 	}

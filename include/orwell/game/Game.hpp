@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <memory>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -12,6 +13,8 @@
 
 namespace orwell
 {
+class Server;
+
 namespace com
 {
 class Sender;
@@ -23,7 +26,9 @@ class Robot;
 class Game
 {
 public:
-	Game(boost::posix_time::time_duration const & iGameDuration);
+	Game(
+			boost::posix_time::time_duration const & iGameDuration,
+			Server & ioServer);
 	~Game();
 
 //	std::shared_ptr< com::Sender > getPublisher();
@@ -53,7 +58,8 @@ public:
 	//add empty RobotContext
 	bool addRobot(
 			std::string const & iName,
-			uint16_t const aVideoRetransmissionPort,
+			uint16_t const iVideoRetransmissionPort,
+			uint16_t const iServerCommandPort,
 			std::string iRobotId = "");
 
 	/// Remove a robot named #iName if found.
@@ -62,6 +68,10 @@ public:
 	/// \return
 	///  True if and only if the robot was found and removed.
 	bool removeRobot(std::string const & iName);
+
+	void fire(std::string const & iRobotId);
+
+	void readImages();
 
 	std::shared_ptr< Robot > getRobotWithoutRealRobot(
 			std::string const & iTemporaryRobotId) const;
@@ -81,6 +91,8 @@ private:
 	bool m_isRunning;
 	/// Each connected robot has a robotContext in this map. The key is the robot name.
 	std::map<std::string, std::shared_ptr<Robot> > m_robots;
+	/// Same as #m_robots except that the kid is the ID instead of the name
+	std::map< std::string, std::shared_ptr< Robot > > m_robotsById;
 	/// Each connected controller has a playerContext in this map. The key is the player name.
 	std::map< std::string, std::shared_ptr< Player > > m_players;
 	/// Each connected controller has a playerContext in this map. The key is the team name.
@@ -94,6 +106,10 @@ private:
 	boost::posix_time::ptime m_time;
 	boost::posix_time::ptime m_startTime;
 	boost::posix_time::time_duration m_gameDuration;
+
+	Server & m_server;
+	/// robot ids for which an image has been requested
+	std::set< std::string > m_pendingImage;
 };
 
 }

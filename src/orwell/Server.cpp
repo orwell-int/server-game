@@ -10,6 +10,8 @@
 #include <iostream>
 #include <unistd.h>
 
+#include <boost/lexical_cast.hpp>
+
 #include <zmq.hpp>
 
 #include "MissingFromTheStandard.hpp"
@@ -60,7 +62,7 @@ Server::Server(
 				orwell::com::ConnectionMode::BIND,
 				_zmqContext,
 				0))
-	, _game(boost::posix_time::milliseconds(iGameDuration))
+	, _game(boost::posix_time::milliseconds(iGameDuration), *this)
 	, _decider(_game, _publisher)
 	, _ticDuration( boost::posix_time::milliseconds(iTicDuration) )
 	, _previousTic(boost::posix_time::microsec_clock::local_time())
@@ -100,14 +102,14 @@ void Server::loopUntilOneMessageIsProcessed()
 		aDuration = aCurrentTic - _previousTic;
 		if ( aDuration < _ticDuration )
 		{
-			if ( not processMessageIfAvailable() )
+			if (processMessageIfAvailable())
 			{
-				// sleep a fraction of ticduration
-				usleep( _ticDuration.total_milliseconds() / 10 );
+				aMessageHasBeenProcessed = true;
 			}
 			else
 			{
-				aMessageHasBeenProcessed = true;
+				// sleep a fraction of ticduration
+				usleep(_ticDuration.total_milliseconds() / 10);
 			}
 		}
 		else if (_forcedStop)
@@ -117,6 +119,7 @@ void Server::loopUntilOneMessageIsProcessed()
 		else
 		{
 			feedAgentProxy();
+			_game.readImages();
 			ProcessTimer aProcessTimer(_publisher, _game);
 			aProcessTimer.execute();
 			_previousTic = aCurrentTic;
@@ -171,6 +174,39 @@ void Server::push(
 			orwell::com::ConnectionMode::CONNECT,
 			_zmqContext);
 	aPusher.sendString(iMessage);
+}
+
+
+void Server::addServerCommandSocket(
+		std::string const & iAssociatedRobotId,
+		uint16_t const iPort)
+{
+	ORWELL_LOG_DEBUG("addServerCommandSocket(" <<
+			"robotID=" << iAssociatedRobotId <<
+			", port=" << iPort << ")");
+	m_serverCommandSockets[iAssociatedRobotId] = std::make_shared< orwell::com::Socket >(
+			"tcp://localhost:" + boost::lexical_cast<std::string>(iPort),
+			ZMQ_REQ,
+			orwell::com::ConnectionMode::CONNECT,
+			_zmqContext,
+			0);
+}
+
+void Server::sendServerCommand(
+		std::string const & iRobotId,
+		std::string const & iCommand)
+{
+	ORWELL_LOG_DEBUG("sendServerCommand(" <<
+			"robotID=" << iRobotId <<
+			", command=" << iCommand << ")");
+	m_serverCommandSockets[iRobotId]->sendString(iCommand);
+}
+
+bool Server::receiveCommandResponse(
+		std::string const & iRobotId,
+		std::string & oMessage)
+{
+	return m_serverCommandSockets[iRobotId]->receiveString(oMessage, false);
 }
 
 }

@@ -48,8 +48,7 @@ int main()
 			aParameters);
 	TestAgent aTestAgent(aParameters.m_agentPort.get());
 	std::thread aApplicationThread(Application, aParameters);
-	std::string aReply;
-	aReply = aTestAgent.sendCommand("stop application");
+	aTestAgent.sendCommand("stop application");
 	aApplicationThread.join();
 	orwell::support::GlobalLogger::Clear();
 	return 0;

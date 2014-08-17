@@ -49,6 +49,12 @@ public :
 			std::string const & iProperty,
 			std::string const & iValue) override;
 
+	/// get property <property> of robot <name>
+	void getRobot(
+			std::string const & iRobotName,
+			std::string const & iProperty,
+			std::string & oValue) override;
+
 	/// List all the players present.
 	///
 	void listPlayer(std::string & ioReply) override;
