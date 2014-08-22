@@ -99,9 +99,9 @@ int main()
 
 	std::string aReply;
 	std::thread aApplicationThread(Application, aParameters);
-	aReply = aTestAgent.sendCommand("ping", std::string("pong"));
+	aTestAgent.sendCommand("ping", std::string("pong"));
 
-	aReply = aTestAgent.sendCommand("add robot toto");
+	aTestAgent.sendCommand("add robot toto");
 	std::string aRobotId = aTestAgent.sendCommand("get robot toto id", boost::none);
 	assert("KO" != aRobotId);
 	std::thread aClientSendsInputThread(
@@ -110,16 +110,17 @@ int main()
 			*aParameters.m_publisherPort,
 			aRobotId);
 	aClientSendsInputThread.join();
-	assert(not gOK); // because the game is not started yet, the Input message must be dropped by the server
+	 // because the game is not started yet, the Input message is supposed to be dropped by the server
+	assert(not gOK);
 	char aPath[FILENAME_MAX];
 	getcwd(aPath, sizeof(aPath));
 	std::string aFullPath = std::string(aPath) + PATH_SEPARATOR + "master.part";
 	ORWELL_LOG_INFO("Path to stream file: " + aFullPath);
-	aReply = aTestAgent.sendCommand("set robot toto video_url " + aFullPath);
-	aReply = aTestAgent.sendCommand("start game");
+	aTestAgent.sendCommand("set robot toto video_url " + aFullPath);
+	aTestAgent.sendCommand("start game");
 	{
 		aReply = aTestAgent.sendCommand("get robot toto video_port", boost::none);
-		std::string aCommand("cd server-web && make client ARGS='-u http://127.0.0.1:" + aReply + " -l 9020'");
+		std::string aCommand("cd server-web && make client ARGS='-u http://127.0.0.1:" + aReply + " -l 9020 -d 8'");
 		int aCode = system(aCommand.c_str());
 		ORWELL_LOG_INFO("fake client started (return code is " << aCode << ").");
 	}
@@ -142,14 +143,14 @@ int main()
 	}
 
 	assert(gOK);
-	aReply = aTestAgent.sendCommand("stop game");
+	aTestAgent.sendCommand("stop game");
 	aFakeClientConnector.sendCommand("stop", std::string("stopping"));
 	ClientSendsInput(
 			*aParameters.m_pullerPort,
 			*aParameters.m_publisherPort,
 			aRobotId);
 	assert(not gOK);
-	aReply = aTestAgent.sendCommand("stop application");
+	aTestAgent.sendCommand("stop application");
 	aApplicationThread.join();
 	ORWELL_LOG_INFO("Test ends\n");
 	orwell::support::GlobalLogger::Clear();
