@@ -13,3 +13,4 @@ doc/Server-game/diagrams/
 compile_commands.json
 patch_ycm.diff
 .vagrant/
+include/zmq.hpp
