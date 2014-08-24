@@ -177,8 +177,6 @@ video-ports    = 9001
 		true, // dry run
 		false, // broadcast
 		//{}, // robot ids
-		std::map<std::string, orwell::Application::Parameters::Robot>(), // robot descriptors
-		std::set<orwell::Application::Parameters::Team>(), // teams
 	};
 	test_ReadParameters(Status::PASS, Common::GetArguments(
 				false, // help
@@ -263,8 +261,6 @@ video-ports    = 9001
 		false, // dry run
 		true, // broadcast
 		//{}, // robot ids
-		std::map<std::string, orwell::Application::Parameters::Robot>(), // robot descriptors
-		std::set<orwell::Application::Parameters::Team>(), // teams
 	};
 	test_ReadParameters(Status::PASS, Common::GetArguments(
 				false, // help
@@ -300,8 +296,6 @@ puller-port = 42
 		true, // dry run
 		false, // broadcast
 		//{}, // robot ids
-		std::map<std::string, orwell::Application::Parameters::Robot>(), // robot descriptors
-		std::set<orwell::Application::Parameters::Team>(), // teams
 	};
 	test_ReadParameters(Status::PASS, Common::GetArguments(
 				false, // help
