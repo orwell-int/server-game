@@ -177,8 +177,6 @@ video-ports    = 9001
 		true, // dry run
 		false, // broadcast
 		//{}, // robot ids
-		{}, // robot descriptors
-		{}, // teams
 	};
 	test_ReadParameters(Status::PASS, Common::GetArguments(
 				false, // help
@@ -222,8 +220,6 @@ video-ports    = 9001:9004
 		true, // dry run
 		false, // broadcast
 		//{}, // robot ids
-		{}, // robot descriptors
-		{}, // teams
 	};
 	test_ReadParameters(Status::PASS, Common::GetArguments(
 				false, // help
@@ -265,8 +261,6 @@ video-ports    = 9001
 		false, // dry run
 		true, // broadcast
 		//{}, // robot ids
-		{}, // robot descriptors
-		{}, // teams
 	};
 	test_ReadParameters(Status::PASS, Common::GetArguments(
 				false, // help
@@ -302,8 +296,6 @@ puller-port = 42
 		true, // dry run
 		false, // broadcast
 		//{}, // robot ids
-		{}, // robot descriptors
-		{}, // teams
 	};
 	test_ReadParameters(Status::PASS, Common::GetArguments(
 				false, // help
