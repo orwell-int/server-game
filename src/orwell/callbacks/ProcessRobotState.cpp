@@ -29,6 +29,17 @@ void ProcessRobotState::execute()
 
 	ORWELL_LOG_INFO("ProcessRobotState::execute : simple relay");
 
+	if (not aRobotStateMsg.rfid().empty())
+	{
+
+	}
+	if (aRobotStateMsg.color() != -1)
+	{
+
+	}
+
+
+	// forward this message to each controler
 	RawMessage aForward(aDestination, "RobotState", aRobotStateMsg.SerializeAsString());
 	m_publisher->send( aForward );
 }

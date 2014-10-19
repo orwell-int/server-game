@@ -3,6 +3,7 @@
 #include "orwell/Server.hpp"
 #include "orwell/BroadcastServer.hpp"
 #include "orwell/support/GlobalLogger.hpp"
+#include "orwell/game/Item.hpp"
 
 #include <boost/program_options.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -326,7 +327,7 @@ void Application::ParseGameConfigFromFile(
 	if (aGameRobots)
 	{
 		std::vector<std::string> aRobotList;
-		Application::TokenizeRobots(aGameRobots.get(), aRobotList);
+		Application::Tokenize(aGameRobots.get(), aRobotList);
 
 		for (std::string const & iRobot : aRobotList)
 		{
@@ -335,6 +336,28 @@ void Application::ParseGameConfigFromFile(
 			ORWELL_LOG_INFO("Pushing robot: " << aRobotName << " ; in team " << aRobotTeam);
 			ioParam.m_robots[iRobot] = Parameters::Robot{aRobotName, aRobotTeam};
 			ioParam.m_teams.insert(aRobotTeam);
+		}
+	}
+
+	// list of all items to add
+	boost::optional<std::string> aGameItems = aPtree.get_optional<std::string>("game.items");
+	if (aGameItems)
+	{
+		std::vector<std::string> aItemList;
+		Application::Tokenize(aGameItems.get(), aItemList);
+
+		for (std::string const & iItem : aItemList)
+		{
+			std::string aItemName = aPtree.get<std::string>(iItem + ".name");
+			std::string aItemType = aPtree.get<std::string>(iItem + ".type");
+			std::string aItemRfid = aPtree.get<std::string>(iItem + ".rfid");
+			int32_t aItemColor = aPtree.get<int32_t>(iItem + ".color");
+
+			std::shared_ptr<game::Item> aNewItem = game::Item::CreateItem(aItemType, aItemName, aItemRfid, aItemColor);
+
+			ORWELL_LOG_INFO(aNewItem->toLogString());
+			//ioParam.m_Items[iItem] = Parameters::Item{aItemName, aItemTeam};
+			//ioParam.m_teams.insert(aItemTeam);
 		}
 	}
 }
@@ -533,9 +556,9 @@ void Application::initBroadcastServer(Parameters const & iParam)
 	}
 }
 
-void Application::TokenizeRobots(
-		std::string const & iRobotsString,
-		std::vector<std::string> & oRobotList)
+void Application::Tokenize(
+		std::string const & iString,
+		std::vector<std::string> & oList)
 {
 	std::string aToken;
 
@@ -543,7 +566,8 @@ void Application::TokenizeRobots(
 	 * This is kind of a hack: I know there are some boost libraries doing the
 	 * tokenization but I really wanted to use a lambda function here..
 	 */
-	std::for_each(iRobotsString.begin(), iRobotsString.end(), [&](char iChar) {
+	std::for_each(iString.begin(), iString.end(), [&](char iChar)
+	{
 		if (iChar != '|' and iChar != ' ')
 		{
 			aToken += iChar;
@@ -552,7 +576,7 @@ void Application::TokenizeRobots(
 		{
 			if (not aToken.empty())
 			{
-				oRobotList.push_back(aToken);
+				oList.push_back(aToken);
 				aToken.clear();
 			}
 		}
@@ -560,7 +584,7 @@ void Application::TokenizeRobots(
 
 	if (not aToken.empty())
 	{
-		oRobotList.push_back(aToken);
+		oList.push_back(aToken);
 	}
 }
 

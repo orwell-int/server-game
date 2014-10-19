@@ -115,11 +115,13 @@ TempFile::TempFile(std::string const & iContent)
 	char aFileName[L_tmpnam];
 	tmpnam(aFileName);
 	FILE * aFile = fopen(aFileName, "w");
-	size_t const aWritten = fputs(iContent.c_str(), aFile);
-	if (aWritten != iContent.size())
-	{
-		std::cerr << "Temporary file not created properly." << std::endl;
-	}
+	fputs(iContent.c_str(), aFile);
+//	turns out fputs does not returns the size of input
+//	size_t const aWritten = fputs(iContent.c_str(), aFile);
+//	if (aWritten != iContent.size())
+//	{
+//		std::cerr << "Temporary file not created properly." << std::endl;
+//	}
 	fclose(aFile);
 	m_fileName = std::string(aFileName);
 }
@@ -128,6 +130,7 @@ TempFile::~TempFile()
 {
 	if (not m_fileName.empty())
 	{
+		std::cerr << "batman remove " << m_fileName << std::endl;
 		remove(m_fileName.c_str());
 		m_fileName.erase();
 	}
@@ -502,6 +505,52 @@ team = Mathematicians
 			);
 }
 
+static void test_parse_game_file_with_flag()
+{
+	ORWELL_LOG_DEBUG("test_parse_game_file_with_flag");
+	TempFile aTechConfigFile(std::string(R"(
+[server]
+video-ports    = 9001:9004
+)"));
+
+	TempFile aGameConfigFile(std::string(R"(
+[game]
+robots = robot_A | robot_B
+items = item_RedFlag
+
+[robot_A]
+name = Aristotle
+team = Philosophers
+
+[robot_B]
+name = Bourbaki
+team = Mathematicians
+
+[item_RedFlag]
+name = Red Flag
+type = flag
+rfid = myrfidredflag
+color = -1 
+
+)"));
+
+	test_ReadParameters(Status::FAIL, Common::GetArguments(
+				false, // help
+				1, // publisher port
+				2, // puller port
+				3, // agent port
+				aTechConfigFile.m_fileName, // orwellrc
+				aGameConfigFile.m_fileName, // game config file path
+				274, // game duration
+				666, // tick interval
+				false, // version
+				true, // debug log
+				true, // no broadcast
+				true) // dry run
+			);
+
+}
+
 int main()
 {
 	orwell::support::GlobalLogger::Create("test_application", "test_application.log", true);
@@ -523,6 +572,7 @@ int main()
 	test_parse_command_line_and_file_5();
 	test_parse_command_line_and_file_6_badConfigFile();
 	test_parse_command_line_and_file_7_moreRobotsThanVideoPorts();
+	test_parse_game_file_with_flag();
 
 	orwell::support::GlobalLogger::Clear();
 	return 0;

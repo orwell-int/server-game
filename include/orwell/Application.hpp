@@ -73,9 +73,9 @@ private:
 
 	void initBroadcastServer(Parameters const & iParam);
 
-	static void TokenizeRobots(
-		std::string const & iRobotsString,
-		std::vector<std::string> & oRobotList);
+	static void Tokenize(
+		std::string const & iString,
+		std::vector<std::string> & oList);
 
 	//Parameter parsing and validation
 	static bool ParseParametersFromCommandLine(
