@@ -130,7 +130,6 @@ TempFile::~TempFile()
 {
 	if (not m_fileName.empty())
 	{
-		std::cerr << "batman remove " << m_fileName << std::endl;
 		remove(m_fileName.c_str());
 		m_fileName.erase();
 	}

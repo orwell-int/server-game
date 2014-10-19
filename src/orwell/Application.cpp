@@ -356,8 +356,6 @@ void Application::ParseGameConfigFromFile(
 			std::shared_ptr<game::Item> aNewItem = game::Item::CreateItem(aItemType, aItemName, aItemRfid, aItemColor);
 
 			ORWELL_LOG_INFO(aNewItem->toLogString());
-			//ioParam.m_Items[iItem] = Parameters::Item{aItemName, aItemTeam};
-			//ioParam.m_teams.insert(aItemTeam);
 		}
 	}
 }

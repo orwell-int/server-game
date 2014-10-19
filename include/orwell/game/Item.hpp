@@ -3,6 +3,7 @@
 #pragma once
 
 #include <string>
+#include <map>
 #include <memory>
 #include <ostream>
 
@@ -25,8 +26,12 @@ public:
 	std::string getRfid() const;
 	int32_t getColor() const;
 
-	static std::shared_ptr<Item> GetItem(
-			std::string const & iRfid,
+	static void InitializeStaticMaps();
+
+	static std::shared_ptr<Item> GetItemByRfid(
+			std::string const & iRfid);
+
+	static std::shared_ptr<Item> GetItemByColor(
 			int32_t const iColorCode);
 
 	static std::shared_ptr<Item> CreateItem(
@@ -41,6 +46,9 @@ private:
 	std::string m_name;
 	std::string m_rfid;
 	int32_t m_color;
+
+	static std::map<std::string, std::shared_ptr<Item> > s_itemsByRfid;
+	static std::map<int32_t, std::shared_ptr<Item> > s_itemsByColor;
 
 };
 

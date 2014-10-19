@@ -31,13 +31,12 @@ void ProcessRobotState::execute()
 
 	if (not aRobotStateMsg.rfid().empty())
 	{
-
+		// game::Item::GetItemByRfid(aRobotStateMsg.rfid());
 	}
 	if (aRobotStateMsg.color() != -1)
 	{
-
+		// game::Item::GetItemByColor(aRobotStateMsg.color());
 	}
-
 
 	// forward this message to each controler
 	RawMessage aForward(aDestination, "RobotState", aRobotStateMsg.SerializeAsString());
