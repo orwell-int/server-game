@@ -77,24 +77,23 @@ int main()
 	log4cxx::NDC ndc("test_input");
 	ORWELL_LOG_INFO("Test starts\n");
 	orwell::Application::Parameters aParameters;
+
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_publisherPort = 9000;
+	aCommandLineArguments.m_pullerPort = 9001;
+	aCommandLineArguments.m_agentPort = 9003;
+	aCommandLineArguments.m_tickInterval = 10;
+	aCommandLineArguments.m_gameDuration = 200;
+	aCommandLineArguments.m_dryRun = false;
+	aCommandLineArguments.m_broadcast = false;
+
 	Arguments aArguments = Common::GetArguments(
-			false,
-			9000,
-			9001,
-			9003,
-			boost::none,
-			boost::none,
-			10,
-			200,
-			false,
-			true,
-			true,
-			false);
+			aCommandLineArguments, true);
 	orwell::Application::ReadParameters(
 			aArguments.m_argc,
 			aArguments.m_argv,
 			aParameters);
-	TestAgent aTestAgent(aParameters.m_agentPort.get());
+	TestAgent aTestAgent(aParameters.m_commandLineParameters.m_agentPort.get());
 	usleep(100);
 
 	std::string aReply;
@@ -106,8 +105,8 @@ int main()
 	assert("KO" != aRobotId);
 	std::thread aClientSendsInputThread(
 			ClientSendsInput,
-			*aParameters.m_pullerPort,
-			*aParameters.m_publisherPort,
+			*aParameters.m_commandLineParameters.m_pullerPort,
+			*aParameters.m_commandLineParameters.m_publisherPort,
 			aRobotId);
 	aClientSendsInputThread.join();
 	 // because the game is not started yet, the Input message is supposed to be dropped by the server
@@ -135,8 +134,8 @@ int main()
 		ORWELL_LOG_INFO("ping video server");
 		aTestClient.sendCommand("ping", std::string("pong"));
 		ClientSendsInput(
-				*aParameters.m_pullerPort,
-				*aParameters.m_publisherPort,
+				*aParameters.m_commandLineParameters.m_pullerPort,
+				*aParameters.m_commandLineParameters.m_publisherPort,
 				aRobotId);
 		ORWELL_LOG_INFO("make sure one image was captured.");
 		aTestClient.sendCommand("status", std::string("captured = 1"));
@@ -146,8 +145,8 @@ int main()
 	aTestAgent.sendCommand("stop game");
 	aFakeClientConnector.sendCommand("stop", std::string("stopping"));
 	ClientSendsInput(
-			*aParameters.m_pullerPort,
-			*aParameters.m_publisherPort,
+			*aParameters.m_commandLineParameters.m_pullerPort,
+			*aParameters.m_commandLineParameters.m_publisherPort,
 			aRobotId);
 	assert(not gOK);
 	aTestAgent.sendCommand("stop application");

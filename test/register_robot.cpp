@@ -38,6 +38,7 @@ static void ExpectRegistered(
 	Register aRegisterMessage;
 	aRegisterMessage.set_temporary_robot_id(iTemporaryRobotId);
 	aRegisterMessage.set_video_url("http://localhost:80");
+	aRegisterMessage.set_image("this is a photo of the robot.jpg");
 	RawMessage aMessage(
 			iTemporaryRobotId,
 			"Register",

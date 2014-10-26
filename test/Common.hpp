@@ -21,6 +21,8 @@
 
 namespace orwell
 {
+class Application_CommandLineParameters;
+
 namespace com
 {
 class Receiver;
@@ -52,19 +54,11 @@ class Common
 {
 public:
 	static Arguments GetArguments(
-			bool const iHelp = false,
-			boost::optional< int32_t > const iPublisherPort = boost::none,
-			boost::optional< int32_t > const iPullerPort = boost::none,
-			boost::optional< int32_t > const iAgentPort = boost::none,
-			boost::optional< std::string > const iOrwellRc = boost::none,
-			boost::optional< std::string > const iGameConfig = boost::none,
-			boost::optional< int64_t > const iTicInterval = boost::none,
-			boost::optional< int32_t > const iGameDuration = boost::none,
-			bool const iVersion = false,
+			orwell::Application_CommandLineParameters const & iCommandLineParams,
 			bool const iDebugLog = false,
-			bool const iNoBroadcast = false,
-			bool const iDryRun = false);
-
+			bool const iHelp = false,
+			bool const iShowVersion = false
+	);
 	static bool ExpectMessage(
 			std::string const & iType,
 			orwell::com::Receiver & iSubscriber,

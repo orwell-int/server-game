@@ -108,10 +108,17 @@ int main()
 	{
 		orwell::Application & aApplication = orwell::Application::GetInstance();
 
+		orwell::Application::CommandLineParameters aCommandLineArguments;
+		aCommandLineArguments.m_publisherPort = 9001;
+		aCommandLineArguments.m_pullerPort = 9000;
+		aCommandLineArguments.m_agentPort = 9003;
+		aCommandLineArguments.m_tickInterval = 500;
+		aCommandLineArguments.m_gameDuration = 300;
+		aCommandLineArguments.m_dryRun = true;
+		aCommandLineArguments.m_broadcast = false;
+
 		Arguments aArguments = Common::GetArguments(
-				false, 9001, 9000, 9003,
-				boost::none, boost::none, 500, 300,
-				false, true, true, true);
+				aCommandLineArguments, true);
 		orwell::Application::Parameters aParameters;
 		orwell::Application::ReadParameters(
 				aArguments.m_argc,
