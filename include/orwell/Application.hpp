@@ -47,10 +47,19 @@ public :
 			std::string m_name;
 			std::string m_team;
 		};
+		struct Item
+		{
+			std::string m_name;
+			std::string m_type;
+			std::string m_rfid;
+			int32_t m_color;
+		};
+
 		CommandLineParameters m_commandLineParameters;
 		typedef std::string Team;
 		std::vector< uint16_t > m_videoPorts;
 		std::map<std::string, Robot> m_robots;
+		std::map<std::string, Item> m_items;
 		std::set<Team> m_teams;
 		boost::optional<std::string> m_gameType;
 		boost::optional<std::string> m_gameName;
@@ -134,4 +143,8 @@ std::ostream & operator<<(
 bool operator==(
 		orwell::Application::Parameters::Robot const & iLeft,
 		orwell::Application::Parameters::Robot const & iRight);
+
+bool operator==(
+		orwell::Application::Parameters::Item const & iLeft,
+		orwell::Application::Parameters::Item const & iRight);
 

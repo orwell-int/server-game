@@ -31,7 +31,7 @@ void ProcessRobotState::execute()
 
 	if (not aRobotStateMsg.rfid().empty())
 	{
-		// game::Item::GetItemByRfid(aRobotStateMsg.rfid());
+		//game::Item::GetItemByRfid(aRobotStateMsg.rfid());
 	}
 	if (aRobotStateMsg.color() != -1)
 	{

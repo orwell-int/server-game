@@ -573,9 +573,11 @@ color = -1
 			{"robot_A", {"Aristotle", "Philosophers"}},
 			{"robot_B", {"Bourbaki", "Mathematicians"}},
 	};
+	aExpectedParameters.m_items = {
+			{"item_RedFlag", {"Red_Flag", "flag", "myrfidredflag", -1}},
+	};
 	aExpectedParameters.m_teams = {"Mathematicians", "Philosophers"};
 	aExpectedParameters.m_videoPorts = {9004, 9003, 9002, 9001};
-
 
 	test_ReadParameters(
 			Status::PASS,
@@ -585,6 +587,40 @@ color = -1
 			),
 			aExpectedParameters);
 
+	// second test. This time item_RedFlag has both a rfid and a color... which is a no go
+	TempFile aGameConfigFile2(std::string(R"(
+[game]
+robots = robot_A | robot_B
+items = item_RedFlag
+
+[robot_A]
+name = Aristotle
+team = Philosophers
+
+[robot_B]
+name = Bourbaki
+team = Mathematicians
+
+[item_RedFlag]
+name = Red Flag
+type = flag
+rfid = myrfidredflag
+color = 2
+
+)"));
+	aCommandLineArguments.m_gameFilePath = aGameConfigFile2.m_fileName;
+	aExpectedParameters.m_items = {
+			{"item_RedFlag", {"Red_Flag", "flag", "myrfidredflag", 2}},
+	};
+	aExpectedParameters.m_commandLineParameters = aCommandLineArguments;
+
+	test_ReadParameters(
+			Status::FAIL,
+			Common::GetArguments(
+				aCommandLineArguments,
+				true // debug log
+			),
+			aExpectedParameters);
 }
 
 int main()

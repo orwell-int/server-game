@@ -352,10 +352,8 @@ void Application::ParseGameConfigFromFile(
 			std::string aItemType = aPtree.get<std::string>(iItem + ".type");
 			std::string aItemRfid = aPtree.get<std::string>(iItem + ".rfid");
 			int32_t aItemColor = aPtree.get<int32_t>(iItem + ".color");
-
-			std::shared_ptr<game::Item> aNewItem = game::Item::CreateItem(aItemType, aItemName, aItemRfid, aItemColor);
-
-			ORWELL_LOG_INFO(aNewItem->toLogString());
+			ORWELL_LOG_INFO("Pushing item: " << aItemName << " (" << aItemType << ")");
+			ioParam.m_items[iItem] = Parameters::Item{aItemName, aItemType, aItemRfid, aItemColor};
 		}
 	}
 }
@@ -388,6 +386,16 @@ bool Application::CheckParametersConsistency(Parameters const & iParam)
 	{
 		ORWELL_LOG_ERROR("Only " << iParam.m_videoPorts.size() << " ports for " << iParam.m_robots.size() << " robots");
 		return false;
+	}
+
+	for (auto aPair : iParam.m_items)
+	{
+		Parameters::Item aItem = aPair.second;
+		if (aItem.m_color != -1 and not aItem.m_rfid.empty())
+		{
+			ORWELL_LOG_ERROR("Item " << aPair.first << " is badly configured. rfid=" << aItem.m_rfid << ", color=" << aItem.m_color);
+			return false;
+		}
 	}
 	return true;
 }
@@ -540,6 +548,12 @@ void Application::initServer(Parameters const & iParam)
 				popPort(),
 				aPair.first);
 	}
+	for (auto aPair : iParam.m_items)
+	{
+		Parameters::Item aItem = aPair.second;
+		std::shared_ptr<game::Item> aNewItem = game::Item::CreateItem(aItem.m_type, aItem.m_name, aItem.m_rfid, aItem.m_color);
+		ORWELL_LOG_INFO("new item in game config file : " << aNewItem->toLogString());
+	}
 }
 
 void Application::initBroadcastServer(Parameters const & iParam)
@@ -599,6 +613,7 @@ bool operator==(
 {
 	// comparing maps directly does not work
 	bool aSameRobots = (iLeft.m_robots.size() == iRight.m_robots.size());
+	bool aSameItems = (iLeft.m_items.size() == iRight.m_items.size());
 	auto aRobotIterator = iLeft.m_robots.begin();
 	while ((aSameRobots) and (iLeft.m_robots.end() != aRobotIterator))
 	{
@@ -609,6 +624,17 @@ bool operator==(
 			aSameRobots = (aRobotIterator->second == aFound->second);
 		}
 		++aRobotIterator;
+	}
+	auto aItemIterator = iLeft.m_items.begin();
+	while ((aSameItems) and (iLeft.m_items.end() != aItemIterator))
+	{
+		std::string const & aKey = aItemIterator->first;
+		auto const aFound = iRight.m_items.find(aKey);
+		if ((aSameItems = (iRight.m_items.end() != aFound)))
+		{
+			aSameItems = (aItemIterator->second == aFound->second);
+		}
+		++aItemIterator;
 	}
 	return ((iLeft.m_commandLineParameters.m_pullerPort == iRight.m_commandLineParameters.m_pullerPort)
 		and (iLeft.m_commandLineParameters.m_publisherPort == iRight.m_commandLineParameters.m_publisherPort)
@@ -651,6 +677,12 @@ std::ostream & operator<<(
 		orwell::Application::Parameters::Robot const & aRobot = aPair.second;
 		ioOstream << aKey << ":" << aRobot.m_name << "@" << aRobot.m_team << ", ";
 	}
+	for (auto const aPair : iParameters.m_items)
+	{
+		std::string const & aKey = aPair.first;
+		orwell::Application::Parameters::Item const & aItem = aPair.second;
+		ioOstream << aKey << ":" << aItem.m_name << "(" << aItem.m_type << "), rfid=" << aItem.m_rfid << ", color=" << aItem.m_color;
+	}
 	ioOstream << "] ; ";
 	ioOstream << "teams [";
 	std::ostream_iterator< std::string > aOut(ioOstream,", ");
@@ -667,6 +699,16 @@ bool operator==(
 {
 	return ((iLeft.m_name == iRight.m_name)
 		and (iLeft.m_team == iRight.m_team));
+}
+
+bool operator==(
+		orwell::Application::Parameters::Item const & iLeft,
+		orwell::Application::Parameters::Item const & iRight)
+{
+	return ((iLeft.m_name == iRight.m_name)
+		and (iLeft.m_type == iRight.m_type)
+		and (iLeft.m_rfid == iRight.m_rfid)
+		and (iLeft.m_color == iRight.m_color));
 }
 
 uint16_t Application::popPort()
