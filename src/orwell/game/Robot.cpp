@@ -1,10 +1,7 @@
 #include "orwell/game/Robot.hpp"
 #include <iostream>
 
-#include "robot.pb.h"
-
 using namespace std;
-using orwell::messages::RobotState;
 
 namespace orwell {
 namespace game {
@@ -86,15 +83,15 @@ bool const Robot::getIsAvailable() const
 	return ((m_hasRealRobot) and (not getHasPlayer()));
 }
 
-void fillRobotStateMessage( messages::RobotState & oMessage )
-{
-	//todo
-	//those are just bullshit hardcoded values to have the syntax
-	oMessage.set_life(1);
-	oMessage.mutable_move()->set_left(0);
-	oMessage.mutable_move()->set_right(0);
-	oMessage.set_active(true);
-}
+//void fillRobotStateMessage( messages::RobotState & oMessage )
+//{
+//	//todo
+//	//those are just bullshit hardcoded values to have the syntax
+//	oMessage.set_life(1);
+//	oMessage.mutable_move()->set_left(0);
+//	oMessage.mutable_move()->set_right(0);
+//	oMessage.set_active(true);
+//}
 
 }
 } // namespaces

@@ -3,16 +3,14 @@
 #pragma once
 
 #include <string>
-
 #include <memory>
 
 namespace orwell {
-namespace messages {
-class RobotState;
-}
+
 namespace game
 {
 class Player;
+class Item;
 
 class Robot
 {
@@ -49,7 +47,7 @@ public:
 
 	bool const getIsAvailable() const;
 
-	void fillRobotStateMessage( messages::RobotState & oMessage );
+//	void fillRobotStateMessage( messages::RobotState & oMessage );
 
 private:
 	std::string m_name;

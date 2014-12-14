@@ -22,6 +22,8 @@ class Sender;
 namespace game
 {
 class Robot;
+class Item;
+class Contact;
 
 class Game
 {
@@ -35,7 +37,6 @@ public:
 
 	std::shared_ptr<Robot> accessRobot(std::string const & iRobotName);
 	std::map<std::string, std::shared_ptr<Robot> > const & getRobots();
-
 
 	std::shared_ptr< Player > accessPlayer( std::string const & iPlayerName );
 	std::map< std::string, std::shared_ptr< Player > > const & getPlayers();
@@ -79,6 +80,9 @@ public:
 	std::shared_ptr<Robot> getAvailableRobot() const;
 	void fillGameStateMessage(messages::GameState & oGameState);
 
+	void robotIsInContactWith(std::string const & iRobotId, std::shared_ptr<Item> const iFlag);
+	void robotDropsContactWith(std::string const & iRobotId, std::shared_ptr<Item> const iFlag);
+
 	void setTime(boost::posix_time::ptime const & iCurrentTime);
 
 	void stopIfGameIsFinished();
@@ -87,6 +91,7 @@ private:
 	/// \return
 	///  A RobotID that is not already used.
 	std::string getNewRobotId() const;
+
 	/// True if and only if the game is running
 	bool m_isRunning;
 	/// Each connected robot has a robotContext in this map. The key is the robot name.
@@ -106,6 +111,9 @@ private:
 	boost::posix_time::ptime m_time;
 	boost::posix_time::ptime m_startTime;
 	boost::posix_time::time_duration m_gameDuration;
+
+	//Contacts between robots and flags. The key is the robotId
+	std::map<std::string, std::unique_ptr<Contact> > m_contacts;
 
 	Server & m_server;
 	/// robot ids for which an image has been requested

@@ -44,7 +44,7 @@ ProcessDecider::ProcessDecider(
 	_map["Hello"] = std::unique_ptr<InterfaceProcess>(new ProcessHello(ioPublisher, ioGame));
 	_map["Input"] = std::unique_ptr<InterfaceProcess>(new ProcessInput(ioPublisher, ioGame));
 	_map["Register"] = std::unique_ptr<InterfaceProcess>(new ProcessRegister(ioPublisher, ioGame));
-	_map["RobotState"] = std::unique_ptr<InterfaceProcess>(new ProcessRobotState(ioPublisher, ioGame));
+	_map["ServerRobotState"] = std::unique_ptr<InterfaceProcess>(new ProcessRobotState(ioPublisher, ioGame));
 }
 
 ProcessDecider::~ProcessDecider()
@@ -65,9 +65,9 @@ void ProcessDecider::process(com::RawMessage const & iMessage)
 	{
 		aMsg = new messages::Input(BuildProtobuf<messages::Input>(iMessage));
 	}
-	else if (iMessage._type == "RobotState")
+	else if (iMessage._type == "ServerRobotState")
 	{
-		aMsg = new messages::RobotState(BuildProtobuf<messages::RobotState>(iMessage));
+		aMsg = new messages::ServerRobotState(BuildProtobuf<messages::ServerRobotState>(iMessage));
 	}
 	else if (iMessage._type == "Register")
 	{

@@ -10,8 +10,11 @@
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/game/Robot.hpp"
 #include "orwell/game/Player.hpp"
+#include "orwell/game/Contact.hpp"
 #include "orwell/com/Sender.hpp"
 #include "orwell/Server.hpp"
+
+#include "MissingFromTheStandard.hpp"
 
 #include <iostream>
 #include <zmq.hpp>
@@ -357,6 +360,20 @@ std::string Game::getNewRobotId() const
 		++aIndex;
 	}
 	return aFullRobotId;
+}
+
+void Game::robotIsInContactWith(std::string const & iRobotId, std::shared_ptr<Item> const iFlag)
+{
+	m_contacts[iRobotId] = make_unique<Contact>(
+			m_time,
+			boost::posix_time::milliseconds(5000),
+			m_robotsById[iRobotId],
+			iFlag);
+}
+
+void Game::robotDropsContactWith(std::string const & iRobotId, std::shared_ptr<Item> const iFlag)
+{
+	m_contacts.erase(iRobotId);
 }
 
 
