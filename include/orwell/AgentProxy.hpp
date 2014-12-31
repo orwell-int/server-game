@@ -27,12 +27,25 @@ public :
 	/// stop application
 	void stopApplication() override;
 
+	/// List all the teams present.
+	///
+	void listTeam(std::string & ioReply) override;
+
+	/// add team <name>
+	void addTeam(
+			std::string const & iTeamName) override;
+
+	/// remove team <name>
+	void removeTeam(std::string const & iTeamName) override;
+
 	/// List all the robots present.
 	///
 	void listRobot(std::string & ioReply) override;
 
 	/// add robot <name>
-	void addRobot(std::string const & iRobotName) override;
+	void addRobot(
+			std::string const & iRobotName,
+			std::string const & iTeamName) override;
 
 	/// remove robot <name>
 	void removeRobot(std::string const & iRobotName) override;

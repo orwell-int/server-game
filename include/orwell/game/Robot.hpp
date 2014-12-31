@@ -1,16 +1,18 @@
-/* This class stores the information about a robot that is connected to the server */
+/// This class stores the information about a robot that is connected to the server
 
 #pragma once
 
 #include <string>
 #include <memory>
 
-namespace orwell {
+namespace orwell
+{
 
 namespace game
 {
 class Player;
 class Item;
+class Team;
 
 class Robot
 {
@@ -18,9 +20,14 @@ public:
 	Robot(
 			std::string const & iName,
 			std::string const & iRobotId,
+			Team & iTeam,
 			uint16_t const & iVideoRetransmissionPort,
 			uint16_t const & iServerCommandPort);
 	~Robot();
+
+	Team & getTeam();
+
+	Team const & getTeam() const;
 
 	void setHasRealRobot(bool const iHasRealRobot);
 	bool const getHasRealRobot() const;
@@ -52,6 +59,7 @@ public:
 private:
 	std::string m_name;
 	std::string m_robotId;
+	Team & m_team;
 	std::string m_videoUrl; //the origin URL of the videofeed
 	uint16_t m_videoRetransmissionPort; // the port on which the python server retransmits the video feed
 	uint16_t m_serverCommandPort; // the port used to give instructions to the retransmitter.

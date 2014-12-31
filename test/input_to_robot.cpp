@@ -100,7 +100,8 @@ int main()
 	std::thread aApplicationThread(Application, aParameters);
 	aTestAgent.sendCommand("ping", std::string("pong"));
 
-	aTestAgent.sendCommand("add robot toto");
+	aTestAgent.sendCommand("add team TEAM");
+	aTestAgent.sendCommand("add robot toto TEAM");
 	std::string aRobotId = aTestAgent.sendCommand("get robot toto id", boost::none);
 	assert("KO" != aRobotId);
 	std::thread aClientSendsInputThread(

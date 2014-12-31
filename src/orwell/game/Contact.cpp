@@ -4,8 +4,10 @@
 
 #include "orwell/game/Item.hpp"
 #include "orwell/game/Robot.hpp"
+#include "orwell/game/Team.hpp"
 
-namespace orwell {
+namespace orwell
+{
 namespace game
 {
 
@@ -21,13 +23,23 @@ Contact::Contact(
 }
 
 Contact::~Contact()
-{}
+{
+}
 
 StepSignal Contact::step(boost::posix_time::ptime const & iCurrentTime)
 {
-	return StepSignal::Ah_AH_AH_AH_STAYINGALIVE;
+	StepSignal aResult = StepSignal::SILENCEIKILLU;
+	if (iCurrentTime > m_stopTime)
+	{
+		m_robot->getTeam().captureItem(m_item);
+	}
+	else
+	{
+		aResult = StepSignal::AH_AH_AH_AH_STAYINGALIVE;
+	}
+	return aResult;
 }
 
-}} // namespaces
-
+} // game
+} // orwell
 

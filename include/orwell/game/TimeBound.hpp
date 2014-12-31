@@ -13,7 +13,7 @@ namespace game
 
 enum class StepSignal
 {
-	Ah_AH_AH_AH_STAYINGALIVE,
+	AH_AH_AH_AH_STAYINGALIVE,
 	SILENCEIKILLU
 };
 

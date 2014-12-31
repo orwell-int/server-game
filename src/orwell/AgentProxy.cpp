@@ -81,6 +81,10 @@ bool AgentProxy::step(
 			{
 				listRobot(ioReply);
 			}
+			else if ("team" == aObject)
+			{
+				listTeam(ioReply);
+			}
 			else
 			{
 				aResult = false;
@@ -125,11 +129,23 @@ bool AgentProxy::step(
 	{
 		std::string aObject;
 		aStream >> aObject;
-		if ("robot" == aObject)
+		if ("team" == aObject)
 		{
 			DispatchArgument(
 					aStream,
-					std::bind(&AgentProxy::addRobot, this, _1),
+					std::bind(&AgentProxy::addTeam, this, _1),
+					aResult,
+					ioReply);
+		}
+		else if ("robot" == aObject)
+		{
+			std::string aName;
+			aStream >> aName;
+			std::string aTeam;
+			aStream >> aTeam;
+			Dispatch(
+					aStream,
+					std::bind(&AgentProxy::addRobot, this, aName, aTeam),
 					aResult,
 					ioReply);
 		}
@@ -146,7 +162,15 @@ bool AgentProxy::step(
 	{
 		std::string aObject;
 		aStream >> aObject;
-		if ("robot" == aObject)
+		if ("team" == aObject)
+		{
+			DispatchArgument(
+					aStream,
+					std::bind(&AgentProxy::removeTeam, this, _1),
+					aResult,
+					ioReply);
+		}
+		else if ("robot" == aObject)
 		{
 			DispatchArgument(
 					aStream,
@@ -242,6 +266,31 @@ void AgentProxy::stopApplication()
 	m_application.stop();
 }
 
+void AgentProxy::listTeam(std::string & ioReply)
+{
+	ORWELL_LOG_INFO("list team");
+	std::vector< std::string > aTeams;
+	m_application.accessServer()->accessContext().getTeams(aTeams);
+	ioReply = "Teams:\n";
+	for (auto const & aTeam : aTeams)
+	{
+		ioReply += "\t" + aTeam + "\n";
+	}
+}
+
+void AgentProxy::addTeam(std::string const & iTeamName)
+{
+	ORWELL_LOG_INFO("add team " << iTeamName);
+	m_application.accessServer()->accessContext().addTeam(
+			iTeamName);
+}
+
+void AgentProxy::removeTeam(std::string const & iTeamName)
+{
+	ORWELL_LOG_INFO("remove team " << iTeamName);
+	m_application.accessServer()->accessContext().removeTeam(iTeamName);
+}
+
 void AgentProxy::listRobot(std::string & ioReply)
 {
 	ORWELL_LOG_INFO("list robot");
@@ -270,11 +319,16 @@ void AgentProxy::listRobot(std::string & ioReply)
 	}
 }
 
-
-void AgentProxy::addRobot(std::string const & iRobotName)
+void AgentProxy::addRobot(
+		std::string const & iRobotName,
+		std::string const & iTeamName)
 {
 	ORWELL_LOG_INFO("add robot " << iRobotName);
-	m_application.accessServer()->accessContext().addRobot(iRobotName, m_application.popPort(), m_application.popPort());
+	m_application.accessServer()->accessContext().addRobot(
+			iRobotName,
+			iTeamName,
+			m_application.popPort(),
+			m_application.popPort());
 }
 
 void AgentProxy::removeRobot(std::string const & iRobotName)

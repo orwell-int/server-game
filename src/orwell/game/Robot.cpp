@@ -9,10 +9,12 @@ namespace game {
 Robot::Robot(
 		string const & iName,
 		std::string const & iRobotId,
+		Team & iTeam,
 		uint16_t const & iVideoRetransmissionPort,
 		uint16_t const & iServerCommandPort)
 	: m_name(iName)
 	, m_robotId(iRobotId)
+	, m_team(iTeam)
 	, m_videoRetransmissionPort(iVideoRetransmissionPort)
 	, m_serverCommandPort(iServerCommandPort)
 	, m_hasRealRobot(false)
@@ -21,6 +23,16 @@ Robot::Robot(
 
 Robot::~Robot()
 {
+}
+
+Team & Robot::getTeam()
+{
+	return m_team;
+}
+
+Team const & Robot::getTeam() const
+{
+	return m_team;
 }
 
 void Robot::setHasRealRobot(bool const iHasRealRobot)

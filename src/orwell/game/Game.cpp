@@ -1,4 +1,4 @@
-/* This class stores most of the useful data of the server. */
+// This class stores most of the useful data of the server.
 
 #include "orwell/game/Game.hpp"
 
@@ -6,6 +6,12 @@
 #include <sstream>
 #include <fstream>
 #include <signal.h>
+#include <iostream>
+#include <utility>
+
+#include <boost/lexical_cast.hpp>
+
+#include <zmq.hpp>
 
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/game/Robot.hpp"
@@ -16,19 +22,16 @@
 
 #include "MissingFromTheStandard.hpp"
 
-#include <iostream>
-#include <zmq.hpp>
-
-#include <boost/lexical_cast.hpp>
-
 using std::map;
 using std::string;
 using std::pair;
 using std::shared_ptr;
 using std::make_shared;
 
-namespace orwell {
-namespace game {
+namespace orwell
+{
+namespace game
+{
 
 Game::Game(
 		boost::posix_time::time_duration const & iGameDuration,
@@ -184,8 +187,41 @@ void Game::stop()
 	}
 }
 
+bool Game::addTeam(std::string const & iTeamName)
+{
+	bool aAdded(false);
+	if (m_teams.end() == m_teams.find(iTeamName))
+	{
+		m_teams[iTeamName] = Team(iTeamName);
+		//m_teams.insert(std::make_pair< std::string, Team >(iTeamName, Team(iTeamName)));
+		aAdded = true;
+	}
+	return aAdded;
+}
+
+bool Game::removeTeam(std::string const & iTeamName)
+{
+	bool aRemoved(false);
+	auto aFound = m_teams.find(iTeamName);
+	if (m_teams.end() != aFound)
+	{
+		m_teams.erase(aFound);
+		aRemoved = true;
+	}
+	return aRemoved;
+}
+
+void Game::getTeams(std::vector< std::string > & ioTeams) const
+{
+	for (auto const & aPair : m_teams)
+	{
+		ioTeams.push_back(aPair.first);
+	}
+}
+
 bool Game::addRobot(
 		string const & iName,
+		string const & iTeamName,
 		uint16_t const iVideoRetransmissionPort,
 		uint16_t const iServerCommandPort,
 		std::string iRobotId)
@@ -202,12 +238,17 @@ bool Game::addRobot(
 		{
 			iRobotId = getNewRobotId();
 		}
-		shared_ptr<Robot> aRobot = make_shared<Robot>(iName, iRobotId, iVideoRetransmissionPort, iServerCommandPort);
-		m_robots.insert( pair<string, shared_ptr<Robot> >( iName, aRobot ) );
-		m_robotsById.insert(pair< string, shared_ptr< Robot > >(iRobotId, aRobot));
-		ORWELL_LOG_INFO("new Robot added with name='" << iName << "', " <<
-			"ID='" << iRobotId << "'");
-		aAddedRobotSuccess = true;
+		std::map<std::string, Team>::iterator aTeamIterator = m_teams.find(iTeamName);
+		if (m_teams.end() != aTeamIterator)
+		{
+			shared_ptr<Robot> aRobot = make_shared<Robot>(
+					iName, iRobotId, aTeamIterator->second, iVideoRetransmissionPort, iServerCommandPort);
+			m_robots.insert( pair<string, shared_ptr<Robot> >( iName, aRobot ) );
+			m_robotsById.insert(pair< string, shared_ptr< Robot > >(iRobotId, aRobot));
+			ORWELL_LOG_INFO("new Robot added with name='" << iName << "', " <<
+					"ID='" << iRobotId << "'");
+			aAddedRobotSuccess = true;
+		}
 	}
 	return aAddedRobotSuccess;
 }
@@ -306,12 +347,12 @@ std::shared_ptr< Robot > Game::getRobotForPlayer(string const & iPlayer) const
 {
 	std::shared_ptr< Robot > aFoundRobot;
 	
-	for (pair<string, std::shared_ptr<Robot>> const & iItem : m_robots)
+	for (pair<string, std::shared_ptr<Robot>> const & aElemement : m_robots)
 	{
-		std::shared_ptr< Player > aPlayer = iItem.second.get()->getPlayer();
+		std::shared_ptr< Player > aPlayer = aElemement.second.get()->getPlayer();
 		if ((nullptr != aPlayer) and (aPlayer->getName() == iPlayer))
 		{
-			aFoundRobot = iItem.second;
+			aFoundRobot = aElemement.second;
 		}
 	}
 	if (nullptr == aFoundRobot.get())
@@ -349,9 +390,9 @@ std::string Game::getNewRobotId() const
 	{
 		aAlreadyThere = false;
 		aFullRobotId = aRobotIdPrefix + boost::lexical_cast< std::string >(aIndex);
-		for (std::pair< std::string, std::shared_ptr< Robot > > const & iItem : m_robots)
+		for (std::pair< std::string, std::shared_ptr< Robot > > const & aElemement : m_robots)
 		{
-			if (iItem.second->getRobotId() == aFullRobotId)
+			if (aElemement.second->getRobotId() == aFullRobotId)
 			{
 				aAlreadyThere = true;
 				break;
@@ -377,6 +418,6 @@ void Game::robotDropsContactWith(std::string const & iRobotId, std::shared_ptr<I
 }
 
 
-}
-} // namespaces
+} // game
+} // orwell
 

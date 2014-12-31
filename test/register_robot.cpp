@@ -129,9 +129,11 @@ int main()
 			500);
 	ORWELL_LOG_INFO("server created");
 	std::vector< std::string > aRobots = {"Gipsy Danger", "Goldorak", "Securitron"};
-	aServer->accessContext().addRobot(aRobots[0], 8001, 8004, "robot1");
-	aServer->accessContext().addRobot(aRobots[1], 8002, 8005, "robot2");
-	aServer->accessContext().addRobot(aRobots[2], 8003, 8006, "robot3");
+	std::string const aTeamName("TEAM");
+	aServer->accessContext().addTeam(aTeamName);
+	aServer->accessContext().addRobot(aRobots[0], aTeamName, 8001, 8004, "robot1");
+	aServer->accessContext().addRobot(aRobots[1], aTeamName, 8002, 8005, "robot2");
+	aServer->accessContext().addRobot(aRobots[2], aTeamName, 8003, 8006, "robot3");
 	std::thread aServerThread(server, aServer);
 	std::thread aClientThread(proxy);
 	aClientThread.join();

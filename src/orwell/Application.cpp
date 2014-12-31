@@ -540,10 +540,15 @@ void Application::initServer(Parameters const & iParam)
 
 	m_availablePorts = iParam.m_videoPorts;
 	// temporary hack
+	for (auto const & aTeamName : iParam.m_teams)
+	{
+		m_server->accessContext().addTeam(aTeamName);
+	}
 	for (auto aPair : iParam.m_robots)
 	{
 		m_server->accessContext().addRobot(
 				aPair.second.m_name,
+				aPair.second.m_team,
 				popPort(),
 				popPort(),
 				aPair.first);

@@ -75,9 +75,17 @@ public :
 
 	MOCK_METHOD0(stopApplication, void());
 	
+	MOCK_METHOD1(listTeam, void(std::string & ioReply));
+
+	MOCK_METHOD1(addTeam, void(std::string const & iTeamName));
+
+	MOCK_METHOD1(removeTeam, void(std::string const & iTeamName));
+
 	MOCK_METHOD1(listRobot, void(std::string & ioReply));
 
-	MOCK_METHOD1(addRobot, void(std::string const & iRobotName));
+	MOCK_METHOD2(addRobot, void(
+				std::string const & iRobotName,
+				std::string const & iTeamName));
 
 	MOCK_METHOD1(removeRobot, void(std::string const & iRobotName));
 

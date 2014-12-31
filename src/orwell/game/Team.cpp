@@ -1,16 +1,22 @@
 #include "orwell/game/Team.hpp"
 #include "orwell/game/Player.hpp"
+#include "orwell/game/Item.hpp"
 
 #include <algorithm>
 
-using namespace std;
+namespace orwell
+{
+namespace game
+{
 
-namespace orwell {
-namespace game {
+Team::Team()
+	: m_score(0)
+{
+}
 
-Team::Team(string const & iName)
-	: _name(iName)
-	, _players()
+Team::Team(std::string const & iName)
+	: m_name(iName)
+	, m_score(0)
 {
 }
 
@@ -18,18 +24,40 @@ Team::~Team()
 {
 }
 
-void Team::addPlayer( shared_ptr<Player> iPlayer)
+Team Team::GetNeutralTeam()
 {
-	if ( std::find(_players.begin(), _players.end(), iPlayer) == _players.end())
+	static Team gNeutralTeam("");
+	return gNeutralTeam;
+}
+
+std::string const & Team::getName() const
+{
+	return m_name;
+}
+
+void Team::increaseScore(uint16_t const iAmount)
+{
+	m_score += iAmount;
+}
+
+void Team::addPlayer(std::shared_ptr<Player> ioPlayer)
+{
+	if (std::find(m_players.begin(), m_players.end(), ioPlayer) == m_players.end())
 	{
-		_players.push_back( iPlayer );
+		m_players.push_back(ioPlayer);
 	}
 }
 
-void Team::removePlayer( shared_ptr<Player> iPlayer)
+void Team::removePlayer(std::shared_ptr<Player> ioPlayer)
 {
-	_players.remove( iPlayer );
+	m_players.remove(ioPlayer);
 }
 
-}} // namespaces
+void Team::captureItem(std::shared_ptr< Item > ioItem)
+{
+	ioItem->capture(*this);
+}
+
+} // game
+} // orwell
 

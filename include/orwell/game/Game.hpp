@@ -18,7 +18,7 @@ class Server;
 namespace com
 {
 class Sender;
-}
+} // com
 namespace game
 {
 class Robot;
@@ -38,7 +38,7 @@ public:
 	std::shared_ptr<Robot> accessRobot(std::string const & iRobotName);
 	std::map<std::string, std::shared_ptr<Robot> > const & getRobots();
 
-	std::shared_ptr< Player > accessPlayer( std::string const & iPlayerName );
+	std::shared_ptr< Player > accessPlayer(std::string const & iPlayerName);
 	std::map< std::string, std::shared_ptr< Player > > const & getPlayers();
 
 	bool getIsRunning() const;
@@ -56,9 +56,27 @@ public:
 	///  True if and only if the player was found and removed.
 	bool removePlayer(std::string const & iName);
 
-	//add empty RobotContext
+	bool addTeam(std::string const & iTeamName);
+
+	bool removeTeam(std::string const & iTeamName);
+
+	void getTeams(std::vector< std::string > & ioTeams) const;
+
+	/// Add a robot.
+	/// \param iName
+	///  The name of the robot to add (this should be unique). If a robot with
+	///  the same name is found this call is ignored and no new robot is created.
+	/// \param iTeamName
+	///  The addition will only work with a valid team name.
+	/// \param iVideoRetransmissionPort
+	///  The port used to send the video from the camera on the robot.
+	/// \param iServerCommandPort
+	///  The port used to receive commands related to the video transmission.
+	/// \return
+	///  True if and only if the robot was added successfully.
 	bool addRobot(
 			std::string const & iName,
+			std::string const & iTeamName,
 			uint16_t const iVideoRetransmissionPort,
 			uint16_t const iServerCommandPort,
 			std::string iRobotId = "");
@@ -120,6 +138,6 @@ private:
 	std::set< std::string > m_pendingImage;
 };
 
-}
-} //end namespace
+} // game
+} // orwell
 

@@ -38,10 +38,20 @@ static void test_1(orwell::Application & ioApplication)
 	ORWELL_LOG_DEBUG("test_1");
 	orwell::AgentProxy aAgentProxy(ioApplication);
 	std::string aAgentReply;
+	std::string aTeamList;
 	std::string aPlayerList;
 	std::string aRobotList;
+	assert(aAgentProxy.step("add team TEAM", aAgentReply));
 	assert(aAgentProxy.step("add player Player1", aAgentReply));
-	assert(aAgentProxy.step("add robot Robot1", aAgentReply));
+	assert(aAgentProxy.step("add robot Robot1 TEAM", aAgentReply));
+	// list team {
+	assert(aAgentProxy.step("list team", aTeamList));
+	ORWELL_LOG_DEBUG("aTeamList = " << aTeamList);
+	std::string aExpectedTeamList(R"(Teams:
+	TEAM
+)");
+	ORWELL_ASSERT(aExpectedTeamList, aTeamList, "list team KO");
+	// } list team
 	// list player {
 	assert(aAgentProxy.step("list player", aPlayerList));
 	ORWELL_LOG_DEBUG("aPlayerList = " << aPlayerList);
@@ -85,6 +95,12 @@ static void test_1(orwell::Application & ioApplication)
 	assert(aAgentProxy.step("stop game", aAgentReply));
 	assert(aAgentProxy.step("remove robot Robot1", aAgentReply));
 	assert(aAgentProxy.step("remove player Player1", aAgentReply));
+	assert(aAgentProxy.step("remove team TEAM", aAgentReply));
+	assert(aAgentProxy.step("list team", aTeamList));
+	ORWELL_LOG_DEBUG("aTeamList = " << aTeamList);
+	aExpectedTeamList = (R"(Teams:
+)");
+	ORWELL_ASSERT(aExpectedTeamList, aTeamList, "empty team KO");
 	assert(aAgentProxy.step("list player", aPlayerList));
 	ORWELL_LOG_DEBUG("aPlayerList = " << aPlayerList);
 	aExpectedPlayerList = (R"(Players:

@@ -7,17 +7,22 @@
 #include <string>
 #include <memory>
 
-namespace orwell {
-namespace game {
+namespace orwell
+{
+namespace game
+{
 namespace item
 {
 
 class Flag : public Item
 {
-public:
-	Flag(std::string const & iName,
+public :
+	Flag(
+			std::string const & iName,
 			std::string const & iRfid);
-	Flag(std::string const & iName,
+
+	Flag(
+			std::string const & iName,
 			int32_t const iColorCode);
 
 	virtual ~Flag();
@@ -25,4 +30,7 @@ public:
 
 };
 
-}}} //end namespace
+} // item
+} // game
+} // orwell
+

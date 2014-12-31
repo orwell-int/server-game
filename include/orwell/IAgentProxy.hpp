@@ -23,11 +23,23 @@ public :
 	/// stop application
 	virtual void stopApplication() = 0;
 
+	/// get the list of teams
+	virtual void listTeam(std::string & ioReply) = 0;
+
+	/// add team <name>
+	virtual void addTeam(
+			std::string const & iTeamName) = 0;
+
+	/// remove team <name>
+	virtual void removeTeam(std::string const & iTeamName) = 0;
+
 	/// get the list of robots
 	virtual void listRobot(std::string & ioReply) = 0;
 
 	/// add robot <name>
-	virtual void addRobot(std::string const & iRobotName) = 0;
+	virtual void addRobot(
+			std::string const & iRobotName,
+			std::string const & iTeamName) = 0;
 
 	/// remove robot <name>
 	virtual void removeRobot(std::string const & iRobotName) = 0;
