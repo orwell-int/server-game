@@ -56,10 +56,26 @@ public:
 	///  True if and only if the player was found and removed.
 	bool removePlayer(std::string const & iName);
 
+	/// Add a team by name.
+	/// \param iTeamName
+	///  The name of the team to add.
+	/// \return
+	///  True if and only if the team has been added (it can fail if a team
+	///  with the same name is already present).
 	bool addTeam(std::string const & iTeamName);
 
+	/// Remove a team.
+	/// \param iTeamName
+	///  The name of the team to remove.
+	/// \return
+	///  True if and only if the team has been removed (it can fail if no
+	///  team matching the name has been found). WARNING: we do not check
+	///  if robots are still in the team (yet).
 	bool removeTeam(std::string const & iTeamName);
 
+	/// Append the names of the teams to a provided array.
+	/// \param ioTeams
+	///  What to add the names to.
 	void getTeams(std::vector< std::string > & ioTeams) const;
 
 	/// Add a robot.
@@ -90,7 +106,8 @@ public:
 
 	void fire(std::string const & iRobotId);
 
-	void readImages();
+	/// Perform actions that need to be performed every tic
+	void step();
 
 	std::shared_ptr< Robot > getRobotWithoutRealRobot(
 			std::string const & iTemporaryRobotId) const;
@@ -98,8 +115,12 @@ public:
 	std::shared_ptr<Robot> getAvailableRobot() const;
 	void fillGameStateMessage(messages::GameState & oGameState);
 
-	void robotIsInContactWith(std::string const & iRobotId, std::shared_ptr<Item> const iFlag);
-	void robotDropsContactWith(std::string const & iRobotId, std::shared_ptr<Item> const iFlag);
+	void robotIsInContactWith(
+			std::string const & iRobotId,
+			std::shared_ptr<Item> const iItem);
+	void robotDropsContactWith(
+			std::string const & iRobotId,
+			std::shared_ptr<Item> const iItem);
 
 	void setTime(boost::posix_time::ptime const & iCurrentTime);
 
@@ -109,6 +130,11 @@ private:
 	/// \return
 	///  A RobotID that is not already used.
 	std::string getNewRobotId() const;
+
+	void readImages();
+
+	/// Loop over the different contacts and give them the new time.
+	void handleContacts();
 
 	/// True if and only if the game is running
 	bool m_isRunning;

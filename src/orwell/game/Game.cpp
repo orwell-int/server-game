@@ -57,7 +57,7 @@ map<string, shared_ptr<Robot> > const & Game::getRobots()
 	return m_robots;
 }
 
-std::shared_ptr< Player > Game::accessPlayer( string const & iPlayerName)
+std::shared_ptr< Player > Game::accessPlayer(string const & iPlayerName)
 {
 	return m_players.at(iPlayerName);
 }
@@ -279,20 +279,10 @@ void Game::fire(std::string const & iRobotId)
 	}
 }
 
-void Game::readImages()
+void Game::step()
 {
-	std::set< std::string >::iterator aPending = m_pendingImage.begin();
-	while (m_pendingImage.end() != aPending)
-	{
-		std::set< std::string >::iterator aCurrent = aPending++;
-		std::string const & aRobotId = *aCurrent;
-		std::string aImage;
-		if (m_server.receiveCommandResponse(aRobotId, aImage))
-		{
-			m_pendingImage.erase(aCurrent);
-			ORWELL_LOG_INFO("Image received to be processed (FIRE1)");
-		}
-	}
+	readImages();
+	handleContacts();
 }
 
 std::shared_ptr< Robot > Game::getRobotWithoutRealRobot(
@@ -403,16 +393,41 @@ std::string Game::getNewRobotId() const
 	return aFullRobotId;
 }
 
-void Game::robotIsInContactWith(std::string const & iRobotId, std::shared_ptr<Item> const iFlag)
+void Game::readImages()
 {
+	std::set< std::string >::iterator aPending = m_pendingImage.begin();
+	while (m_pendingImage.end() != aPending)
+	{
+		std::set< std::string >::iterator aCurrent = aPending++;
+		std::string const & aRobotId = *aCurrent;
+		std::string aImage;
+		if (m_server.receiveCommandResponse(aRobotId, aImage))
+		{
+			m_pendingImage.erase(aCurrent);
+			ORWELL_LOG_INFO("Image received to be processed (FIRE1)");
+		}
+	}
+}
+
+void Game::handleContacts()
+{
+	for(auto & aContactPair : m_contacts)
+	{
+		aContactPair.second->step(m_time);
+	}
+}
+
+void Game::robotIsInContactWith(std::string const & iRobotId, std::shared_ptr<Item> const iItem)
+{
+	// here we suppose that a robot can only be in contact with one item.
 	m_contacts[iRobotId] = make_unique<Contact>(
 			m_time,
 			boost::posix_time::milliseconds(5000),
 			m_robotsById[iRobotId],
-			iFlag);
+			iItem);
 }
 
-void Game::robotDropsContactWith(std::string const & iRobotId, std::shared_ptr<Item> const iFlag)
+void Game::robotDropsContactWith(std::string const & iRobotId, std::shared_ptr<Item> const iItem)
 {
 	m_contacts.erase(iRobotId);
 }

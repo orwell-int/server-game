@@ -42,32 +42,32 @@ Server::Server(
 		std::string const & iPublishUrl,
 		long const iTicDuration,
 		uint32_t const iGameDuration)
-	: _zmqContext(1)
+	: m_zmqContext(1)
 	, m_agentProxy(ioAgentProxy)
 	, m_agentSocket(std::make_shared< orwell::com::Socket >(
 				iAgentUrl,
 				ZMQ_REP,
 				orwell::com::ConnectionMode::BIND,
-				_zmqContext,
+				m_zmqContext,
 				0))
-	, _puller(std::make_shared< Receiver >(
+	, m_puller(std::make_shared< Receiver >(
 				iPullUrl,
 				ZMQ_PULL,
 				orwell::com::ConnectionMode::BIND,
-				_zmqContext,
+				m_zmqContext,
 				0))
-	, _publisher(std::make_shared< Sender >(
+	, m_publisher(std::make_shared< Sender >(
 				iPublishUrl,
 				ZMQ_PUB,
 				orwell::com::ConnectionMode::BIND,
-				_zmqContext,
+				m_zmqContext,
 				0))
-	, _game(boost::posix_time::milliseconds(iGameDuration), *this)
-	, _decider(_game, _publisher)
-	, _ticDuration( boost::posix_time::milliseconds(iTicDuration) )
-	, _previousTic(boost::posix_time::microsec_clock::local_time())
-	, _mainLoopRunning(false)
-	, _forcedStop(false)
+	, m_game(boost::posix_time::milliseconds(iGameDuration), *this)
+	, m_decider(m_game, m_publisher)
+	, m_ticDuration( boost::posix_time::milliseconds(iTicDuration) )
+	, m_previousTic(boost::posix_time::microsec_clock::local_time())
+	, m_mainLoopRunning(false)
+	, m_forcedStop(false)
 {
 }
 
@@ -79,10 +79,10 @@ bool Server::processMessageIfAvailable()
 {
 	bool aProcessedMessage = false;
 	orwell::com::RawMessage aMessage;
-	if (_puller->receive(aMessage))
+	if (m_puller->receive(aMessage))
 	{
 		ORWELL_LOG_DEBUG("Message received in processMessageIfAvailable");
-		_decider.process(aMessage);
+		m_decider.process(aMessage);
 		aProcessedMessage = true;
 	}
 	return aProcessedMessage;
@@ -98,9 +98,9 @@ void Server::loopUntilOneMessageIsProcessed()
 	while (not aMessageHasBeenProcessed)
 	{
 		aCurrentTic = boost::posix_time::microsec_clock::local_time();
-		_game.setTime(aCurrentTic);
-		aDuration = aCurrentTic - _previousTic;
-		if ( aDuration < _ticDuration )
+		m_game.setTime(aCurrentTic);
+		aDuration = aCurrentTic - m_previousTic;
+		if ( aDuration < m_ticDuration )
 		{
 			if (processMessageIfAvailable())
 			{
@@ -109,29 +109,29 @@ void Server::loopUntilOneMessageIsProcessed()
 			else
 			{
 				// sleep a fraction of ticduration
-				usleep(_ticDuration.total_milliseconds() / 10);
+				usleep(m_ticDuration.total_milliseconds() / 10);
 			}
 		}
-		else if (_forcedStop)
+		else if (m_forcedStop)
 		{
 			break;
 		}
 		else
 		{
 			feedAgentProxy();
-			_game.readImages();
-			ProcessTimer aProcessTimer(_publisher, _game);
+			m_game.step();
+			ProcessTimer aProcessTimer(m_publisher, m_game);
 			aProcessTimer.execute();
-			_previousTic = aCurrentTic;
+			m_previousTic = aCurrentTic;
 		}
 	}
 }
 
 void Server::loop()
 {
-	_mainLoopRunning = true;
+	m_mainLoopRunning = true;
 
-	while (_mainLoopRunning)
+	while (m_mainLoopRunning)
 	{
 		loopUntilOneMessageIsProcessed();
 	}
@@ -140,14 +140,14 @@ void Server::loop()
 void Server::stop()
 {
 	ORWELL_LOG_INFO("Terminating server main loop");
-	_forcedStop = true;
-	_mainLoopRunning = false;
-	_game.stop();
+	m_forcedStop = true;
+	m_mainLoopRunning = false;
+	m_game.stop();
 }
 
 orwell::game::Game & Server::accessContext()
 {
-	return _game;
+	return m_game;
 }
 
 void Server::feedAgentProxy()
@@ -172,7 +172,7 @@ void Server::push(
 			iUrl,
 			ZMQ_PUSH,
 			orwell::com::ConnectionMode::CONNECT,
-			_zmqContext);
+			m_zmqContext);
 	aPusher.sendString(iMessage);
 }
 
@@ -188,7 +188,7 @@ void Server::addServerCommandSocket(
 			"tcp://localhost:" + boost::lexical_cast<std::string>(iPort),
 			ZMQ_REQ,
 			orwell::com::ConnectionMode::CONNECT,
-			_zmqContext,
+			m_zmqContext,
 			0);
 }
 
