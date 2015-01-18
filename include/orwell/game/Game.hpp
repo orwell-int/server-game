@@ -78,6 +78,13 @@ public:
 	///  What to add the names to.
 	void getTeams(std::vector< std::string > & ioTeams) const;
 
+	/// Get a team from its name.
+	/// \param iTeamName
+	///  The name of the team to retrieve.
+	/// \return
+	///  The team if found and the neutral team otherwise.
+	Team const & getTeam(std::string const & iTeamName) const;
+
 	/// Add a robot.
 	/// \param iName
 	///  The name of the robot to add (this should be unique). If a robot with

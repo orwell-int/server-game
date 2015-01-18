@@ -553,6 +553,7 @@ void Application::initServer(Parameters const & iParam)
 				popPort(),
 				aPair.first);
 	}
+	ORWELL_LOG_INFO("number of items found in configuration file: " << iParam.m_items.size());
 	for (auto aPair : iParam.m_items)
 	{
 		Parameters::Item aItem = aPair.second;

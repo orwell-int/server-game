@@ -139,37 +139,6 @@ static void test_same_ports_puller_agent()
 	test_ReadParameters(Status::FAIL, Common::GetArguments(aCommandLineArguments, false, false));
 }
 
-struct TempFile
-{
-	std::string m_fileName;
-
-	TempFile(std::string const & iContent);
-
-	~TempFile();
-};
-
-TempFile::TempFile(std::string const & iContent)
-{
-	char aFileName[L_tmpnam];
-	tmpnam(aFileName);
-	FILE * aFile = fopen(aFileName, "w");
-	if (fputs(iContent.c_str(), aFile) < 0)
-	{
-		std::cerr << "Temporary file not created properly." << std::endl;
-	}
-	fclose(aFile);
-	m_fileName = std::string(aFileName);
-}
-
-TempFile::~TempFile()
-{
-	if (not m_fileName.empty())
-	{
-		remove(m_fileName.c_str());
-		m_fileName.erase();
-	}
-}
-
 static void test_most_arguments()
 {
 	TempFile aTempFile(std::string(R"(

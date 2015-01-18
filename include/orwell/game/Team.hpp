@@ -18,11 +18,13 @@ public:
 	Team(std::string const & iName);
 	~Team();
 
-	static Team GetNeutralTeam();
+	static Team & GetNeutralTeam();
 
 	std::string const & getName() const;
 
 	void increaseScore(uint16_t const iAmount = 1);
+
+	uint32_t getScore() const;
 
 	void addPlayer(std::shared_ptr<Player> ioPlayer);
 	void removePlayer(std::shared_ptr<Player> ioPlayer);

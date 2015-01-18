@@ -263,3 +263,25 @@ void TestAgent::reset()
 	m_agentSocket.reset();
 }
 
+TempFile::TempFile(std::string const & iContent)
+{
+	char aFileName[L_tmpnam];
+	tmpnam(aFileName);
+	FILE * aFile = fopen(aFileName, "w");
+	if (fputs(iContent.c_str(), aFile) < 0)
+	{
+		std::cerr << "Temporary file not created properly." << std::endl;
+	}
+	fclose(aFile);
+	m_fileName = std::string(aFileName);
+}
+
+TempFile::~TempFile()
+{
+	if (not m_fileName.empty())
+	{
+		remove(m_fileName.c_str());
+		m_fileName.erase();
+	}
+}
+

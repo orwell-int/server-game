@@ -33,6 +33,12 @@ public :
 	/// remove team <name>
 	virtual void removeTeam(std::string const & iTeamName) = 0;
 
+	/// get property <property> of team <name>
+	virtual void getTeam(
+			std::string const & iTeamName,
+			std::string const & iProperty,
+			std::string & oValue) = 0;
+
 	/// get the list of robots
 	virtual void listRobot(std::string & ioReply) = 0;
 
@@ -79,4 +85,3 @@ public :
 
 };
 }
-

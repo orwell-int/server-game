@@ -4,6 +4,8 @@
 
 #include <algorithm>
 
+#include "orwell/support/GlobalLogger.hpp"
+
 namespace orwell
 {
 namespace game
@@ -24,7 +26,7 @@ Team::~Team()
 {
 }
 
-Team Team::GetNeutralTeam()
+Team & Team::GetNeutralTeam()
 {
 	static Team gNeutralTeam("");
 	return gNeutralTeam;
@@ -38,6 +40,12 @@ std::string const & Team::getName() const
 void Team::increaseScore(uint16_t const iAmount)
 {
 	m_score += iAmount;
+	ORWELL_LOG_DEBUG("Score increased to " << m_score);
+}
+
+uint32_t Team::getScore() const
+{
+	return m_score;
 }
 
 void Team::addPlayer(std::shared_ptr<Player> ioPlayer)

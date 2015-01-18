@@ -219,6 +219,14 @@ void Game::getTeams(std::vector< std::string > & ioTeams) const
 	}
 }
 
+Team const & Game::getTeam(std::string const & iTeamName) const
+{
+	auto aFound = m_teams.find(iTeamName);
+	return (m_teams.end() != aFound)
+		? aFound->second
+		: Team::GetNeutralTeam();
+}
+
 bool Game::addRobot(
 		string const & iName,
 		string const & iTeamName,
@@ -422,7 +430,7 @@ void Game::robotIsInContactWith(std::string const & iRobotId, std::shared_ptr<It
 	// here we suppose that a robot can only be in contact with one item.
 	m_contacts[iRobotId] = make_unique<Contact>(
 			m_time,
-			boost::posix_time::milliseconds(5000),
+			boost::posix_time::milliseconds(1),
 			m_robotsById[iRobotId],
 			iItem);
 }

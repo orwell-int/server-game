@@ -81,6 +81,11 @@ public :
 
 	MOCK_METHOD1(removeTeam, void(std::string const & iTeamName));
 
+	MOCK_METHOD3(getTeam, void(
+			std::string const & iTeamName,
+			std::string const & iProperty,
+			std::string & oValue));
+
 	MOCK_METHOD1(listRobot, void(std::string & ioReply));
 
 	MOCK_METHOD2(addRobot, void(
@@ -112,6 +117,15 @@ public :
 	MOCK_METHOD0(startGame, void());
 
 	MOCK_METHOD0(stopGame, void());
+};
+
+struct TempFile
+{
+	std::string m_fileName;
+
+	TempFile(std::string const & iContent);
+
+	~TempFile();
 };
 
 class TestAgent

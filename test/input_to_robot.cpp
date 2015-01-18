@@ -52,7 +52,7 @@ static void const ClientSendsInput(
 	ORWELL_LOG_INFO("message built : left" << aInputMessage.move().left() << "-right" << aInputMessage.move().right());
 	ORWELL_LOG_INFO("message built : w1:" << aInputMessage.fire().weapon1() << "-w2:" << aInputMessage.fire().weapon2());
 	std::string aType = "Input";
-	RawMessage aMessage(iRobotId, "Input", aInputMessage.SerializeAsString());
+	RawMessage aMessage(iRobotId, aType, aInputMessage.SerializeAsString());
 	aPusher.send(aMessage);
 	if ( not Common::ExpectMessage(aType, aSubscriber, aMessage, 100) )
 	{

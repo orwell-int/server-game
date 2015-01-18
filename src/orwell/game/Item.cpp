@@ -133,6 +133,7 @@ void Item::capture(Team & ioTeam)
 	if (ioTeam.getName() != m_owningTeam)
 	{
 		ioTeam.increaseScore();
+		m_owningTeam = ioTeam.getName();
 	}
 }
 
