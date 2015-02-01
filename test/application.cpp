@@ -319,9 +319,11 @@ video-ports    = 9001:9004
 	TempFile aTempFile(std::string(R"(
 [game]
 robots = robot_A | robot_B
-gametype = Problem
-gamename = Enigma
 duration = 999
+ruleset = ruleset
+
+[ruleset]
+game_name = game
 
 [robot_A]
 name = Aristotle
@@ -348,8 +350,6 @@ team = Mathematicians
 
 	orwell::Application::Parameters aExpectedParameters ;
 	aExpectedParameters.m_commandLineParameters = aExpectedCommandLineArguments;
-	aExpectedParameters.m_gameName = "Enigma";
-	aExpectedParameters.m_gameType = "Problem";
 	aExpectedParameters.m_robots = {
 			{"robot_A", {"Aristotle", "Philosophers"}},
 			{"robot_B", {"Bourbaki", "Mathematicians"}},
@@ -378,8 +378,10 @@ video-ports    = 9001:9004
 	TempFile aTempFile(std::string(R"(
 [game]
 robots = robot_A | robot_B
-gametype = Problem
-gamename = Enigma
+ruleset = ruleset
+
+[ruleset]
+game_name = game
 
 [robot_A]
 name = Aristotle
@@ -404,8 +406,6 @@ team = Mathematicians
 
 	orwell::Application::Parameters aExpectedParameters ;
 	aExpectedParameters.m_commandLineParameters = aCommandLineArguments;
-	aExpectedParameters.m_gameName = "Enigma";
-	aExpectedParameters.m_gameType = "Problem";
 	aExpectedParameters.m_robots = {
 			{"robot_A", {"Aristotle", "Philosophers"}},
 			{"robot_B", {"Bourbaki", "Mistake!!"}}, // voluntary mistake
@@ -465,8 +465,10 @@ video-ports    = 9001
 	TempFile aGameConfigFile(std::string(R"(
 [game]
 robots = robot_A | robot_B
-gametype = Problem
-gamename = Enigma
+ruleset = ruleset
+
+[ruleset]
+game_name = game
 
 [robot_A]
 name = Aristotle
@@ -508,6 +510,10 @@ video-ports    = 9001:9004
 [game]
 robots = robot_A | robot_B
 items = item_RedFlag
+ruleset = ruleset
+
+[ruleset]
+game_name = game
 
 [robot_A]
 name = Aristotle
@@ -561,6 +567,10 @@ color = -1
 [game]
 robots = robot_A | robot_B
 items = item_RedFlag
+ruleset = ruleset
+
+[ruleset]
+game_name = game
 
 [robot_A]
 name = Aristotle

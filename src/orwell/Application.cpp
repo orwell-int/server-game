@@ -17,12 +17,13 @@
 #include <signal.h>
 #include <sstream>
 
-using namespace orwell;
 using namespace boost::program_options;
 using namespace boost::property_tree;
 using namespace log4cxx;
 using std::make_shared;
 using std::string;
+
+namespace orwell {
 
 Application & Application::GetInstance()
 {
@@ -314,12 +315,13 @@ void Application::ParseGameConfigFromFile(
 	ptree aPtree;
 	ini_parser::read_ini(*ioParam.m_commandLineParameters.m_gameFilePath, aPtree);
 
-	ioParam.m_gameType = aPtree.get_optional<std::string>("game.gametype");
-	ioParam.m_gameName = aPtree.get_optional<std::string>("game.gamename");
 	if (not ioParam.m_commandLineParameters.m_gameDuration)
 	{
 		ioParam.m_commandLineParameters.m_gameDuration = aPtree.get_optional< uint32_t >("game.duration");
 	}
+
+	// deal with the Ruleset
+	ioParam.m_ruleset.parseConfig(aPtree.get<std::string>("game.ruleset"), aPtree);
 
 	// list of all robots to add
 	boost::optional<std::string> aGameRobots = aPtree.get_optional<std::string>("game.robots");
@@ -532,6 +534,7 @@ void Application::initServer(Parameters const & iParam)
 
 	m_server = new orwell::Server(
 			m_agentProxy,
+			iParam.m_ruleset,
 			aAgentAddress,
 			aPullerAddress,
 			aPublisherAddress,
@@ -606,6 +609,24 @@ void Application::Tokenize(
 	}
 }
 
+uint16_t Application::popPort()
+{
+	if (not m_availablePorts.empty())
+	{
+		uint16_t aReturnPort = m_availablePorts.back();
+		m_availablePorts.pop_back();
+		m_takenPorts.push_back(aReturnPort);
+		return aReturnPort;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+
+} // namespace orwell
+
 bool operator!=(
 		orwell::Application::Parameters const & iLeft,
 		orwell::Application::Parameters const & iRight)
@@ -653,8 +674,6 @@ bool operator==(
 		and (iLeft.m_commandLineParameters.m_broadcast == iRight.m_commandLineParameters.m_broadcast)
 		and (aSameRobots)
 		and (iLeft.m_teams == iRight.m_teams)
-		and (iLeft.m_gameType == iRight.m_gameType)
-		and (iLeft.m_gameName == iRight.m_gameName)
 		);
 }
 
@@ -694,8 +713,6 @@ std::ostream & operator<<(
 	std::ostream_iterator< std::string > aOut(ioOstream,", ");
 	std::copy(iParameters.m_teams.begin(), iParameters.m_teams.end(), aOut);
 	ioOstream << "] ; ";
-	ioOstream << "game type [" << iParameters.m_gameType << "] ; ";
-	ioOstream << "game name [" << iParameters.m_gameName << "]";
 	return ioOstream;
 }
 
@@ -717,17 +734,5 @@ bool operator==(
 		and (iLeft.m_color == iRight.m_color));
 }
 
-uint16_t Application::popPort()
-{
-	if (not m_availablePorts.empty())
-	{
-		uint16_t aReturnPort = m_availablePorts.back();
-		m_availablePorts.pop_back();
-		m_takenPorts.push_back(aReturnPort);
-		return aReturnPort;
-	}
-	else
-	{
-		return 0;
-	}
-}
+
+

@@ -80,6 +80,10 @@ video-ports    = 9004-9005
 [game]
 robots = robot_A
 items = item_RedFlag
+ruleset = ruleset
+
+[ruleset]
+game_name = game
 
 [robot_A]
 name = toto

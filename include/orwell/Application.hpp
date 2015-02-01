@@ -10,12 +10,14 @@
 
 #include <boost/optional.hpp>
 
+#include "orwell/game/Ruleset.hpp"
 #include "orwell/AgentProxy.hpp"
 
 namespace orwell {
 class Server;
 class BroadcastServer;
 class AgentProxy;
+
 
 struct Application_CommandLineParameters
 {
@@ -61,8 +63,7 @@ public :
 		std::map<std::string, Robot> m_robots;
 		std::map<std::string, Item> m_items;
 		std::set<Team> m_teams;
-		boost::optional<std::string> m_gameType;
-		boost::optional<std::string> m_gameName;
+		game::Ruleset m_ruleset;
 	};
 
 	virtual ~Application();

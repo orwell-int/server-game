@@ -11,6 +11,7 @@
 #include "orwell/com/Receiver.hpp"
 #include "orwell/Server.hpp"
 #include "orwell/game/Robot.hpp"
+#include "orwell/game/Ruleset.hpp"
 
 #include "Common.hpp"
 
@@ -120,9 +121,11 @@ int main()
 	orwell::support::GlobalLogger::Create("test_register", "test_register_robot.log");
 	log4cxx::NDC ndc("test_register");
 	FakeAgentProxy aFakeAgentProxy;
+	orwell::game::Ruleset aRuleset;
 	std::shared_ptr< orwell::Server > aServer =
 		std::make_shared< orwell::Server >(
 			aFakeAgentProxy,
+			aRuleset,
 			"tcp://*:9003",
 			"tcp://*:9000",
 			"tcp://*:9001",

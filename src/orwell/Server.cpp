@@ -37,6 +37,7 @@ namespace orwell
 
 Server::Server(
 		orwell::IAgentProxy & ioAgentProxy,
+		game::Ruleset const & iRuleset,
 		std::string const & iAgentUrl,
 		std::string const & iPullUrl,
 		std::string const & iPublishUrl,
@@ -62,7 +63,7 @@ Server::Server(
 				orwell::com::ConnectionMode::BIND,
 				m_zmqContext,
 				0))
-	, m_game(boost::posix_time::milliseconds(iGameDuration), *this)
+	, m_game(boost::posix_time::milliseconds(iGameDuration), iRuleset, *this)
 	, m_decider(m_game, m_publisher)
 	, m_ticDuration( boost::posix_time::milliseconds(iTicDuration) )
 	, m_previousTic(boost::posix_time::microsec_clock::local_time())

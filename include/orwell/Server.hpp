@@ -36,6 +36,7 @@ public:
 	///  Duration of the game in seconds.
 	Server(
 			orwell::IAgentProxy & ioAgentProxy,
+			game::Ruleset const & iRuleset,
 			std::string const & iAgentUrl =  "tcp://*:9003",
 			std::string const & iPullUrl = "tcp://*:9000",
 			std::string const & iPublishUrl = "tcp://*:9001",

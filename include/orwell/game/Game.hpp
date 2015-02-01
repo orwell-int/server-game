@@ -24,12 +24,14 @@ namespace game
 class Robot;
 class Item;
 class Contact;
+class Ruleset;
 
 class Game
 {
 public:
 	Game(
 			boost::posix_time::time_duration const & iGameDuration,
+			Ruleset const & iRuleset,
 			Server & ioServer);
 	~Game();
 
@@ -169,6 +171,8 @@ private:
 	Server & m_server;
 	/// robot ids for which an image has been requested
 	std::set< std::string > m_pendingImage;
+
+	Ruleset const & m_ruleset;
 };
 
 } // game

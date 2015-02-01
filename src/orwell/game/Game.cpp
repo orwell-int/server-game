@@ -19,6 +19,7 @@
 #include "orwell/game/Contact.hpp"
 #include "orwell/com/Sender.hpp"
 #include "orwell/Server.hpp"
+#include "orwell/game/Ruleset.hpp"
 
 #include "MissingFromTheStandard.hpp"
 
@@ -35,10 +36,12 @@ namespace game
 
 Game::Game(
 		boost::posix_time::time_duration const & iGameDuration,
+		Ruleset const & iRuleset,
 		Server & ioServer)
 	: m_isRunning(false)
 	, m_gameDuration(iGameDuration)
 	, m_server(ioServer)
+	, m_ruleset(iRuleset)
 {
 }
 
@@ -430,7 +433,7 @@ void Game::robotIsInContactWith(std::string const & iRobotId, std::shared_ptr<It
 	// here we suppose that a robot can only be in contact with one item.
 	m_contacts[iRobotId] = make_unique<Contact>(
 			m_time,
-			boost::posix_time::milliseconds(1),
+			m_ruleset.m_timeToCapture,
 			m_robotsById[iRobotId],
 			iItem);
 }
