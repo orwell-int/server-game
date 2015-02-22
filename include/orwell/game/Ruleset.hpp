@@ -5,16 +5,12 @@
 #include <stdint.h>
 
 #include <boost/property_tree/ptree_fwd.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/posix_time_types.hpp>
 
-//namespace boost {
-//namespace property_tree {
-//class ptree;
-//}
-//}
-
-namespace orwell {
-namespace game {
+namespace orwell
+{
+namespace game
+{
 
 class Ruleset
 {
@@ -32,5 +28,6 @@ public :
 	boost::posix_time::milliseconds m_timeToCapture;
 
 };
-}} //namespaces
+} // game
+} // orwell
 

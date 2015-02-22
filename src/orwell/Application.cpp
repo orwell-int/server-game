@@ -23,7 +23,8 @@ using namespace log4cxx;
 using std::make_shared;
 using std::string;
 
-namespace orwell {
+namespace orwell
+{
 
 Application & Application::GetInstance()
 {
@@ -560,7 +561,12 @@ void Application::initServer(Parameters const & iParam)
 	for (auto aPair : iParam.m_items)
 	{
 		Parameters::Item aItem = aPair.second;
-		std::shared_ptr<game::Item> aNewItem = game::Item::CreateItem(aItem.m_type, aItem.m_name, aItem.m_rfid, aItem.m_color);
+		std::shared_ptr<game::Item> aNewItem = game::Item::CreateItem(
+				aItem.m_type,
+				aItem.m_name,
+				aItem.m_rfid,
+				aItem.m_color,
+				iParam.m_ruleset);
 		ORWELL_LOG_INFO("new item in game config file : " << aNewItem->toLogString());
 	}
 }
@@ -733,6 +739,4 @@ bool operator==(
 		and (iLeft.m_rfid == iRight.m_rfid)
 		and (iLeft.m_color == iRight.m_color));
 }
-
-
 

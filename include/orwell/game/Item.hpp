@@ -5,22 +5,27 @@
 #include <memory>
 #include <ostream>
 
+#include <boost/date_time/posix_time/posix_time_types.hpp>
+
 namespace orwell
 {
 namespace game
 {
 class Team;
+class Ruleset;
 
 class Item
 {
 protected:
 	Item(
 			std::string const & iName,
-			std::string const & iRfid);
+			std::string const & iRfid,
+			boost::posix_time::milliseconds const & iTimeToCapture);
 
 	Item(
 			std::string const & iName,
-			int32_t const iColorCode);
+			int32_t const iColorCode,
+			boost::posix_time::milliseconds const & iTimeToCapture);
 
 	virtual ~Item();
 
@@ -41,7 +46,8 @@ public:
 			std::string const & iType,
 			std::string const & iName,
 			std::string const & iRfid,
-			int32_t const iColorCode);
+			int32_t const iColorCode,
+			Ruleset const & iRuleset);
 
 	virtual std::string toLogString() const;
 
@@ -52,12 +58,16 @@ private:
 	std::string m_rfid;
 	int32_t m_color;
 	std::string m_owningTeam;
+	boost::posix_time::milliseconds m_timeToCapture;
 
 	static std::map<std::string, std::shared_ptr<Item> > s_itemsByRfid;
 	static std::map<int32_t, std::shared_ptr<Item> > s_itemsByColor;
 
+	virtual void innerCapture(Team & ioTeam) = 0;
 };
 
-}} //end namespace
+} // game
+} // orwell
 
 std::ostream & operator<<(std::ostream& oOstream, const orwell::game::Item & aItem);
+

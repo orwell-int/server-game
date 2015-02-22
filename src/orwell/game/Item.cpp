@@ -3,6 +3,7 @@
 #include "orwell/game/Team.hpp"
 #include "orwell/game/item/Flag.hpp"
 #include "orwell/support/GlobalLogger.hpp"
+#include "orwell/game/Ruleset.hpp"
 
 #include <sstream>
 
@@ -16,19 +17,23 @@ namespace game
 
 Item::Item(
 		std::string const & iName,
-		std::string const & iRfid)
+		std::string const & iRfid,
+		boost::posix_time::milliseconds const & iTimeToCapture)
 	: m_name(iName)
 	, m_rfid(iRfid)
 	, m_color(-1)
+	, m_timeToCapture(iTimeToCapture)
 {
 	ORWELL_LOG_DEBUG("new Item (" << iName <<") by Rfid ("<< iRfid << ")");
 }
 
 Item::Item(
 		std::string const & iName,
-		int32_t const iColorCode)
+		int32_t const iColorCode,
+		boost::posix_time::milliseconds const & iTimeToCapture)
 	: m_name(iName)
 	, m_color(iColorCode)
+	, m_timeToCapture(iTimeToCapture)
 {
 	ORWELL_LOG_DEBUG("new Item (" << iName <<") by color ("<< iColorCode << ")");
 }
@@ -86,11 +91,12 @@ std::shared_ptr<Item> Item::CreateItem(
 		std::string const & iType,
 		std::string const & iName,
 		std::string const & iRfid,
-		int32_t const iColorCode)
+		int32_t const iColorCode,
+		Ruleset const & iRuleset)
 {
-	if (iType == "flag")
+	if ("flag" == iType)
 	{
-		if (iRfid.empty() and iColorCode != -1)
+		if (iRfid.empty() and -1 != iColorCode)
 		{
 			if (s_itemsByColor.find(iColorCode) != s_itemsByColor.end())
 			{
@@ -98,12 +104,16 @@ std::shared_ptr<Item> Item::CreateItem(
 			}
 			else
 			{
-				std::shared_ptr<item::Flag> aNewFlag = std::make_shared<item::Flag>(iName, iColorCode);
+				std::shared_ptr<item::Flag> aNewFlag = std::make_shared<item::Flag>(
+						iName,
+						iColorCode,
+						iRuleset.m_timeToCapture,
+						iRuleset.m_pointsOnCapture);
 				s_itemsByColor[iColorCode] = aNewFlag;
 				return aNewFlag;
 			}
 		}
-		else if (not iRfid.empty() and iColorCode == -1)
+		else if (not iRfid.empty() and -1 == iColorCode)
 		{
 			if (s_itemsByRfid.find(iRfid) != s_itemsByRfid.end())
 			{
@@ -111,7 +121,11 @@ std::shared_ptr<Item> Item::CreateItem(
 			}
 			else
 			{
-				std::shared_ptr<item::Flag> aNewFlag = std::make_shared<item::Flag>(iName, iRfid);
+				std::shared_ptr<item::Flag> aNewFlag = std::make_shared<item::Flag>(
+						iName,
+						iRfid,
+						iRuleset.m_timeToCapture,
+						iRuleset.m_pointsOnCapture);
 				s_itemsByRfid[iRfid] = aNewFlag;
 				return aNewFlag;
 			}
@@ -132,7 +146,7 @@ void Item::capture(Team & ioTeam)
 {
 	if (ioTeam.getName() != m_owningTeam)
 	{
-		ioTeam.increaseScore();
+		innerCapture(ioTeam);
 		m_owningTeam = ioTeam.getName();
 	}
 }

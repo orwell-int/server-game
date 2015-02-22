@@ -84,6 +84,7 @@ ruleset = ruleset
 
 [ruleset]
 game_name = game
+points_on_capture = 1
 
 [robot_A]
 name = toto
@@ -96,7 +97,6 @@ rfid = myrfidredflag
 color = -1 
 
 )"));
-	ORWELL_LOG_INFO("batman ");
 	orwell::Application::CommandLineParameters aCommandLineArguments;
 	aCommandLineArguments.m_publisherPort = 9000;
 	aCommandLineArguments.m_pullerPort = 9001;
