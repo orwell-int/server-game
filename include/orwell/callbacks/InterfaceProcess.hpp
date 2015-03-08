@@ -5,7 +5,7 @@
  */
 
 #include <memory>
-#include <vector>
+#include <map>
 #include <string>
 
 #include "orwell/com/Sender.hpp"
@@ -29,7 +29,7 @@ class InterfaceProcess
 	typedef std::string Key;
 	typedef std::string Value;
 	typedef std::pair<Key, Value> Argument;
-	typedef std::vector<Argument> DictionaryOfArguments;
+	typedef std::map< Key, Value > DictionaryOfArguments;
 
 public:
 	InterfaceProcess(
@@ -48,18 +48,18 @@ public:
 
 	void setGameContext(game::Game & ioGame);
 
-	void insertArgument(Argument const & iArgument);
+	//void insertArgument(Argument const & iArgument);
 
 	void insertArgument(Key const & iKey, Value const & iValue);
 
 	void removeArgument(Key const & iKey);
 
-	Argument & accessArgument(Key const & iKey);
+	Value & accessArgument(Key const & iKey);
 
-	Argument const & getArgument(Key const & iKey);
+	Value const & getArgument(Key const & iKey) const;
 
 protected:
-    std::shared_ptr< com::Sender > m_publisher;
+	std::shared_ptr< com::Sender > m_publisher;
 
 	google::protobuf::MessageLite * m_msg;
 

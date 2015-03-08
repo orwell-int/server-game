@@ -66,25 +66,33 @@ int32_t Item::getColor() const
 std::shared_ptr<Item> Item::GetItemByRfid(
 		std::string const & iRfid)
 {
+	std::shared_ptr< Item > aFound;
 	std::map<std::string, std::shared_ptr<Item> >::iterator it = s_itemsByRfid.find(iRfid);
 	if (it != s_itemsByRfid.end())
 	{
-		return it->second;
+		aFound = it->second;
 	}
-	ORWELL_LOG_ERROR("Tried to retrieve Item by RFID : " << iRfid << ". Not found");
-	return nullptr;
+	else
+	{
+		ORWELL_LOG_ERROR("Tried to retrieve Item by RFID : " << iRfid << ". Not found");
+	}
+	return aFound;
 }
 
 std::shared_ptr<Item> Item::GetItemByColor(
 		int32_t const iColorCode)
 {
+	std::shared_ptr< Item > aFound;
 	std::map<std::int32_t, std::shared_ptr<Item> >::iterator it = s_itemsByColor.find(iColorCode);
 	if (it != s_itemsByColor.end())
 	{
-		return it->second;
+		aFound = it->second;
 	}
-	ORWELL_LOG_ERROR("Tried to retrieve Item by Color code : " << iColorCode << ". Not found");
-	return nullptr;
+	else
+	{
+		ORWELL_LOG_ERROR("Tried to retrieve Item by Color code : " << iColorCode << ". Not found");
+	}
+	return aFound;
 }
 
 std::shared_ptr<Item> Item::CreateItem(

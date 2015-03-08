@@ -53,9 +53,12 @@ static void const ProxySendsRobotState(
 	aRfidMessage->set_status(ON);
 	aRfidMessage->set_timestamp(0);
 
+	RawMessage aMessage2("Idonotexist", "ServerRobotState", aRobotState.SerializeAsString());
+	aPusher.send(aMessage2);
+	ORWELL_LOG_INFO("message sent with wrong id = " + aRobotState.SerializeAsString());
+
 	RawMessage aMessage(iRobotId, "ServerRobotState", aRobotState.SerializeAsString());
 	aPusher.send(aMessage);
-
 	ORWELL_LOG_INFO("batman message sent = " + aRobotState.SerializeAsString());
 }
 

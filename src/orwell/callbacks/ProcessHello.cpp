@@ -37,7 +37,7 @@ void ProcessHello::execute()
 	ORWELL_LOG_INFO("ProcessHello::execute");
 
 	orwell::messages::Hello const & anHelloMsg = static_cast<orwell::messages::Hello const & >(*m_msg);
-	std::string const & aClientID = getArgument("RoutingID").second;
+	std::string const & aClientID = getArgument("RoutingID");
     
 	string aNewPlayerName = anHelloMsg.name();
 	bool const aPlayerAddedSuccess = m_game->addPlayer( aNewPlayerName );

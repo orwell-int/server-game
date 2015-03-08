@@ -38,7 +38,8 @@ public:
 //	std::shared_ptr< com::Sender > getPublisher();
 
 	std::shared_ptr<Robot> accessRobot(std::string const & iRobotName);
-	std::map<std::string, std::shared_ptr<Robot> > const & getRobots();
+	bool getHasRobotById(std::string const & iRobotId) const;
+	std::map<std::string, std::shared_ptr<Robot> > const & getRobots() const;
 
 	std::shared_ptr< Player > accessPlayer(std::string const & iPlayerName);
 	std::map< std::string, std::shared_ptr< Player > > const & getPlayers();

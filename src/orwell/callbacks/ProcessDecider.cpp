@@ -31,9 +31,9 @@ static MessageType BuildProtobuf(
 		RawMessage const & iMessage)
 {
 	MessageType aMessage;
-	bool aSuccess = aMessage.ParsePartialFromString( iMessage._payload );
-	ORWELL_LOG_DEBUG("BuildProtobuf success : " << aSuccess << "-" );
-	ORWELL_LOG_DEBUG("Resulting protobuf : size=" << aMessage.ByteSize() << "-" );
+	bool aSuccess = aMessage.ParsePartialFromString(iMessage._payload);
+	ORWELL_LOG_DEBUG("BuildProtobuf success : " << aSuccess << "-");
+	ORWELL_LOG_DEBUG("Resulting protobuf : size=" << aMessage.ByteSize() << "-");
 	return aMessage;
 }
 

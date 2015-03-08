@@ -55,7 +55,12 @@ shared_ptr<Robot> Game::accessRobot(string const & iRobotName)
 	return m_robots.at(iRobotName);
 }
 
-map<string, shared_ptr<Robot> > const & Game::getRobots()
+bool Game::getHasRobotById(std::string const & iRobotId) const
+{
+	return (m_robotsById.end() != m_robotsById.find(iRobotId));
+}
+
+map<string, shared_ptr<Robot> > const & Game::getRobots() const
 {
 	return m_robots;
 }

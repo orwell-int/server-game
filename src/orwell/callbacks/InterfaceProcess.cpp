@@ -43,60 +43,33 @@ void InterfaceProcess::init(
 	}
 }
 
-void InterfaceProcess::insertArgument(const Argument & iArgument)
-{
-	m_dictionary.push_back(iArgument);
-}
+//void InterfaceProcess::insertArgument(const Argument & iArgument)
+//{
+	//m_dictionary.push_back(iArgument);
+//}
 
 void InterfaceProcess::insertArgument(
 		const Key & iKey,
 		const Value & iValue)
 {
-	Argument anArgument(iKey, iValue);
-	insertArgument(anArgument);
+	//Argument anArgument(iKey, iValue);
+	//insertArgument(anArgument);
+	m_dictionary[iKey] = iValue;
 }
 
 void InterfaceProcess::removeArgument(const Key & iKey)
 {
-	bool found(false);
-	auto anIterator = m_dictionary.begin();
-
-	for (Argument const & anArgument: m_dictionary)
-	{
-		if (anArgument.first == iKey)
-		{
-			found = true;
-			break;
-		}
-		++anIterator;
-	}
-
-	if (found)
-	{
-		m_dictionary.erase(anIterator);
-	}
+	m_dictionary.erase(iKey);
 }
 
-InterfaceProcess::Argument const & InterfaceProcess::getArgument(const Key & iKey)
+InterfaceProcess::Value & InterfaceProcess::accessArgument(const Key & iKey)
 {
-	for (Argument const & anArgument: m_dictionary)
-	{
-		if (anArgument.first == iKey)
-			return anArgument;
-	}
-
-	throw 1;
+	return m_dictionary.at(iKey);
 }
 
-InterfaceProcess::Argument & InterfaceProcess::accessArgument(const Key & iKey)
+InterfaceProcess::Value const & InterfaceProcess::getArgument(const Key & iKey) const
 {
-	for (Argument & anArgument: m_dictionary)
-	{
-		if (anArgument.first == iKey)
-			return anArgument;
-	}
-
-	throw 1;
+	return m_dictionary.at(iKey);
 }
 
 }} //namespaces

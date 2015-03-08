@@ -23,7 +23,7 @@ ProcessInput::ProcessInput(
 
 void ProcessInput::execute()
 {
-	std::string const & aDestination = getArgument("RoutingID").second;
+	std::string const & aDestination = getArgument("RoutingID");
 	orwell::messages::Input const & anInputMsg = static_cast<orwell::messages::Input const &>(*m_msg);
 
 	ORWELL_LOG_INFO("ProcessInput::execute : simple relay");
