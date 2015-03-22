@@ -2,6 +2,7 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+#include "orwell/support/GlobalLogger.hpp"
 #include "orwell/game/Item.hpp"
 #include "orwell/game/Robot.hpp"
 #include "orwell/game/Team.hpp"
@@ -20,6 +21,7 @@ Contact::Contact(
 	, m_item(iItem)
 	, m_stopTime(iStartTime + iTimerDuration)
 {
+	ORWELL_LOG_DEBUG("Create a contact");
 }
 
 Contact::~Contact()
@@ -29,6 +31,7 @@ Contact::~Contact()
 StepSignal Contact::step(boost::posix_time::ptime const & iCurrentTime)
 {
 	StepSignal aResult = StepSignal::SILENCEIKILLU;
+	ORWELL_LOG_DEBUG("Step in a contact");
 	if (iCurrentTime > m_stopTime)
 	{
 		m_robot->getTeam().captureItem(m_item);

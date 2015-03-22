@@ -81,17 +81,21 @@ video-ports    = 9004-9005
 
 	TempFile aGameConfigFile(std::string(R"(
 [game]
-robots = robot_A
+teams = team_A
 items = item_RedFlag
 ruleset = ruleset
+duration = 10
 
 [ruleset]
 game_name = game
 points_on_capture = 1
 
+[team_A]
+name = TEAM
+robots = robot_A
+
 [robot_A]
 name = toto
-team = TEAM
 
 [item_RedFlag]
 name = Red Flag

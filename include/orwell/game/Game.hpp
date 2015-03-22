@@ -5,6 +5,7 @@
 #include <memory>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/optional.hpp>
 
 #include "orwell/game/Player.hpp"
 #include "orwell/game/Team.hpp"
@@ -87,6 +88,8 @@ public:
 	/// \return
 	///  The team if found and the neutral team otherwise.
 	Team const & getTeam(std::string const & iTeamName) const;
+
+	boost::optional< std::string > const & getWinner() const;
 
 	/// Add a robot.
 	/// \param iName
@@ -172,6 +175,8 @@ private:
 	Server & m_server;
 	/// robot ids for which an image has been requested
 	std::set< std::string > m_pendingImage;
+
+	boost::optional< std::string > m_winner;
 
 	Ruleset const & m_ruleset;
 };

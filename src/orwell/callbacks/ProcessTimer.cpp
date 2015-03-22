@@ -29,6 +29,11 @@ void ProcessTimer::execute()
 	GameState aGameState;
 	aGameState.set_playing(m_game->getIsRunning());
 
+	if (m_game->getWinner())
+	{
+		aGameState.set_winner(*m_game->getWinner());
+	}
+
     RawMessage aMessage("all_clients", "GameState", aGameState.SerializeAsString());
     m_publisher->send( aMessage );
 }

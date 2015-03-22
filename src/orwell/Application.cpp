@@ -324,21 +324,34 @@ void Application::ParseGameConfigFromFile(
 	// deal with the Ruleset
 	ioParam.m_ruleset.parseConfig(aPtree.get<std::string>("game.ruleset"), aPtree);
 
-	// list of all robots to add
-	boost::optional<std::string> aGameRobots = aPtree.get_optional<std::string>("game.robots");
-	// If we have some robots, we need to retrieve them from the ini file itself and add them in the Server's context
-	if (aGameRobots)
+	// list of all teams to add
+	boost::optional<std::string> aGameTeams = aPtree.get_optional<std::string>("game.teams");
+	// If we have some teams, we need to retrieve them from the ini file itself and add them in the Server's context
+	if (aGameTeams)
 	{
-		std::vector<std::string> aRobotList;
-		Application::Tokenize(aGameRobots.get(), aRobotList);
+		std::vector<std::string> aTeamList;
+		Application::Tokenize(aGameTeams.get(), aTeamList);
 
-		for (std::string const & iRobot : aRobotList)
+		for (std::string const & aTeam : aTeamList)
 		{
-			std::string aRobotName = aPtree.get<std::string>(iRobot + ".name");
-			std::string aRobotTeam = aPtree.get<std::string>(iRobot + ".team");
-			ORWELL_LOG_INFO("Pushing robot: " << aRobotName << " ; in team " << aRobotTeam);
-			ioParam.m_robots[iRobot] = Parameters::Robot{aRobotName, aRobotTeam};
-			ioParam.m_teams.insert(aRobotTeam);
+			std::string aTeamName = aPtree.get<std::string>(aTeam + ".name");
+			ORWELL_LOG_INFO("Pushing team: " << aTeamName);
+			ioParam.m_teams.insert(aTeamName);
+			// list of all robots to add
+			boost::optional<std::string> aGameRobots = aPtree.get_optional<std::string>(aTeam + ".robots");
+			// If we have some robots, we need to retrieve them from the ini file itself and add them in the Server's context
+			if (aGameRobots)
+			{
+				std::vector<std::string> aRobotList;
+				Application::Tokenize(aGameRobots.get(), aRobotList);
+
+				for (std::string const & aRobot : aRobotList)
+				{
+					std::string aRobotName = aPtree.get<std::string>(aRobot + ".name");
+					ORWELL_LOG_INFO("Pushing robot: " << aRobotName << " ; in team " << aTeamName);
+					ioParam.m_robots[aRobot] = Parameters::Robot{aRobotName, aTeamName};
+				}
+			}
 		}
 	}
 

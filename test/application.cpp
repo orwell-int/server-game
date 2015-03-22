@@ -318,20 +318,26 @@ video-ports    = 9001:9004
 )"));
 	TempFile aTempFile(std::string(R"(
 [game]
-robots = robot_A | robot_B
+teams = team_A | team_B
 duration = 999
 ruleset = ruleset
 
 [ruleset]
 game_name = game
 
+[team_A]
+name = Philosophers
+robots = robot_A
+
+[team_B]
+name = Mathematicians
+robots = robot_B
+
 [robot_A]
 name = Aristotle
-team = Philosophers
 
 [robot_B]
 name = Bourbaki
-team = Mathematicians
 
 )"));
 
@@ -377,19 +383,23 @@ video-ports    = 9001:9004
 
 	TempFile aTempFile(std::string(R"(
 [game]
-robots = robot_A | robot_B
+teams = team_A | team_B
 ruleset = ruleset
 
 [ruleset]
 game_name = game
 
+[team_A]
+name = Philosophers
+
+[team_B]
+name = Mathematicians
+
 [robot_A]
 name = Aristotle
-team = Philosophers
 
 [robot_B]
 name = Bourbaki
-team = Mathematicians
 
 )"));
 
@@ -464,19 +474,25 @@ video-ports    = 9001
 
 	TempFile aGameConfigFile(std::string(R"(
 [game]
-robots = robot_A | robot_B
+teams = team_A | team_B
 ruleset = ruleset
 
 [ruleset]
 game_name = game
 
+[team_A]
+name = Philosophers
+robots = robot_A
+
+[team_B]
+name = Mathematicians
+robots = robot_B
+
 [robot_A]
 name = Aristotle
-team = Philosophers
 
 [robot_B]
 name = Bourbaki
-team = Mathematicians
 )"));
 
 	orwell::Application::CommandLineParameters aCommandLineArguments;
@@ -508,20 +524,26 @@ video-ports    = 9001:9004
 
 	TempFile aGameConfigFile(std::string(R"(
 [game]
-robots = robot_A | robot_B
+teams = team_A | team_B
 items = item_RedFlag
 ruleset = ruleset
 
 [ruleset]
 game_name = game
 
+[team_A]
+name = Philosophers
+robots = robot_A
+
+[team_B]
+name = Mathematicians
+robots = robot_B
+
 [robot_A]
 name = Aristotle
-team = Philosophers
 
 [robot_B]
 name = Bourbaki
-team = Mathematicians
 
 [item_RedFlag]
 name = Red Flag
@@ -565,20 +587,26 @@ color = -1
 	// second test. This time item_RedFlag has both a rfid and a color... which is a no go
 	TempFile aGameConfigFile2(std::string(R"(
 [game]
-robots = robot_A | robot_B
+teams = team_A | team_B
 items = item_RedFlag
 ruleset = ruleset
 
 [ruleset]
 game_name = game
 
+[team_A]
+name = Philosophers
+robots = robot_A
+
+[team_B]
+name = Mathematicians
+robots = robot_B
+
 [robot_A]
 name = Aristotle
-team = Philosophers
 
 [robot_B]
 name = Bourbaki
-team = Mathematicians
 
 [item_RedFlag]
 name = Red Flag

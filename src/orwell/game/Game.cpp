@@ -297,8 +297,12 @@ void Game::fire(std::string const & iRobotId)
 
 void Game::step()
 {
-	readImages();
-	handleContacts();
+	//if (m_isRunning)
+	{
+		readImages();
+		handleContacts();
+		stopIfGameIsFinished();
+	}
 }
 
 std::shared_ptr< Robot > Game::getRobotWithoutRealRobot(
@@ -349,6 +353,11 @@ std::shared_ptr<Robot> Game::getAvailableRobot() const
 	return aFoundRobot;
 }
 
+boost::optional< std::string > const & Game::getWinner() const
+{
+	return m_winner;
+}
+
 std::shared_ptr< Robot > Game::getRobotForPlayer(string const & iPlayer) const
 {
 	std::shared_ptr< Robot > aFoundRobot;
@@ -383,6 +392,31 @@ void Game::stopIfGameIsFinished()
 	if (m_gameDuration <= m_startTime - m_time)
 	{
 		stop();
+	}
+	else
+	{
+		std::vector< std::string > aWinningTeams;
+		for (std::pair< std::string, Team > const & aTeamElement : m_teams)
+		{
+			if (aTeamElement.second.getScore() >= m_ruleset.m_scoreToWin)
+			{
+				aWinningTeams.push_back(aTeamElement.second.getName());
+			}
+		}
+		if (aWinningTeams.empty())
+		{
+			// nobody has won yet
+		}
+		else if (1 == aWinningTeams.size())
+		{
+			m_winner = aWinningTeams.front();
+			stop();
+		}
+		else
+		{
+			//todo
+			stop();
+		}
 	}
 }
 
