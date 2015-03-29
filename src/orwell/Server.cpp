@@ -200,7 +200,11 @@ void Server::sendServerCommand(
 	ORWELL_LOG_DEBUG("sendServerCommand(" <<
 			"robotID=" << iRobotId <<
 			", command=" << iCommand << ")");
-	m_serverCommandSockets[iRobotId]->sendString(iCommand);
+	auto aFound = m_serverCommandSockets.find(iRobotId);
+	if (m_serverCommandSockets.end() != aFound)
+	{
+		aFound->second->sendString(iCommand);
+	}
 }
 
 bool Server::receiveCommandResponse(

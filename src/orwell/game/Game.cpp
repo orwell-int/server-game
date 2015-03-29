@@ -301,7 +301,10 @@ void Game::step()
 	{
 		readImages();
 		handleContacts();
-		stopIfGameIsFinished();
+		if (m_isRunning)
+		{
+			stopIfGameIsFinished();
+		}
 	}
 }
 
@@ -391,6 +394,7 @@ void Game::stopIfGameIsFinished()
 {
 	if (m_gameDuration <= m_startTime - m_time)
 	{
+		ORWELL_LOG_INFO("stop ; game duration " << m_startTime - m_time);
 		stop();
 	}
 	else
@@ -409,11 +413,13 @@ void Game::stopIfGameIsFinished()
 		}
 		else if (1 == aWinningTeams.size())
 		{
+			ORWELL_LOG_INFO("stop ; we have a winner");
 			m_winner = aWinningTeams.front();
 			stop();
 		}
 		else
 		{
+			ORWELL_LOG_INFO("stop ; stalemate");
 			//todo
 			stop();
 		}

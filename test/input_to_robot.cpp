@@ -86,6 +86,7 @@ int main()
 	aCommandLineArguments.m_gameDuration = 200;
 	aCommandLineArguments.m_dryRun = false;
 	aCommandLineArguments.m_broadcast = false;
+	aCommandLineArguments.m_gameFilePath = "orwell-game.ini";
 
 	Arguments aArguments = Common::GetArguments(
 			aCommandLineArguments, true);

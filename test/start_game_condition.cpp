@@ -120,6 +120,7 @@ int main()
 	log4cxx::NDC ndc("test_start_game_condition");
 	FakeAgentProxy aFakeAgentProxy;
 	orwell::game::Ruleset aRuleset;
+	aRuleset.m_scoreToWin = 1;
 	std::shared_ptr< orwell::Server > aServer =
 		std::make_shared< orwell::Server >(
 			aFakeAgentProxy,
