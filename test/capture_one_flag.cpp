@@ -89,6 +89,7 @@ duration = 10
 [ruleset]
 game_name = game
 points_on_capture = 1
+score_to_win = 3
 
 [team_A]
 name = TEAM
@@ -136,6 +137,7 @@ color = -1
 	ORWELL_LOG_INFO("batman robotId = " + aRobotId);
 	aTestAgent.sendCommand("get team TEAM score", std::string("0"));
 
+	aTestAgent.sendCommand("start game");
 	std::thread aProxySendsRobotStateThread(
 			ProxySendsRobotState,
 			*aParameters.m_commandLineParameters.m_pullerPort,
@@ -184,6 +186,7 @@ color = -1
 //	assert(not gOK);
 	usleep(3 * *aCommandLineArguments.m_tickInterval * 1000);
 	aTestAgent.sendCommand("get team TEAM score", std::string("1"));
+	aTestAgent.sendCommand("stop game");
 	aTestAgent.sendCommand("stop application");
 	aApplicationThread.join();
 	ORWELL_LOG_INFO("Test ends\n");

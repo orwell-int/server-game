@@ -80,8 +80,6 @@ static void client()
 	Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB, orwell::com::ConnectionMode::CONNECT, aContext);
 	usleep(1 * 1000);
 
-	ExpectGameState(false, aSubscriber);
-
 	Hello aHelloMessage;
 	aHelloMessage.set_name("playername");
 	RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());

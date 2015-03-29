@@ -297,15 +297,9 @@ void Game::fire(std::string const & iRobotId)
 
 void Game::step()
 {
-	//if (m_isRunning)
-	{
-		readImages();
-		handleContacts();
-		if (m_isRunning)
-		{
-			stopIfGameIsFinished();
-		}
-	}
+	readImages();
+	handleContacts();
+	stopIfGameIsFinished();
 }
 
 std::shared_ptr< Robot > Game::getRobotWithoutRealRobot(

@@ -120,9 +120,12 @@ void Server::loopUntilOneMessageIsProcessed()
 		else
 		{
 			feedAgentProxy();
-			m_game.step();
-			ProcessTimer aProcessTimer(m_publisher, m_game);
-			aProcessTimer.execute();
+			if (m_game.getIsRunning())
+			{
+				m_game.step();
+				ProcessTimer aProcessTimer(m_publisher, m_game);
+				aProcessTimer.execute();
+			}
 			m_previousTic = aCurrentTic;
 		}
 	}
