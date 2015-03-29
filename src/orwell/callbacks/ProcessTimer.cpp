@@ -34,8 +34,8 @@ void ProcessTimer::execute()
 		aGameState.set_winner(*m_game->getWinner());
 	}
 
-    RawMessage aMessage("all_clients", "GameState", aGameState.SerializeAsString());
-    m_publisher->send( aMessage );
+	RawMessage aMessage("all_clients", "GameState", aGameState.SerializeAsString());
+	m_publisher->send( aMessage );
 }
 
 }

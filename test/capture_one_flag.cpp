@@ -60,6 +60,26 @@ static void const ProxySendsRobotState(
 	RawMessage aMessage(iRobotId, "ServerRobotState", aRobotState.SerializeAsString());
 	aPusher.send(aMessage);
 	ORWELL_LOG_INFO("batman message sent = " + aRobotState.SerializeAsString());
+	RawMessage aResponse;
+	bool aGotWhatExpected(false);
+	while (not aGotWhatExpected)
+	{
+		if (not Common::ExpectMessage("GameState", aSubscriber, aResponse))
+		{
+			ORWELL_LOG_DEBUG("Expected gamestate but we got something else : " << aResponse._type);
+		}
+		else
+		{
+			GameState aGameState;
+			aGameState.ParsePartialFromString(aResponse._payload);
+
+			if ((not aGameState.playing()) and (aGameState.winner() == "TEAM"))
+			{
+				ORWELL_LOG_DEBUG("Game stopped as expected and team TEAM won.");
+				aGotWhatExpected = true;
+			}
+		}
+	}
 }
 
 static void Application(orwell::Application::Parameters const & aParameters)
@@ -89,7 +109,7 @@ duration = 10
 [ruleset]
 game_name = game
 points_on_capture = 1
-score_to_win = 3
+score_to_win = 1
 
 [team_A]
 name = TEAM
@@ -186,7 +206,8 @@ color = -1
 //	assert(not gOK);
 	usleep(3 * *aCommandLineArguments.m_tickInterval * 1000);
 	aTestAgent.sendCommand("get team TEAM score", std::string("1"));
-	aTestAgent.sendCommand("stop game");
+	// we do not need to stop the game as there is a winner
+	//aTestAgent.sendCommand("stop game");
 	aTestAgent.sendCommand("stop application");
 	aApplicationThread.join();
 	ORWELL_LOG_INFO("Test ends\n");
