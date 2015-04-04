@@ -36,6 +36,7 @@ before_install:
 script:
     - gcov -v | grep "4.8"
     - lcov --version | grep "1.10"
+    - wget http://enl.usc.edu/enl/trunk/aqua/OpenCV-2.3.1/share/OpenCV/OpenCVConfig.cmake -O modules/FindOpenCV.cmake 
     - mkdir -p ./build
     - cd ./build && cmake .. && make && cd ./test
     - cd server-web ; make develop ; cd -
