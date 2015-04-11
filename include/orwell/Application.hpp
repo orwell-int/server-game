@@ -10,6 +10,7 @@
 
 #include <boost/optional.hpp>
 
+#include "orwell/game/Ruleset.hpp"
 #include "orwell/AgentProxy.hpp"
 
 namespace orwell {
@@ -17,9 +18,30 @@ class Server;
 class BroadcastServer;
 class AgentProxy;
 
+
+struct Application_CommandLineParameters
+{
+	boost::optional<uint16_t> m_pullerPort;
+	boost::optional<uint16_t> m_publisherPort;
+	boost::optional<uint16_t> m_agentPort;
+	/// path to technical configuration file
+	boost::optional<std::string> m_rcFilePath;
+	/// path to game configuration file
+	boost::optional<std::string> m_gameFilePath;
+	boost::optional<int64_t> m_tickInterval;
+	boost::optional< int32_t > m_gameDuration;
+	boost::optional<bool> m_dryRun;
+	boost::optional<bool> m_broadcast;
+};
+
+
 class Application
 {
 public :
+	// The arguments which can be found in command line.
+
+	typedef Application_CommandLineParameters CommandLineParameters;
+
 	struct Parameters
 	{
 		struct Robot
@@ -27,23 +49,21 @@ public :
 			std::string m_name;
 			std::string m_team;
 		};
+		struct Item
+		{
+			std::string m_name;
+			std::string m_type;
+			std::string m_rfid;
+			int32_t m_color;
+		};
+
+		CommandLineParameters m_commandLineParameters;
 		typedef std::string Team;
-		boost::optional<uint16_t> m_pullerPort;
-		boost::optional<uint16_t> m_publisherPort;
-		boost::optional<uint16_t> m_agentPort;
 		std::vector< uint16_t > m_videoPorts;
-		boost::optional<int64_t> m_tickInterval;
-		boost::optional< int32_t > m_gameDuration;
-		/// path to technical configuration file
-		boost::optional<std::string> m_rcFilePath;
-		/// path to game configuration file
-		boost::optional<std::string> m_gameFilePath;
-		boost::optional<bool> m_dryRun;
-		boost::optional<bool> m_broadcast;
 		std::map<std::string, Robot> m_robots;
+		std::map<std::string, Item> m_items;
 		std::set<Team> m_teams;
-		boost::optional<std::string> m_gameType;
-		boost::optional<std::string> m_gameName;
+		game::Ruleset m_ruleset;
 	};
 
 	virtual ~Application();
@@ -73,9 +93,9 @@ private:
 
 	void initBroadcastServer(Parameters const & iParam);
 
-	static void TokenizeRobots(
-		std::string const & iRobotsString,
-		std::vector<std::string> & oRobotList);
+	static void Tokenize(
+		std::string const & iString,
+		std::vector<std::string> & oList);
 
 	//Parameter parsing and validation
 	static bool ParseParametersFromCommandLine(
@@ -124,4 +144,8 @@ std::ostream & operator<<(
 bool operator==(
 		orwell::Application::Parameters::Robot const & iLeft,
 		orwell::Application::Parameters::Robot const & iRight);
+
+bool operator==(
+		orwell::Application::Parameters::Item const & iLeft,
+		orwell::Application::Parameters::Item const & iRight);
 

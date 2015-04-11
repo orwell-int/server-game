@@ -21,6 +21,8 @@
 
 namespace orwell
 {
+class Application_CommandLineParameters;
+
 namespace com
 {
 class Receiver;
@@ -52,19 +54,11 @@ class Common
 {
 public:
 	static Arguments GetArguments(
-			bool const iHelp = false,
-			boost::optional< int32_t > const iPublisherPort = boost::none,
-			boost::optional< int32_t > const iPullerPort = boost::none,
-			boost::optional< int32_t > const iAgentPort = boost::none,
-			boost::optional< std::string > const iOrwellRc = boost::none,
-			boost::optional< std::string > const iGameConfig = boost::none,
-			boost::optional< int64_t > const iTicInterval = boost::none,
-			boost::optional< int32_t > const iGameDuration = boost::none,
-			bool const iVersion = false,
+			orwell::Application_CommandLineParameters const & iCommandLineParams,
 			bool const iDebugLog = false,
-			bool const iNoBroadcast = false,
-			bool const iDryRun = false);
-
+			bool const iHelp = false,
+			bool const iShowVersion = false
+	);
 	static bool ExpectMessage(
 			std::string const & iType,
 			orwell::com::Receiver & iSubscriber,
@@ -81,9 +75,22 @@ public :
 
 	MOCK_METHOD0(stopApplication, void());
 	
+	MOCK_METHOD1(listTeam, void(std::string & ioReply));
+
+	MOCK_METHOD1(addTeam, void(std::string const & iTeamName));
+
+	MOCK_METHOD1(removeTeam, void(std::string const & iTeamName));
+
+	MOCK_METHOD3(getTeam, void(
+			std::string const & iTeamName,
+			std::string const & iProperty,
+			std::string & oValue));
+
 	MOCK_METHOD1(listRobot, void(std::string & ioReply));
 
-	MOCK_METHOD1(addRobot, void(std::string const & iRobotName));
+	MOCK_METHOD2(addRobot, void(
+				std::string const & iRobotName,
+				std::string const & iTeamName));
 
 	MOCK_METHOD1(removeRobot, void(std::string const & iRobotName));
 
@@ -110,6 +117,15 @@ public :
 	MOCK_METHOD0(startGame, void());
 
 	MOCK_METHOD0(stopGame, void());
+};
+
+struct TempFile
+{
+	std::string m_fileName;
+
+	TempFile(std::string const & iContent);
+
+	~TempFile();
 };
 
 class TestAgent

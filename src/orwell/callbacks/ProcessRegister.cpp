@@ -22,8 +22,10 @@ using orwell::messages::Welcome;
 using orwell::messages::Goodbye;
 using orwell::com::RawMessage;
 
-namespace orwell{
-namespace callbacks{
+namespace orwell
+{
+namespace callbacks
+{
 
 ProcessRegister::ProcessRegister(
 		std::shared_ptr< com::Sender > ioPublisher,
@@ -38,7 +40,7 @@ void ProcessRegister::execute()
 
 	orwell::messages::Register const & aRegisterMsg =
 		static_cast< orwell::messages::Register const & >(*m_msg);
-	std::string const & aClientID = getArgument("RoutingID").second;
+	std::string const & aClientID = getArgument("RoutingID");
     
 	std::string aTemporaryRobotId = aRegisterMsg.temporary_robot_id();
 	std::shared_ptr< orwell::game::Robot > aRobot =
@@ -55,6 +57,14 @@ void ProcessRegister::execute()
 	aRegistered.set_robot_id(aRobotId);
 	RawMessage aReply(aClientID, "Registered", aRegistered.SerializeAsString());
 	m_publisher->send(aReply);
+	if (aRobot)
+	{
+		ORWELL_LOG_INFO("ProcessRegister::execute success");
+	}
+	else
+	{
+		ORWELL_LOG_INFO("ProcessRegister::execute failure");
+	}
 }
 
 }

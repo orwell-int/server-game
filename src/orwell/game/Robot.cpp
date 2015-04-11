@@ -1,10 +1,7 @@
 #include "orwell/game/Robot.hpp"
 #include <iostream>
 
-#include "robot.pb.h"
-
 using namespace std;
-using orwell::messages::RobotState;
 
 namespace orwell {
 namespace game {
@@ -12,10 +9,12 @@ namespace game {
 Robot::Robot(
 		string const & iName,
 		std::string const & iRobotId,
+		Team & iTeam,
 		uint16_t const & iVideoRetransmissionPort,
 		uint16_t const & iServerCommandPort)
 	: m_name(iName)
 	, m_robotId(iRobotId)
+	, m_team(iTeam)
 	, m_videoRetransmissionPort(iVideoRetransmissionPort)
 	, m_serverCommandPort(iServerCommandPort)
 	, m_hasRealRobot(false)
@@ -24,6 +23,16 @@ Robot::Robot(
 
 Robot::~Robot()
 {
+}
+
+Team & Robot::getTeam()
+{
+	return m_team;
+}
+
+Team const & Robot::getTeam() const
+{
+	return m_team;
 }
 
 void Robot::setHasRealRobot(bool const iHasRealRobot)
@@ -86,15 +95,15 @@ bool const Robot::getIsAvailable() const
 	return ((m_hasRealRobot) and (not getHasPlayer()));
 }
 
-void fillRobotStateMessage( messages::RobotState & oMessage )
-{
-	//todo
-	//those are just bullshit hardcoded values to have the syntax
-	oMessage.set_life(1);
-	oMessage.mutable_move()->set_left(0);
-	oMessage.mutable_move()->set_right(0);
-	oMessage.set_active(true);
-}
+//void fillRobotStateMessage( messages::RobotState & oMessage )
+//{
+//	//todo
+//	//those are just bullshit hardcoded values to have the syntax
+//	oMessage.set_life(1);
+//	oMessage.mutable_move()->set_left(0);
+//	oMessage.mutable_move()->set_right(0);
+//	oMessage.set_active(true);
+//}
 
 }
 } // namespaces

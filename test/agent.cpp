@@ -28,25 +28,22 @@ int main()
 	log4cxx::NDC ndc("test_agent");
 	ORWELL_LOG_INFO("Test starts\n");
 
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_agentPort = 9004;
+	aCommandLineArguments.m_tickInterval = 1;
+	aCommandLineArguments.m_gameDuration = 100;
+	aCommandLineArguments.m_dryRun = false;
+	aCommandLineArguments.m_broadcast = false;
+
 	orwell::Application::Parameters aParameters;
 	Arguments aArguments = Common::GetArguments(
-			false,
-			boost::none,
-			boost::none,
-			9004,
-			boost::none,
-			boost::none,
-			1,
-			100,
-			false,
-			true,
-			true,
-			false);
+			aCommandLineArguments,
+			true);
 	orwell::Application::ReadParameters(
 			aArguments.m_argc,
 			aArguments.m_argv,
 			aParameters);
-	TestAgent aTestAgent(aParameters.m_agentPort.get());
+	TestAgent aTestAgent(aParameters.m_commandLineParameters.m_agentPort.get());
 	std::thread aApplicationThread(Application, aParameters);
 	aTestAgent.sendCommand("stop application");
 	aApplicationThread.join();

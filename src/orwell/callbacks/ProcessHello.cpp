@@ -22,8 +22,10 @@ using orwell::messages::Goodbye;
 using orwell::com::RawMessage;
 using std::string;
 
-namespace orwell{
-namespace callbacks{
+namespace orwell
+{
+namespace callbacks
+{
 
 ProcessHello::ProcessHello(
 		std::shared_ptr< com::Sender > ioPublisher,
@@ -37,7 +39,7 @@ void ProcessHello::execute()
 	ORWELL_LOG_INFO("ProcessHello::execute");
 
 	orwell::messages::Hello const & anHelloMsg = static_cast<orwell::messages::Hello const & >(*m_msg);
-	std::string const & aClientID = getArgument("RoutingID").second;
+	std::string const & aClientID = getArgument("RoutingID");
     
 	string aNewPlayerName = anHelloMsg.name();
 	bool const aPlayerAddedSuccess = m_game->addPlayer( aNewPlayerName );
@@ -59,14 +61,14 @@ void ProcessHello::execute()
 
 				Welcome aWelcome;
 				aWelcome.set_robot(aAvailableRobot->getName());
-				aWelcome.set_team( orwell::messages::RED ); //currently stupidly hardoded
+				aWelcome.set_team("team_red"); //currently stupidly hard coded
 				aWelcome.set_id(aAvailableRobot->getRobotId());
 
 				aWelcome.set_video_address("localhost");
 				aWelcome.set_video_port(aAvailableRobot->getVideoRetransmissionPort());
 
 				RawMessage aReply(aClientID, "Welcome", aWelcome.SerializeAsString());
-				m_publisher->send( aReply );
+				m_publisher->send(aReply);
 				aFailure = false;
 
 				if (m_game->getAvailableRobot() == nullptr)
@@ -92,7 +94,7 @@ void ProcessHello::execute()
 
 		Goodbye aGoodbye;
 		RawMessage aReply(aClientID, "Goodbye", aGoodbye.SerializeAsString());
-		m_publisher->send( aReply );
+		m_publisher->send(aReply);
 	}
 }
 

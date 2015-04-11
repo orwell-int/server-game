@@ -11,6 +11,7 @@
 #include "orwell/com/Receiver.hpp"
 #include "orwell/Server.hpp"
 #include "orwell/game/Robot.hpp"
+#include "orwell/game/Ruleset.hpp"
 
 #include "Common.hpp"
 
@@ -38,6 +39,7 @@ static void ExpectRegistered(
 	Register aRegisterMessage;
 	aRegisterMessage.set_temporary_robot_id(iTemporaryRobotId);
 	aRegisterMessage.set_video_url("http://localhost:80");
+	aRegisterMessage.set_image("this is a photo of the robot.jpg");
 	RawMessage aMessage(
 			iTemporaryRobotId,
 			"Register",
@@ -119,18 +121,22 @@ int main()
 	orwell::support::GlobalLogger::Create("test_register", "test_register_robot.log");
 	log4cxx::NDC ndc("test_register");
 	FakeAgentProxy aFakeAgentProxy;
+	orwell::game::Ruleset aRuleset;
 	std::shared_ptr< orwell::Server > aServer =
 		std::make_shared< orwell::Server >(
 			aFakeAgentProxy,
+			aRuleset,
 			"tcp://*:9003",
 			"tcp://*:9000",
 			"tcp://*:9001",
 			500);
 	ORWELL_LOG_INFO("server created");
 	std::vector< std::string > aRobots = {"Gipsy Danger", "Goldorak", "Securitron"};
-	aServer->accessContext().addRobot(aRobots[0], 8001, 8004, "robot1");
-	aServer->accessContext().addRobot(aRobots[1], 8002, 8005, "robot2");
-	aServer->accessContext().addRobot(aRobots[2], 8003, 8006, "robot3");
+	std::string const aTeamName("TEAM");
+	aServer->accessContext().addTeam(aTeamName);
+	aServer->accessContext().addRobot(aRobots[0], aTeamName, 8001, 8004, "robot1");
+	aServer->accessContext().addRobot(aRobots[1], aTeamName, 8002, 8005, "robot2");
+	aServer->accessContext().addRobot(aRobots[2], aTeamName, 8003, 8006, "robot3");
 	std::thread aServerThread(server, aServer);
 	std::thread aClientThread(proxy);
 	aClientThread.join();

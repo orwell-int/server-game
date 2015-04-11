@@ -62,75 +62,81 @@ static void test_nothing()
 {
 	ORWELL_LOG_DEBUG("test_nothing");
 	// we get default arguments
-	test_ReadParameters(Status::PASS, Common::GetArguments());
+	test_ReadParameters(Status::PASS, Common::GetArguments(orwell::Application::CommandLineParameters()));
 }
 
 static void test_wrong_port_range_publisher_1()
 {
 	ORWELL_LOG_DEBUG("test_wrong_port_range_publisher_1");
-	test_ReadParameters(Status::FAIL, Common::GetArguments(false, 0, 42, 43));
+
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_publisherPort = 0;
+	aCommandLineArguments.m_pullerPort = 42;
+	aCommandLineArguments.m_agentPort = 43;
+
+	test_ReadParameters(Status::FAIL, Common::GetArguments(aCommandLineArguments, false, false));
 }
 
 static void test_wrong_port_range_publisher_2()
 {
 	ORWELL_LOG_DEBUG("test_wrong_port_range_publisher_2");
-	test_ReadParameters(Status::PASS, Common::GetArguments(false, -1024, 42, 43));
+
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_publisherPort = -1024;
+	aCommandLineArguments.m_pullerPort = 42;
+	aCommandLineArguments.m_agentPort = 43;
+
+	// !! careful !  Boost converts -1024 to ... something, and it passes
+	test_ReadParameters(Status::PASS, Common::GetArguments(aCommandLineArguments, false, false));
 }
 
 static void test_wrong_port_range_publisher_3()
 {
 	ORWELL_LOG_DEBUG("test_wrong_port_range_publisher_3");
-	test_ReadParameters(Status::FAIL, Common::GetArguments(false, 99999, 42, 43));
+
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_publisherPort = 99999;
+	aCommandLineArguments.m_pullerPort = 42;
+	aCommandLineArguments.m_agentPort = 43;
+
+	// !! careful !  Boost converts 99999 to ... something, and it passes
+	test_ReadParameters(Status::PASS, Common::GetArguments(aCommandLineArguments, false, false));
 }
 
 static void test_same_ports_agent_publisher()
 {
 	ORWELL_LOG_DEBUG("test_same_ports_agent_publisher");
-	test_ReadParameters(Status::FAIL, Common::GetArguments(false, 41, 42, 41));
+
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_publisherPort = 41;
+	aCommandLineArguments.m_pullerPort = 42;
+	aCommandLineArguments.m_agentPort = 41;
+
+	test_ReadParameters(Status::FAIL, Common::GetArguments(aCommandLineArguments, false, false));
 }
 
 static void test_same_ports_puller_publisher()
 {
 	ORWELL_LOG_DEBUG("test_same_ports_puller_publisher");
-	test_ReadParameters(Status::FAIL, Common::GetArguments(false, 41, 41, 43));
+
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_publisherPort = 41;
+	aCommandLineArguments.m_pullerPort = 41;
+	aCommandLineArguments.m_agentPort = 42;
+
+	test_ReadParameters(Status::FAIL, Common::GetArguments(aCommandLineArguments, false, false));
 }
 
 static void test_same_ports_puller_agent()
 {
 	ORWELL_LOG_DEBUG("test_same_ports_puller_agent");
-	test_ReadParameters(Status::FAIL, Common::GetArguments(false, 41, 42, 42));
-}
 
-struct TempFile
-{
-	std::string m_fileName;
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_publisherPort = 41;
+	aCommandLineArguments.m_pullerPort = 42;
+	aCommandLineArguments.m_agentPort = 42;
 
-	TempFile(std::string const & iContent);
-
-	~TempFile();
-};
-
-TempFile::TempFile(std::string const & iContent)
-{
-	char aFileName[L_tmpnam];
-	tmpnam(aFileName);
-	FILE * aFile = fopen(aFileName, "w");
-	size_t const aWritten = fputs(iContent.c_str(), aFile);
-	if (aWritten != iContent.size())
-	{
-		std::cerr << "Temporary file not created properly." << std::endl;
-	}
-	fclose(aFile);
-	m_fileName = std::string(aFileName);
-}
-
-TempFile::~TempFile()
-{
-	if (not m_fileName.empty())
-	{
-		remove(m_fileName.c_str());
-		m_fileName.erase();
-	}
+	test_ReadParameters(Status::FAIL, Common::GetArguments(aCommandLineArguments, false, false));
 }
 
 static void test_most_arguments()
@@ -140,20 +146,24 @@ static void test_most_arguments()
 video-ports    = 9001
 )"));
 
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_publisherPort = 41;
+	aCommandLineArguments.m_pullerPort = 42;
+	aCommandLineArguments.m_agentPort = 43;
+	aCommandLineArguments.m_rcFilePath = aTempFile.m_fileName;
+	aCommandLineArguments.m_tickInterval = 666;
+	aCommandLineArguments.m_gameDuration = 274;
+	aCommandLineArguments.m_dryRun = false;
+	aCommandLineArguments.m_broadcast = true;
+
 	ORWELL_LOG_DEBUG("test_most_arguments");
-	test_ReadParameters(Status::PASS, Common::GetArguments(
-			false, // help
-			41, // publisher port
-			42, // puller port
-			43, // agent port
-			aTempFile.m_fileName, // std::string("orwell.rc"), // orwellrc
-			boost::none, // game config file path
-			666, // tick interval
-			274, // game duration
-			false, // version
-			true, // debug log
-			true, // no broadcast
-			false)); // dry run
+	test_ReadParameters(
+			Status::PASS,
+			Common::GetArguments(
+				aCommandLineArguments,
+				true // debug log
+			)
+	);
 }
 
 static void test_parse_command_line()
@@ -165,32 +175,26 @@ static void test_parse_command_line()
 video-ports    = 9001
 )"));
 
-	orwell::Application::Parameters aExpectedParameters = {
-		2, // puller port
-		1, // publisher port
-		3, // agent port
-		{9001}, //video ports (useless here because not read from CL)
-		666, // tick interval
-		274, // game duration
-		aTempFile.m_fileName, // rc file path
-		boost::none, // game config file path
-		true, // dry run
-		false, // broadcast
-		//{}, // robot ids
-	};
-	test_ReadParameters(Status::PASS, Common::GetArguments(
-				false, // help
-				1, // publisher port
-				2, // puller port
-				3, // agent port
-				aTempFile.m_fileName, // std::string("orwell.rc"), // orwellrc
-				boost::none, // game config file path
-				666, // tick interval
-				274, // game duration
-				false, // version
-				true, // debug log
-				true, // no broadcast
-				true), // dry run
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_publisherPort = 1;
+	aCommandLineArguments.m_pullerPort = 2;
+	aCommandLineArguments.m_agentPort = 3;
+	aCommandLineArguments.m_rcFilePath = aTempFile.m_fileName;
+	aCommandLineArguments.m_tickInterval = 666;
+	aCommandLineArguments.m_gameDuration = 274;
+	aCommandLineArguments.m_dryRun = true;
+	aCommandLineArguments.m_broadcast = false;
+
+	orwell::Application::Parameters aExpectedParameters ;
+	aExpectedParameters.m_commandLineParameters = aCommandLineArguments;
+	aExpectedParameters.m_videoPorts = {9001};
+
+	test_ReadParameters(
+			Status::PASS,
+			Common::GetArguments(
+				aCommandLineArguments,
+				true // debug log
+			),
 			aExpectedParameters);
 }
 
@@ -208,32 +212,27 @@ agent-port     = 19003
 tic-interval   = 1500
 video-ports    = 9001:9004
 )"));
-	orwell::Application::Parameters aExpectedParameters = {
-		2, // puller port
-		1, // publisher port
-		3, // agent port
-		{9004, 9003, 9002, 9001}, //video ports
-		666, // tick interval
-		274, // game duration
-		aTempFile.m_fileName, // rc file path
-		boost::none, // game config file path
-		true, // dry run
-		false, // broadcast
-		//{}, // robot ids
-	};
-	test_ReadParameters(Status::PASS, Common::GetArguments(
-				false, // help
-				1, // publisher port
-				2, // puller port
-				3, // agent port
-				aTempFile.m_fileName, // orwellrc
-				boost::none, // game config file path
-				666, // tick interval
-				274, // game duration
-				false, // version
-				true, // debug log
-				true, // no broadcast
-				true), // dry run
+
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_publisherPort = 1;
+	aCommandLineArguments.m_pullerPort = 2;
+	aCommandLineArguments.m_agentPort = 3;
+	aCommandLineArguments.m_rcFilePath = aTempFile.m_fileName;
+	aCommandLineArguments.m_tickInterval = 666;
+	aCommandLineArguments.m_gameDuration = 274;
+	aCommandLineArguments.m_dryRun = true;
+	aCommandLineArguments.m_broadcast = false;
+
+	orwell::Application::Parameters aExpectedParameters ;
+	aExpectedParameters.m_commandLineParameters = aCommandLineArguments;
+	aExpectedParameters.m_videoPorts = {9004, 9003, 9002, 9001};
+
+	test_ReadParameters(
+			Status::PASS,
+			Common::GetArguments(
+				aCommandLineArguments,
+				true // debug log
+			),
 			aExpectedParameters);
 }
 
@@ -249,29 +248,31 @@ agent-port     = 903
 tic-interval   = 50
 video-ports    = 9001
 )"));
-	orwell::Application::Parameters aExpectedParameters = {
-		901, // puller port
-		900, // publisher port
-		903, // agent port
-		{9001}, //video ports
-		50, // tick interval
-		300, // game duration
-		aTempFile.m_fileName, // rc file path
-		boost::none, // game config file path
-		false, // dry run
-		true, // broadcast
-		//{}, // robot ids
-	};
-	test_ReadParameters(Status::PASS, Common::GetArguments(
-				false, // help
-				boost::none, // publisher port
-				boost::none, // puller port
-				boost::none, // agent port
-				aTempFile.m_fileName, // orwellrc
-				boost::none, // game config file path
-				boost::none, // tick interval
-				boost::none), // game duration
-		aExpectedParameters);
+
+	orwell::Application::CommandLineParameters aInputCommandLineArguments;
+	aInputCommandLineArguments.m_rcFilePath = aTempFile.m_fileName;
+
+	orwell::Application::CommandLineParameters aExpectedCommandLineArguments;
+	aExpectedCommandLineArguments.m_publisherPort = 900;
+	aExpectedCommandLineArguments.m_pullerPort = 901;
+	aExpectedCommandLineArguments.m_agentPort = 903;
+	aExpectedCommandLineArguments.m_rcFilePath = aTempFile.m_fileName;
+	aExpectedCommandLineArguments.m_tickInterval = 50;
+	aExpectedCommandLineArguments.m_gameDuration = 300;
+	aExpectedCommandLineArguments.m_dryRun = false;
+	aExpectedCommandLineArguments.m_broadcast = true;
+
+	orwell::Application::Parameters aExpectedParameters ;
+	aExpectedParameters.m_commandLineParameters = aExpectedCommandLineArguments;
+	aExpectedParameters.m_videoPorts = {9001};
+
+	test_ReadParameters(
+			Status::PASS,
+			Common::GetArguments(
+				aInputCommandLineArguments,
+				true // debug log
+			),
+			aExpectedParameters);
 }
 
 // make sure a file containing unrelated configuration does nothing wrong.
@@ -284,32 +285,26 @@ video-ports = 9001
 [its a trap]
 puller-port = 42
 )"));
-	orwell::Application::Parameters aExpectedParameters = {
-		2, // puller port
-		1, // publisher port
-		3, // agent port
-		{9001}, //video ports
-		666, // tick interval
-		274, // game duration
-		aTempFile.m_fileName, // rc file path
-		boost::none, // game config file path
-		true, // dry run
-		false, // broadcast
-		//{}, // robot ids
-	};
-	test_ReadParameters(Status::PASS, Common::GetArguments(
-				false, // help
-				1, // publisher port
-				2, // puller port
-				3, // agent port
-				aTempFile.m_fileName, // orwellrc
-				boost::none, // game config file path
-				666, // tick interval
-				274, // game duration
-				false, // version
-				true, // debug log
-				true, // no broadcast
-				true), // dry run
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_publisherPort = 1;
+	aCommandLineArguments.m_pullerPort = 2;
+	aCommandLineArguments.m_agentPort = 3;
+	aCommandLineArguments.m_rcFilePath = aTempFile.m_fileName;
+	aCommandLineArguments.m_tickInterval = 666;
+	aCommandLineArguments.m_gameDuration = 274;
+	aCommandLineArguments.m_dryRun = true;
+	aCommandLineArguments.m_broadcast = false;
+
+	orwell::Application::Parameters aExpectedParameters ;
+	aExpectedParameters.m_commandLineParameters = aCommandLineArguments;
+	aExpectedParameters.m_videoPorts = {9001};
+
+	test_ReadParameters(
+			Status::PASS,
+			Common::GetArguments(
+				aCommandLineArguments,
+				true // debug log
+			),
 			aExpectedParameters);
 }
 
@@ -323,53 +318,57 @@ video-ports    = 9001:9004
 )"));
 	TempFile aTempFile(std::string(R"(
 [game]
-robots = robot_A | robot_B
-gametype = Problem
-gamename = Enigma
+teams = team_A | team_B
 duration = 999
+ruleset = ruleset
+
+[ruleset]
+game_name = game
+
+[team_A]
+name = Philosophers
+robots = robot_A
+
+[team_B]
+name = Mathematicians
+robots = robot_B
 
 [robot_A]
 name = Aristotle
-team = Philosophers
 
 [robot_B]
 name = Bourbaki
-team = Mathematicians
 
 )"));
-	orwell::Application::Parameters aExpectedParameters = {
-		2, // puller port
-		1, // publisher port
-		3, // agent port
-		{9004, 9003, 9002, 9001}, //video ports
-		666, // tick interval
-		999, // game duration
-		aTechConfigFile.m_fileName, // rc file path
-		aTempFile.m_fileName, // game config file path
-		true, // dry run
-		false, // broadcast
-		//{"robot_A", "robot_B"}, // robot ids
-		{
+
+	orwell::Application::CommandLineParameters aInputCommandLineArguments;
+	aInputCommandLineArguments.m_publisherPort = 1;
+	aInputCommandLineArguments.m_pullerPort = 2;
+	aInputCommandLineArguments.m_agentPort = 3;
+	aInputCommandLineArguments.m_rcFilePath = aTechConfigFile.m_fileName;
+	aInputCommandLineArguments.m_gameFilePath = aTempFile.m_fileName;
+	aInputCommandLineArguments.m_tickInterval = 666;
+	aInputCommandLineArguments.m_dryRun = true;
+	aInputCommandLineArguments.m_broadcast = false;
+
+	orwell::Application::CommandLineParameters aExpectedCommandLineArguments = aInputCommandLineArguments;
+	aExpectedCommandLineArguments.m_gameDuration = 999;
+
+	orwell::Application::Parameters aExpectedParameters ;
+	aExpectedParameters.m_commandLineParameters = aExpectedCommandLineArguments;
+	aExpectedParameters.m_robots = {
 			{"robot_A", {"Aristotle", "Philosophers"}},
 			{"robot_B", {"Bourbaki", "Mathematicians"}},
-		}, // robot descriptors
-		{"Mathematicians", "Philosophers"}, // teams
-		std::string("Problem"), // game type
-		std::string("Enigma"), // game name
-	};
-	test_ReadParameters(Status::PASS, Common::GetArguments(
-				false, // help
-				1, // publisher port
-				2, // puller port
-				3, // agent port
-				aTechConfigFile.m_fileName, //orwellrc
-				aTempFile.m_fileName, // game config file path
-				666, // tick interval
-				boost::none, // game duration
-				false, // version
-				true, // debug log
-				true, // no broadcast
-				true), // dry run
+		};
+	aExpectedParameters.m_teams = {"Mathematicians", "Philosophers"};
+	aExpectedParameters.m_videoPorts = {9004, 9003, 9002, 9001};
+
+	test_ReadParameters(
+			Status::PASS,
+			Common::GetArguments(
+				aInputCommandLineArguments,
+				true // debug log
+			),
 			aExpectedParameters);
 }
 
@@ -384,55 +383,55 @@ video-ports    = 9001:9004
 
 	TempFile aTempFile(std::string(R"(
 [game]
-robots = robot_A | robot_B
-gametype = Problem
-gamename = Enigma
+teams = team_A | team_B
+ruleset = ruleset
+
+[ruleset]
+game_name = game
+
+[team_A]
+name = Philosophers
+
+[team_B]
+name = Mathematicians
 
 [robot_A]
 name = Aristotle
-team = Philosophers
 
 [robot_B]
 name = Bourbaki
-team = Mathematicians
 
 )"));
-	orwell::Application::Parameters aExpectedParameters = {
-		2, // puller port
-		1, // publisher port
-		3, // agent port
-		{9004, 9003, 9002, 9001}, //video ports
-		666, // tick interval
-		274, // game duration
-		aTechConfigFile.m_fileName, //orwellrc
-		aTempFile.m_fileName, // game config file path
-		true, // dry run
-		false, // broadcast
-		//{"robot_A", "robot_B"}, // robot ids
-		{
+
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_publisherPort = 1;
+	aCommandLineArguments.m_pullerPort = 2;
+	aCommandLineArguments.m_agentPort = 3;
+	aCommandLineArguments.m_rcFilePath = aTechConfigFile.m_fileName;
+	aCommandLineArguments.m_gameFilePath = aTempFile.m_fileName;
+	aCommandLineArguments.m_tickInterval = 666;
+	aCommandLineArguments.m_gameDuration = 274;
+	aCommandLineArguments.m_dryRun = true;
+	aCommandLineArguments.m_broadcast = false;
+
+	orwell::Application::Parameters aExpectedParameters ;
+	aExpectedParameters.m_commandLineParameters = aCommandLineArguments;
+	aExpectedParameters.m_robots = {
 			{"robot_A", {"Aristotle", "Philosophers"}},
 			{"robot_B", {"Bourbaki", "Mistake!!"}}, // voluntary mistake
-		}, // robot descriptors
-		{"Mathematicians", "Philosophers"}, // teams
-		std::string("Problem"), // game type
-		std::string("Enigma"), // game name
-	};
+		};
+	aExpectedParameters.m_teams = {"Mathematicians", "Philosophers"};
+	aExpectedParameters.m_videoPorts = {9004, 9003, 9002, 9001};
+
 	bool aThrown = false;
 	try
 	{
-		test_ReadParameters(Status::PASS, Common::GetArguments(
-					false, // help
-					1, // publisher port
-					2, // puller port
-					3, // agent port
-					aTechConfigFile.m_fileName, //orwellrc
-					aTempFile.m_fileName, // game config file path
-					666, // tick interval
-					274, // game duration
-					false, // version
-					true, // debug log
-					true, // no broadcast
-					true), // dry run
+		test_ReadParameters(
+				Status::PASS,
+				Common::GetArguments(
+					aCommandLineArguments,
+					true // debug log
+				),
 				aExpectedParameters);
 	}
 	catch (bool const aBool)
@@ -447,20 +446,22 @@ static void test_parse_command_line_and_file_6_badConfigFile()
 {
 	ORWELL_LOG_DEBUG("test_parse_command_line_and_file_6_badConfigFile");
 
-	test_ReadParameters(Status::FAIL, Common::GetArguments(
-				false, // help
-				1, // publisher port
-				2, // puller port
-				3, // agent port
-				std::string("thisfiledoesnotexist"), // orwellrc
-				boost::none, // game config file path
-				666, // tick interval
-				274, // game duration
-				false, // version
-				true, // debug log
-				true, // no broadcast
-				true) // dry run
-			);
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_publisherPort = 1;
+	aCommandLineArguments.m_pullerPort = 2;
+	aCommandLineArguments.m_agentPort = 3;
+	aCommandLineArguments.m_rcFilePath = std::string("thisfiledoesnotexist");
+	aCommandLineArguments.m_tickInterval = 666;
+	aCommandLineArguments.m_gameDuration = 274;
+	aCommandLineArguments.m_dryRun = true;
+	aCommandLineArguments.m_broadcast = false;
+
+	test_ReadParameters(
+			Status::FAIL,
+			Common::GetArguments(
+					aCommandLineArguments,
+					true // debug log
+			));
 }
 
 static void test_parse_command_line_and_file_7_moreRobotsThanVideoPorts()
@@ -473,33 +474,160 @@ video-ports    = 9001
 
 	TempFile aGameConfigFile(std::string(R"(
 [game]
-robots = robot_A | robot_B
-gametype = Problem
-gamename = Enigma
+teams = team_A | team_B
+ruleset = ruleset
+
+[ruleset]
+game_name = game
+
+[team_A]
+name = Philosophers
+robots = robot_A
+
+[team_B]
+name = Mathematicians
+robots = robot_B
 
 [robot_A]
 name = Aristotle
-team = Philosophers
 
 [robot_B]
 name = Bourbaki
-team = Mathematicians
 )"));
 
-	test_ReadParameters(Status::FAIL, Common::GetArguments(
-				false, // help
-				1, // publisher port
-				2, // puller port
-				3, // agent port
-				aTechConfigFile.m_fileName, // orwellrc
-				aGameConfigFile.m_fileName, // game config file path
-				274, // game duration
-				666, // tick interval
-				false, // version
-				true, // debug log
-				true, // no broadcast
-				true) // dry run
-			);
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_publisherPort = 1;
+	aCommandLineArguments.m_pullerPort = 2;
+	aCommandLineArguments.m_agentPort = 3;
+	aCommandLineArguments.m_rcFilePath = aTechConfigFile.m_fileName;
+	aCommandLineArguments.m_gameFilePath = aGameConfigFile.m_fileName;
+	aCommandLineArguments.m_tickInterval = 666;
+	aCommandLineArguments.m_gameDuration = 274;
+	aCommandLineArguments.m_dryRun = true;
+	aCommandLineArguments.m_broadcast = false;
+
+	test_ReadParameters(
+			Status::FAIL,
+			Common::GetArguments(
+				aCommandLineArguments,
+				true // debug log
+			));
+}
+
+static void test_parse_game_file_with_flag()
+{
+	ORWELL_LOG_DEBUG("test_parse_game_file_with_flag");
+	TempFile aTechConfigFile(std::string(R"(
+[server]
+video-ports    = 9001:9004
+)"));
+
+	TempFile aGameConfigFile(std::string(R"(
+[game]
+teams = team_A | team_B
+items = item_RedFlag
+ruleset = ruleset
+
+[ruleset]
+game_name = game
+
+[team_A]
+name = Philosophers
+robots = robot_A
+
+[team_B]
+name = Mathematicians
+robots = robot_B
+
+[robot_A]
+name = Aristotle
+
+[robot_B]
+name = Bourbaki
+
+[item_RedFlag]
+name = Red Flag
+type = flag
+rfid = myrfidredflag
+color = -1 
+
+)"));
+
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_publisherPort = 1;
+	aCommandLineArguments.m_pullerPort = 2;
+	aCommandLineArguments.m_agentPort = 3;
+	aCommandLineArguments.m_rcFilePath = aTechConfigFile.m_fileName;
+	aCommandLineArguments.m_gameFilePath = aGameConfigFile.m_fileName;
+	aCommandLineArguments.m_tickInterval = 666;
+	aCommandLineArguments.m_gameDuration = 274;
+	aCommandLineArguments.m_dryRun = true;
+	aCommandLineArguments.m_broadcast = false;
+
+	orwell::Application::Parameters aExpectedParameters ;
+	aExpectedParameters.m_commandLineParameters = aCommandLineArguments;
+	aExpectedParameters.m_robots = {
+			{"robot_A", {"Aristotle", "Philosophers"}},
+			{"robot_B", {"Bourbaki", "Mathematicians"}},
+	};
+	aExpectedParameters.m_items = {
+			{"item_RedFlag", {"Red_Flag", "flag", "myrfidredflag", -1}},
+	};
+	aExpectedParameters.m_teams = {"Mathematicians", "Philosophers"};
+	aExpectedParameters.m_videoPorts = {9004, 9003, 9002, 9001};
+
+	test_ReadParameters(
+			Status::PASS,
+			Common::GetArguments(
+				aCommandLineArguments,
+				true // debug log
+			),
+			aExpectedParameters);
+
+	// second test. This time item_RedFlag has both a rfid and a color... which is a no go
+	TempFile aGameConfigFile2(std::string(R"(
+[game]
+teams = team_A | team_B
+items = item_RedFlag
+ruleset = ruleset
+
+[ruleset]
+game_name = game
+
+[team_A]
+name = Philosophers
+robots = robot_A
+
+[team_B]
+name = Mathematicians
+robots = robot_B
+
+[robot_A]
+name = Aristotle
+
+[robot_B]
+name = Bourbaki
+
+[item_RedFlag]
+name = Red Flag
+type = flag
+rfid = myrfidredflag
+color = 2
+
+)"));
+	aCommandLineArguments.m_gameFilePath = aGameConfigFile2.m_fileName;
+	aExpectedParameters.m_items = {
+			{"item_RedFlag", {"Red_Flag", "flag", "myrfidredflag", 2}},
+	};
+	aExpectedParameters.m_commandLineParameters = aCommandLineArguments;
+
+	test_ReadParameters(
+			Status::FAIL,
+			Common::GetArguments(
+				aCommandLineArguments,
+				true // debug log
+			),
+			aExpectedParameters);
 }
 
 int main()
@@ -523,6 +651,7 @@ int main()
 	test_parse_command_line_and_file_5();
 	test_parse_command_line_and_file_6_badConfigFile();
 	test_parse_command_line_and_file_7_moreRobotsThanVideoPorts();
+	test_parse_game_file_with_flag();
 
 	orwell::support::GlobalLogger::Clear();
 	return 0;

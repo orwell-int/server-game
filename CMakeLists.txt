@@ -86,12 +86,14 @@ file(GLOB_RECURSE SOURCES src/*.cpp src/*.cc)
 file(GLOB_RECURSE EXPORTABLEHEADERS include/*.hpp include/*.h)
 file(GLOB CONFIG *.ini)
 file(GLOB IMAGES ${CMAKE_SOURCE_DIR}/test/*.part)
+file(GLOB OPENCV_IMAGES ${CMAKE_SOURCE_DIR}/test/*.jpg)
 
 # Required libraries
 find_package(Boost REQUIRED COMPONENTS system program_options)
 find_package(Protobuf REQUIRED)
 find_package(ZMQ REQUIRED)
 find_package(LOG4CXX_LIBRARIES REQUIRED)
+find_package(OpenCV REQUIRED)
 
 # Helpful debug stuff?
 #message ("-- cmake current bin dir "${CMAKE_CURRENT_BINARY_DIR})
@@ -106,7 +108,8 @@ target_link_libraries(
 	${ZMQ_LIBRARIES}
 	${PROTOBUF_LIBRARIES}
 	${Boost_LIBRARIES}
-	${LOG4CXX_LIBRARIES})
+	${LOG4CXX_LIBRARIES}
+	${OpenCV_LIBS})
 
 # Where to install stuff, protobuf messages generated H included
 install(TARGETS orwell_server_game LIBRARY DESTINATION lib)
@@ -115,7 +118,7 @@ install(FILES ${PROTO_HDRS} DESTINATION include)
 foreach(configFile ${CONFIG})
 	add_custom_command(TARGET orwell_server_game COMMAND ${CMAKE_COMMAND} -E copy ${configFile} ${CMAKE_BINARY_DIR})
 endforeach(configFile)
-foreach(image ${IMAGES})
+foreach(image ${IMAGES} ${OPENCV_IMAGES})
 	add_custom_command(TARGET orwell_server_game  COMMAND ${CMAKE_COMMAND} -E copy ${image} ${CMAKE_CURRENT_BINARY_DIR})
 endforeach(image)
 
@@ -137,7 +140,8 @@ target_link_libraries(
 	${ZMQ_LIBRARIES}
 	${PROTOBUF_LIBRARIES}
 	${Boost_LIBRARIES}
-	${LOG4CXX_LIBRARIES})
+	${LOG4CXX_LIBRARIES}
+	${OpenCV_LIBS})
 
 
 OPTION(ORWELL_COVERAGE "Enables code coverage measurements with gcov/lcov." OFF)

@@ -36,6 +36,7 @@ public:
 	///  Duration of the game in seconds.
 	Server(
 			orwell::IAgentProxy & ioAgentProxy,
+			game::Ruleset const & iRuleset,
 			std::string const & iAgentUrl =  "tcp://*:9003",
 			std::string const & iPullUrl = "tcp://*:9000",
 			std::string const & iPublishUrl = "tcp://*:9001",
@@ -78,21 +79,21 @@ public:
 			std::string & oMessage);
 
 private:
-	zmq::context_t _zmqContext;
+	zmq::context_t m_zmqContext;
 	orwell::IAgentProxy & m_agentProxy;
 	std::shared_ptr< com::Socket > m_agentSocket;
-	std::shared_ptr< com::Receiver > _puller;
-	std::shared_ptr< com::Sender > _publisher;
-	orwell::game::Game _game;
-	orwell::callbacks::ProcessDecider _decider;
+	std::shared_ptr< com::Receiver > m_puller;
+	std::shared_ptr< com::Sender > m_publisher;
+	orwell::game::Game m_game;
+	orwell::callbacks::ProcessDecider m_decider;
 
 	std::map< std::string, std::shared_ptr< com::Socket > > m_serverCommandSockets;
 
-	boost::posix_time::time_duration const _ticDuration;
-	boost::posix_time::ptime _previousTic;
+	boost::posix_time::time_duration const m_ticDuration;
+	boost::posix_time::ptime m_previousTic;
 
-	bool _mainLoopRunning;
-	bool _forcedStop;
+	bool m_mainLoopRunning;
+	bool m_forcedStop;
 };
 
 }

@@ -13,6 +13,7 @@
 #include "orwell/com/Receiver.hpp"
 #include "orwell/Server.hpp"
 #include "orwell/game/Robot.hpp"
+#include "orwell/game/Ruleset.hpp"
 
 #include "Common.hpp"
 
@@ -79,8 +80,6 @@ static void client()
 	Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB, orwell::com::ConnectionMode::CONNECT, aContext);
 	usleep(1 * 1000);
 
-	ExpectGameState(false, aSubscriber);
-
 	Hello aHelloMessage;
 	aHelloMessage.set_name("playername");
 	RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
@@ -118,15 +117,20 @@ int main()
 			true);
 	log4cxx::NDC ndc("test_start_game_condition");
 	FakeAgentProxy aFakeAgentProxy;
+	orwell::game::Ruleset aRuleset;
+	aRuleset.m_scoreToWin = 1;
 	std::shared_ptr< orwell::Server > aServer =
 		std::make_shared< orwell::Server >(
 			aFakeAgentProxy,
+			aRuleset,
 			"tcp://*:9003",
 			"tcp://*:9000",
 			"tcp://*:9001");
 	ORWELL_LOG_INFO("server created");
 	std::vector< std::string > aRobots = {"Gipsy Danger"};
-	aServer->accessContext().addRobot(aRobots[0], 8001, 8002, "robot1");
+	std::string const aTeamName("TEAM");
+	aServer->accessContext().addTeam(aTeamName);
+	aServer->accessContext().addRobot(aRobots[0], aTeamName, 8001, 8004, "robot1");
 	aServer->accessContext().accessRobot(aRobots[0])->setHasRealRobot(true);
 	ORWELL_LOG_INFO("robot added 1");
 	std::thread aServerThread(server, aServer);

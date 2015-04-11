@@ -77,16 +77,16 @@ bool Socket::receive(RawMessage & oMessage)
 	bool const aReceived = receiveString(aMessageData);
 	if (aReceived)
 	{
-		size_t aEndDestFlag = aMessageData.find( " ", 0 );
+		size_t aEndDestFlag = aMessageData.find(" ", 0);
 		if (string::npos != aEndDestFlag)
 		{
 			aDest = aMessageData.substr(0, aEndDestFlag);
 
 			size_t aEndTypeFlag = aMessageData.find(" ", aEndDestFlag + 1);
-			if ( aEndTypeFlag != string::npos )
+			if (aEndTypeFlag != string::npos)
 			{
-				aType = aMessageData.substr( aEndDestFlag + 1, aEndTypeFlag - aEndDestFlag - 1 );
-				aPayload = aMessageData.substr( aEndTypeFlag + 1 );
+				aType = aMessageData.substr(aEndDestFlag + 1, aEndTypeFlag - aEndDestFlag - 1);
+				aPayload = aMessageData.substr(aEndTypeFlag + 1);
 			}
 		}
 
@@ -104,10 +104,10 @@ void Socket::sendString(std::string const & iMessage)
 	memcpy((void *) aZmqMessage.data(), iMessage.c_str(), iMessage.size());
 
 	m_zmqSocket->send(aZmqMessage);
-	ORWELL_LOG_TRACE("Sent " << iMessage );
+	ORWELL_LOG_TRACE("Sent " << iMessage);
 }
 
-void Socket::send( RawMessage const & iMessage )
+void Socket::send(RawMessage const & iMessage)
 {
 	string aMessage;
 	aMessage += iMessage._routingId;
@@ -117,7 +117,7 @@ void Socket::send( RawMessage const & iMessage )
 	aMessage += iMessage._payload;
 
 	sendString(aMessage);
-	ORWELL_LOG_TRACE("Sent " << aMessage.size() << " bytes : " << iMessage._type << "-");
+	ORWELL_LOG_DEBUG("Sent message of type " << iMessage._type << " to " << iMessage._routingId << " with size " << aMessage.size());
 }
 
 std::string const & Socket::getUrl() const

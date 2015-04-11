@@ -52,7 +52,7 @@ static void const ClientSendsInput(
 	ORWELL_LOG_INFO("message built : left" << aInputMessage.move().left() << "-right" << aInputMessage.move().right());
 	ORWELL_LOG_INFO("message built : w1:" << aInputMessage.fire().weapon1() << "-w2:" << aInputMessage.fire().weapon2());
 	std::string aType = "Input";
-	RawMessage aMessage(iRobotId, "Input", aInputMessage.SerializeAsString());
+	RawMessage aMessage(iRobotId, aType, aInputMessage.SerializeAsString());
 	aPusher.send(aMessage);
 	if ( not Common::ExpectMessage(aType, aSubscriber, aMessage, 100) )
 	{
@@ -77,49 +77,51 @@ int main()
 	log4cxx::NDC ndc("test_input");
 	ORWELL_LOG_INFO("Test starts\n");
 	orwell::Application::Parameters aParameters;
+
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_publisherPort = 9000;
+	aCommandLineArguments.m_pullerPort = 9001;
+	aCommandLineArguments.m_agentPort = 9003;
+	aCommandLineArguments.m_tickInterval = 10;
+	aCommandLineArguments.m_gameDuration = 200;
+	aCommandLineArguments.m_dryRun = false;
+	aCommandLineArguments.m_broadcast = false;
+	aCommandLineArguments.m_gameFilePath = "orwell-game.ini";
+
 	Arguments aArguments = Common::GetArguments(
-			false,
-			9000,
-			9001,
-			9003,
-			boost::none,
-			boost::none,
-			10,
-			200,
-			false,
-			true,
-			true,
-			false);
+			aCommandLineArguments, true);
 	orwell::Application::ReadParameters(
 			aArguments.m_argc,
 			aArguments.m_argv,
 			aParameters);
-	TestAgent aTestAgent(aParameters.m_agentPort.get());
+	TestAgent aTestAgent(aParameters.m_commandLineParameters.m_agentPort.get());
 	usleep(100);
 
 	std::string aReply;
 	std::thread aApplicationThread(Application, aParameters);
-	aReply = aTestAgent.sendCommand("ping", std::string("pong"));
+	aTestAgent.sendCommand("ping", std::string("pong"));
 
-	aReply = aTestAgent.sendCommand("add robot toto");
+	aTestAgent.sendCommand("add team TEAM");
+	aTestAgent.sendCommand("add robot toto TEAM");
 	std::string aRobotId = aTestAgent.sendCommand("get robot toto id", boost::none);
 	assert("KO" != aRobotId);
 	std::thread aClientSendsInputThread(
 			ClientSendsInput,
-			*aParameters.m_pullerPort,
-			*aParameters.m_publisherPort,
+			*aParameters.m_commandLineParameters.m_pullerPort,
+			*aParameters.m_commandLineParameters.m_publisherPort,
 			aRobotId);
 	aClientSendsInputThread.join();
-	assert(not gOK); // because the game is not started yet, the Input message must be dropped by the server
+	 // because the game is not started yet, the Input message is supposed to be dropped by the server
+	assert(not gOK);
 	char aPath[FILENAME_MAX];
 	getcwd(aPath, sizeof(aPath));
 	std::string aFullPath = std::string(aPath) + PATH_SEPARATOR + "master.part";
 	ORWELL_LOG_INFO("Path to stream file: " + aFullPath);
-	aReply = aTestAgent.sendCommand("set robot toto video_url " + aFullPath);
-	aReply = aTestAgent.sendCommand("start game");
+	aTestAgent.sendCommand("set robot toto video_url " + aFullPath);
+	aTestAgent.sendCommand("start game");
 	{
 		aReply = aTestAgent.sendCommand("get robot toto video_port", boost::none);
-		std::string aCommand("cd server-web && make client ARGS='-u http://127.0.0.1:" + aReply + " -l 9020'");
+		std::string aCommand("cd server-web && make client ARGS='-u http://127.0.0.1:" + aReply + " -l 9020 -d 8'");
 		int aCode = system(aCommand.c_str());
 		ORWELL_LOG_INFO("fake client started (return code is " << aCode << ").");
 	}
@@ -134,22 +136,22 @@ int main()
 		ORWELL_LOG_INFO("ping video server");
 		aTestClient.sendCommand("ping", std::string("pong"));
 		ClientSendsInput(
-				*aParameters.m_pullerPort,
-				*aParameters.m_publisherPort,
+				*aParameters.m_commandLineParameters.m_pullerPort,
+				*aParameters.m_commandLineParameters.m_publisherPort,
 				aRobotId);
 		ORWELL_LOG_INFO("make sure one image was captured.");
 		aTestClient.sendCommand("status", std::string("captured = 1"));
 	}
 
 	assert(gOK);
-	aReply = aTestAgent.sendCommand("stop game");
+	aTestAgent.sendCommand("stop game");
 	aFakeClientConnector.sendCommand("stop", std::string("stopping"));
 	ClientSendsInput(
-			*aParameters.m_pullerPort,
-			*aParameters.m_publisherPort,
+			*aParameters.m_commandLineParameters.m_pullerPort,
+			*aParameters.m_commandLineParameters.m_publisherPort,
 			aRobotId);
 	assert(not gOK);
-	aReply = aTestAgent.sendCommand("stop application");
+	aTestAgent.sendCommand("stop application");
 	aApplicationThread.join();
 	ORWELL_LOG_INFO("Test ends\n");
 	orwell::support::GlobalLogger::Clear();

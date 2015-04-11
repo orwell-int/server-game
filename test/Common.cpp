@@ -7,6 +7,7 @@
 #include "orwell/com/Sender.hpp"
 #include "orwell/com/RawMessage.hpp"
 #include "orwell/support/GlobalLogger.hpp"
+#include "orwell/Application.hpp"
 #include "MissingFromTheStandard.hpp"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -115,18 +116,11 @@ static void BuildStrArgument(
 }
 
 Arguments Common::GetArguments(
+		orwell::Application::CommandLineParameters const & iCommandLineParams,
+		bool const iDebug,
 		bool const iHelp,
-		boost::optional< int32_t > const iPublisherPort,
-		boost::optional< int32_t > const iPullerPort,
-		boost::optional< int32_t > const iAgentPort,
-		boost::optional< std::string > const iOrwellRc,
-		boost::optional< std::string > const iGameConfigPath,
-		boost::optional< int64_t > const iTicInterval,
-		boost::optional< int32_t > const iGameDuration,
-		bool const iVersion,
-		bool const iDebugLog,
-		bool const iNoBroadcast,
-		bool const iDryRun)
+		bool const iShowVersion
+		)
 {
 	Arguments arguments;
 	BuildArgument("FAKE", arguments);
@@ -134,47 +128,49 @@ Arguments Common::GetArguments(
 	{
 		BuildArgument(ARG_HELP, arguments);
 	}
-	if (iPublisherPort)
+	if (iCommandLineParams.m_publisherPort)
 	{
-		BuildIntArgument(ARG_PUBLISHER_PORT, *iPublisherPort, arguments);
+		BuildIntArgument(ARG_PUBLISHER_PORT, *iCommandLineParams.m_publisherPort, arguments);
 	}
-	if (iPullerPort)
+	if (iCommandLineParams.m_pullerPort)
 	{
-		BuildIntArgument(ARG_PULLER_PORT, *iPullerPort, arguments);
+		BuildIntArgument(ARG_PULLER_PORT, *iCommandLineParams.m_pullerPort, arguments);
 	}
-	if (iAgentPort)
+	if (iCommandLineParams.m_agentPort)
 	{
-		BuildIntArgument(ARG_AGENT_PORT, *iAgentPort, arguments);
+		BuildIntArgument(ARG_AGENT_PORT, *iCommandLineParams.m_agentPort, arguments);
 	}
-	if (iOrwellRc)
+	if (iCommandLineParams.m_rcFilePath)
 	{
-		BuildStrArgument(ARG_ORWELLRC, (*iOrwellRc).c_str(), arguments);
+		BuildStrArgument(ARG_ORWELLRC, (*iCommandLineParams.m_rcFilePath).c_str(), arguments);
 	}
-	if (iGameConfigPath)
+	if (iCommandLineParams.m_gameFilePath)
 	{
-		BuildStrArgument(ARG_GAMECONFIG, (*iGameConfigPath).c_str(), arguments);
+		BuildStrArgument(ARG_GAMECONFIG, (*iCommandLineParams.m_gameFilePath).c_str(), arguments);
 	}
-	if (iTicInterval)
+	if (iCommandLineParams.m_tickInterval)
 	{
-		BuildIntArgument(ARG_TIC_INTERVAL, *iTicInterval, arguments);
+		BuildIntArgument(ARG_TIC_INTERVAL, *iCommandLineParams.m_tickInterval, arguments);
 	}
-	if (iGameDuration)
+	if (iCommandLineParams.m_gameDuration)
 	{
-		BuildIntArgument(ARG_GAME_DURATION, *iGameDuration, arguments);
+		BuildIntArgument(ARG_GAME_DURATION, *iCommandLineParams.m_gameDuration, arguments);
 	}
-	if (iVersion)
+	if (iShowVersion)
 	{
 		BuildArgument(ARG_VERSION, arguments);
 	}
-	if (iDebugLog)
+	if (iDebug)
 	{
 		BuildArgument(ARG_DEBUG_LOG, arguments);
 	}
-	if (iNoBroadcast)
+	if (iCommandLineParams.m_broadcast
+			and not *iCommandLineParams.m_broadcast)
 	{
 		BuildArgument(ARG_NO_BROADCAST, arguments);
 	}
-	if (iDryRun)
+	if (iCommandLineParams.m_dryRun
+			and *iCommandLineParams.m_dryRun)
 	{
 		BuildArgument(ARG_DRY_RUN, arguments);
 	}
@@ -265,5 +261,27 @@ std::string TestAgent::sendCommand(
 void TestAgent::reset()
 {
 	m_agentSocket.reset();
+}
+
+TempFile::TempFile(std::string const & iContent)
+{
+	char aFileName[L_tmpnam];
+	tmpnam(aFileName);
+	FILE * aFile = fopen(aFileName, "w");
+	if (fputs(iContent.c_str(), aFile) < 0)
+	{
+		std::cerr << "Temporary file not created properly." << std::endl;
+	}
+	fclose(aFile);
+	m_fileName = std::string(aFileName);
+}
+
+TempFile::~TempFile()
+{
+	if (not m_fileName.empty())
+	{
+		remove(m_fileName.c_str());
+		m_fileName.erase();
+	}
 }
 

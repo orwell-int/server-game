@@ -7,6 +7,7 @@ file(GLOB SOURCES Common.cpp)
 file(GLOB EXPORTABLEHEADERS *.hpp *.h)
 file(GLOB CONFIG ${CMAKE_SOURCE_DIR}/*.ini)
 file(GLOB IMAGES ${CMAKE_SOURCE_DIR}/test/*.part)
+file(GLOB OPENCV_IMAGES ${CMAKE_SOURCE_DIR}/test/*.jpg)
 
 # Required libraries
 find_package(Boost REQUIRED COMPONENTS system)
@@ -34,7 +35,8 @@ target_link_libraries(
 	${GMOCK_LIBRARIES}
 	${GTEST_LIBRARIES}
 	${Boost_LIBRARIES}
-	${LOG4CXX_LIBRARIES})
+	${LOG4CXX_LIBRARIES}
+	${OpenCV_LIBS})
 
 #add_executable(test_registerRobot "register_robot.cpp")
 #target_link_libraries(test_registerRobot orwell_com orwell_tasks)
@@ -77,9 +79,14 @@ add_orwell_test(test_agent "agent.cpp")
 add_orwell_test(test_register_robot "register_robot.cpp")
 add_orwell_test(test_start_game_condition "start_game_condition.cpp")
 add_orwell_test(test_main "main.cpp")
+add_orwell_test(test_opencv "opencv.cpp")
+add_orwell_test(test_capture_one_flag "capture_one_flag.cpp")
 add_dependencies(test_main server_main)
 foreach(image ${IMAGES})
 	add_custom_command(TARGET test_input COMMAND ${CMAKE_COMMAND} -E copy ${image} ${CMAKE_CURRENT_BINARY_DIR})
+endforeach(image)
+foreach(image ${OPENCV_IMAGES})
+	add_custom_command(TARGET test_opencv COMMAND ${CMAKE_COMMAND} -E copy ${image} ${CMAKE_CURRENT_BINARY_DIR})
 endforeach(image)
 execute_process(COMMAND ln -fs ${CMAKE_SOURCE_DIR}/server-web ${CMAKE_CURRENT_BINARY_DIR}/server-web)
 
