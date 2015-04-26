@@ -45,15 +45,15 @@ void ProcessRegister::execute()
 	std::string aTemporaryRobotId = aRegisterMsg.temporary_robot_id();
 	std::shared_ptr< orwell::game::Robot > aRobot =
 		m_game->getRobotWithoutRealRobot(aTemporaryRobotId);
+	Registered aRegistered;
 	std::string aRobotId;
 	if (aRobot)
 	{
 		aRobotId = aRobot->getRobotId();
 		aRobot->setHasRealRobot(true);
 		aRobot->setVideoUrl(aRegisterMsg.video_url());
+		aRegistered.set_team(aRobot->getTeam().getName());
 	}
-
-	Registered aRegistered;
 	aRegistered.set_robot_id(aRobotId);
 	RawMessage aReply(aClientID, "Registered", aRegistered.SerializeAsString());
 	m_publisher->send(aReply);
