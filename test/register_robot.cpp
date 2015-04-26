@@ -33,6 +33,7 @@ int g_status = 0;
 static void ExpectRegistered(
 		std::string const & iTemporaryRobotId,
 		std::string const & iExpectedRobotId,
+		std::string const & iExpectedTeam,
 		Sender & ioPusher,
 		Receiver & ioSubscriber)
 {
@@ -63,9 +64,23 @@ static void ExpectRegistered(
 					<< "' but received '" << aRegistered.robot_id() << "'");
 			g_status = -2;
 		}
-		if (aRegistered.has_team())
+		if (iExpectedTeam.length() > 0)
 		{
-			ORWELL_LOG_INFO("The robot will be in team: " << aRegistered.team());
+			if (aRegistered.has_team())
+			{
+				ORWELL_LOG_INFO("The robot will be in team: " << aRegistered.team());
+				if (iExpectedTeam != aRegistered.team())
+				{
+					ORWELL_LOG_ERROR("Expected team '" << iExpectedTeam
+							<< "' but received '" << aRegistered.team() << "'");
+					g_status = -4;
+				}
+			}
+			else
+			{
+				ORWELL_LOG_ERROR("Expected a team but none found.");
+				g_status = -3;
+			}
 		}
 	}
 }
@@ -90,16 +105,16 @@ static void proxy()
 			aContext);
 	usleep(6 * 1000);
 
-	ExpectRegistered("jambon", "robot1", aPusher, aSubscriber);
+	ExpectRegistered("jambon", "robot1", "TEAM", aPusher, aSubscriber);
 
 	// this tests the case where the same robot_id tries to register twice
-	ExpectRegistered("jambon", "robot1", aPusher, aSubscriber);
+	ExpectRegistered("jambon", "robot1", "TEAM", aPusher, aSubscriber);
 
-	ExpectRegistered("fromage", "robot2", aPusher, aSubscriber);
-	ExpectRegistered("poulet", "robot3", aPusher, aSubscriber);
+	ExpectRegistered("fromage", "robot2", "TEAM", aPusher, aSubscriber);
+	ExpectRegistered("poulet", "robot3", "TEAM", aPusher, aSubscriber);
 
 	// this tests the case where there is no robot available
-	ExpectRegistered("rutabagas", "", aPusher, aSubscriber);
+	ExpectRegistered("rutabagas", "", "", aPusher, aSubscriber);
 	ORWELL_LOG_INFO("quit proxy");
 }
 
