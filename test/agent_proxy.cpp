@@ -94,6 +94,16 @@ static void test_1(orwell::Application & ioApplication)
 	assert(aAgentProxy.step("start game", aAgentReply));
 	assert(aAgentProxy.step("stop game", aAgentReply));
 	assert(aAgentProxy.step("remove robot Robot1", aAgentReply));
+	// add robot with space in the name {
+	assert(aAgentProxy.step("add robot \"Robot One\" TEAM", aAgentReply));
+	assert(aAgentProxy.step("list robot", aRobotList));
+	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
+	std::string aExpectedRobotListWithSpace(R"(Robots:
+	Robot One -> name = Robot One ; not registered ; video_url =  ; player = 
+)");
+	ORWELL_ASSERT(aExpectedRobotListWithSpace, aRobotList, "list robot KO");
+	assert(aAgentProxy.step("remove robot \"Robot One\"", aAgentReply));
+	// } add robot with space in the name
 	assert(aAgentProxy.step("remove player Player1", aAgentReply));
 	assert(aAgentProxy.step("remove team TEAM", aAgentReply));
 	assert(aAgentProxy.step("list team", aTeamList));
