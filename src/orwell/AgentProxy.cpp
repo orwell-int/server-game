@@ -39,6 +39,64 @@ static void Dispatch(
 	}
 }
 
+/// Read a single string if no '"' is found at the begining ; otherwise
+/// read all strings available until one contains a trailing '"' and join
+/// them with ' '.
+///
+/// \param ioStream
+///  The stream to read from.
+///
+/// \param ioValue
+///  This will be updated with what has been read.
+///
+static void ReadName(
+		std::istringstream & ioStream,
+		std::string & ioValue)
+{
+	std::string aArg;
+	ioStream >> aArg;
+	size_t aLength = aArg.size();
+	if (0 < aLength)
+	{
+		if ('"' == aArg.front())
+		{
+			aArg = aArg.substr(1);
+			--aLength;
+			bool aContinue = true;
+			bool aFirst = true;
+			while (aContinue)
+			{
+				if (0 < aLength)
+				{
+					aContinue = (aArg.back() != '"');
+					if (not aContinue)
+					{
+						aArg = aArg.substr(0, aLength - 1);
+					}
+				}
+				if (not aFirst)
+				{
+					ioValue += " ";
+				}
+				else
+				{
+					aFirst = false;
+				}
+				ioValue += aArg;
+				if ((aContinue) and (not ioStream.eof()))
+				{
+					ioStream >> aArg;
+					aLength = aArg.size();
+				}
+			}
+		}
+		else
+		{
+			ioValue = aArg;
+		}
+	}
+}
+
 static void DispatchArgument(
 		std::istringstream & ioStream,
 		std::function< void(std::string const &) > iFunction,
@@ -46,7 +104,7 @@ static void DispatchArgument(
 		std::string & ioReply)
 {
 	std::string aArg;
-	ioStream >> aArg;
+	ReadName(ioStream, aArg);
 	oResult = ioStream.eof();
 	if (oResult)
 	{
@@ -140,9 +198,9 @@ bool AgentProxy::step(
 		else if ("robot" == aObject)
 		{
 			std::string aName;
-			aStream >> aName;
+			ReadName(aStream, aName);
 			std::string aTeam;
-			aStream >> aTeam;
+			ReadName(aStream, aTeam);
 			Dispatch(
 					aStream,
 					std::bind(&AgentProxy::addRobot, this, aName, aTeam),
@@ -218,7 +276,7 @@ bool AgentProxy::step(
 		std::string aObject;
 		aStream >> aObject;
 		std::string aName;
-		aStream >> aName;
+		ReadName(aStream, aName);
 		std::string aProperty;
 		aStream >> aProperty;
 		std::string aValue;
@@ -237,7 +295,7 @@ bool AgentProxy::step(
 		std::string aObject;
 		aStream >> aObject;
 		std::string aName;
-		aStream >> aName;
+		ReadName(aStream, aName);
 		std::string aProperty;
 		aStream >> aProperty;
 		if ("robot" == aObject)
@@ -428,7 +486,7 @@ void AgentProxy::getRobot(
 		std::string const & iProperty,
 		std::string & oValue)
 {
-	ORWELL_LOG_INFO("get robot " << iRobotName << " " << iProperty);
+	ORWELL_LOG_INFO("get robot '" << iRobotName << "' " << iProperty);
 	try
 	{
 		std::shared_ptr< orwell::game::Robot > aRobot =
