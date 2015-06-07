@@ -74,6 +74,7 @@ void BroadcastServer::runBroadcastReceiver()
 			// Receive timeout, let's check if we should keep running..
 			continue;
 		}
+		ORWELL_LOG_INFO("Received an UDP broadcast");
 
 		// Reply with PULLER and PUBLISHER url
 		// Since in UDP Discovery we are limited to 32 bytes (like ICMP_ECHO), build a binary message
@@ -95,7 +96,7 @@ void BroadcastServer::runBroadcastReceiver()
 				0,
 				(struct sockaddr *) &aClientAddress,
 				sizeof(aClientAddress));
-		ORWELL_LOG_DEBUG("sendto returned length " << aMessageLength);
+		ORWELL_LOG_INFO("sendto returned length " << aMessageLength);
 	}
 
 	ORWELL_LOG_INFO("Closing broadcast service");

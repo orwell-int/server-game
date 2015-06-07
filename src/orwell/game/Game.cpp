@@ -43,6 +43,7 @@ Game::Game(
 	, m_server(ioServer)
 	, m_ruleset(iRuleset)
 {
+	ORWELL_LOG_DEBUG("Game duration: " << m_gameDuration.total_seconds() << " second(s).");
 }
 
 Game::~Game()
@@ -112,9 +113,15 @@ bool Game::getIsRunning() const
 	return m_isRunning;
 }
 
+uint64_t Game::getSecondsLeft() const
+{
+	boost::posix_time::time_duration aEllapsed = m_startTime - m_time;
+	return (m_gameDuration.total_seconds() - aEllapsed.total_seconds());
+}
+
 void Game::start()
 {
-	ORWELL_LOG_DEBUG( "Game::start");
+	ORWELL_LOG_DEBUG("Game::start");
 	if (not m_isRunning)
 	{
 		for ( auto const aPair : m_robots )
