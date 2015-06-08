@@ -3,7 +3,7 @@
 message(CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR})
 
 # Get together all the source files and all the headers
-file(GLOB SOURCES Common.cpp)
+file(GLOB SOURCES Common.cpp ItemCommon.cpp)
 file(GLOB EXPORTABLEHEADERS *.hpp *.h)
 file(GLOB CONFIG ${CMAKE_SOURCE_DIR}/*.ini)
 file(GLOB IMAGES ${CMAKE_SOURCE_DIR}/test/*.part)
