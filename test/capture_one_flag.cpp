@@ -3,7 +3,6 @@
 #include <zmq.hpp>
 #include <string>
 
-//#include "server-game.pb.h"
 #include "robot.pb.h"
 
 #include "orwell/Application.hpp"
@@ -89,6 +88,74 @@ static void Application(orwell::Application::Parameters const & aParameters)
 	aApplication.run(aParameters);
 }
 
+
+class TestParameters
+{
+public:
+	TestParameters(
+			orwell::Application::CommandLineParameters const & iCommandLineArguments);
+	orwell::Application::Parameters const & getParameters() const;
+private:
+	orwell::Application::Parameters m_parameters;
+};
+
+TestParameters::TestParameters(
+		orwell::Application::CommandLineParameters const & iCommandLineArguments)
+{
+	Arguments aArguments = Common::GetArguments(
+			iCommandLineArguments, true);
+	orwell::Application::ReadParameters(
+			aArguments.m_argc,
+			aArguments.m_argv,
+			m_parameters);
+}
+
+orwell::Application::Parameters const & TestParameters::getParameters() const
+{
+	return m_parameters;
+}
+
+
+class ItemTester
+{
+public:
+	ItemTester(orwell::Application::Parameters const & aParameters);
+	void run();
+private:
+	orwell::Application::Parameters const & m_parameters;
+	TestAgent m_testAgent;
+	std::thread m_applicationThread;
+	std::thread m_proxySendsRobotStateThread;
+};
+
+ItemTester::ItemTester(orwell::Application::Parameters const & iParameters)
+	: m_parameters(iParameters)
+	, m_testAgent(iParameters.m_commandLineParameters.m_agentPort.get())
+{
+	std::string aReply;
+	m_applicationThread = std::thread(Application, m_parameters);
+	m_testAgent.sendCommand("ping", std::string("pong"));
+	std::string aRobotId = m_testAgent.sendCommand("get robot toto id", boost::none);
+	assert("KO" != aRobotId);
+	ORWELL_LOG_INFO("batman robotId = " + aRobotId);
+	m_testAgent.sendCommand("get team TEAM score", std::string("0"));
+	m_proxySendsRobotStateThread = std::thread(
+			ProxySendsRobotState,
+			*m_parameters.m_commandLineParameters.m_pullerPort,
+			*m_parameters.m_commandLineParameters.m_publisherPort,
+			aRobotId);
+}
+
+void ItemTester::run()
+{
+	m_testAgent.sendCommand("start game");
+	m_proxySendsRobotStateThread.join();
+	usleep(3 * *m_parameters.m_commandLineParameters.m_tickInterval * 1000);
+	m_testAgent.sendCommand("get team TEAM score", std::string("1"));
+	m_testAgent.sendCommand("stop application");
+	m_applicationThread.join();
+}
+
 int main()
 {
 	orwell::support::GlobalLogger::Create("test_capture_one_flag", "test_capture_one_flag.log", true);
@@ -136,80 +203,10 @@ color = -1
 	aCommandLineArguments.m_dryRun = false;
 	aCommandLineArguments.m_broadcast = false;
 
-	Arguments aArguments = Common::GetArguments(
-			aCommandLineArguments, true);
-	orwell::Application::Parameters aParameters;
-	orwell::Application::ReadParameters(
-			aArguments.m_argc,
-			aArguments.m_argv,
-			aParameters);
-	TestAgent aTestAgent(aParameters.m_commandLineParameters.m_agentPort.get());
-	usleep(100);
+	TestParameters aTestParameters(aCommandLineArguments);
 
-	std::string aReply;
-	std::thread aApplicationThread(Application, aParameters);
-	aTestAgent.sendCommand("ping", std::string("pong"));
-
-	//aTestAgent.sendCommand("add team TEAM");
-	//aTestAgent.sendCommand("add robot toto TEAM");
-	std::string aRobotId = aTestAgent.sendCommand("get robot toto id", boost::none);
-	assert("KO" != aRobotId);
-	ORWELL_LOG_INFO("batman robotId = " + aRobotId);
-	aTestAgent.sendCommand("get team TEAM score", std::string("0"));
-
-	aTestAgent.sendCommand("start game");
-	std::thread aProxySendsRobotStateThread(
-			ProxySendsRobotState,
-			*aParameters.m_commandLineParameters.m_pullerPort,
-			*aParameters.m_commandLineParameters.m_publisherPort,
-			aRobotId);
-	aProxySendsRobotStateThread.join();
-	 // because the game is not started yet, the Input message is supposed to be dropped by the server
-//	assert(not gOK);
-//	char aPath[FILENAME_MAX];
-//	getcwd(aPath, sizeof(aPath));
-//	std::string aFullPath = std::string(aPath) + PATH_SEPARATOR + "master.part";
-//	ORWELL_LOG_INFO("Path to stream file: " + aFullPath);
-//	aTestAgent.sendCommand("set robot toto video_url " + aFullPath);
-//	aTestAgent.sendCommand("start game");
-//	{
-//		aReply = aTestAgent.sendCommand("get robot toto video_port", boost::none);
-//		std::string aCommand("cd server-web && make client ARGS='-u http://127.0.0.1:" + aReply + " -l 9020 -d 8'");
-//		int aCode = system(aCommand.c_str());
-//		ORWELL_LOG_INFO("fake client started (return code is " << aCode << ").");
-//	}
-//	TestAgent aFakeClientConnector(9020);
-//	aFakeClientConnector.sendCommand("ping", std::string("pong"));
-//	{
-//		aReply = aTestAgent.sendCommand("get robot toto video_command_port", boost::none);
-//		size_t aIndex = aReply.rfind(":");
-//		uint16_t aPort = boost::lexical_cast< uint16_t >(aReply.substr(aIndex + 1));
-//
-//		TestAgent aTestClient(aPort);
-//		ORWELL_LOG_INFO("ping video server");
-//		aTestClient.sendCommand("ping", std::string("pong"));
-//		ClientSendsInput(
-//				*aParameters.m_commandLineParameters.m_pullerPort,
-//				*aParameters.m_commandLineParameters.m_publisherPort,
-//				aRobotId);
-//		ORWELL_LOG_INFO("make sure one image was captured.");
-//		aTestClient.sendCommand("status", std::string("captured = 1"));
-//	}
-//
-//	assert(gOK);
-//	aTestAgent.sendCommand("stop game");
-//	aFakeClientConnector.sendCommand("stop", std::string("stopping"));
-//	ClientSendsInput(
-//			*aParameters.m_commandLineParameters.m_pullerPort,
-//			*aParameters.m_commandLineParameters.m_publisherPort,
-//			aRobotId);
-//	assert(not gOK);
-	usleep(3 * *aCommandLineArguments.m_tickInterval * 1000);
-	aTestAgent.sendCommand("get team TEAM score", std::string("1"));
-	// we do not need to stop the game as there is a winner
-	//aTestAgent.sendCommand("stop game");
-	aTestAgent.sendCommand("stop application");
-	aApplicationThread.join();
+	ItemTester aTester(aTestParameters.getParameters());
+	aTester.run();
 	ORWELL_LOG_INFO("Test ends\n");
 	orwell::support::GlobalLogger::Clear();
 	return 0;
