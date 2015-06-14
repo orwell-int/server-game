@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <set>
 #include <map>
 #include <memory>
 #include <ostream>
@@ -19,7 +20,7 @@ class Item
 protected:
 	Item(
 			std::string const & iName,
-			std::string const & iRfid,
+			std::set< std::string > const & iRfids,
 			boost::posix_time::milliseconds const & iTimeToCapture);
 
 	Item(
@@ -31,7 +32,7 @@ protected:
 
 public:
 	std::string const & getName() const;
-	std::string const & getRfid() const;
+	std::set< std::string > const & getRfids() const;
 	int32_t getColor() const;
 
 	static void InitializeStaticMaps();
@@ -45,7 +46,7 @@ public:
 	static std::shared_ptr<Item> CreateItem(
 			std::string const & iType,
 			std::string const & iName,
-			std::string const & iRfid,
+			std::set< std::string > const & iRfids,
 			int32_t const iColorCode,
 			Ruleset const & iRuleset);
 
@@ -55,7 +56,7 @@ public:
 
 private:
 	std::string m_name;
-	std::string m_rfid;
+	std::set< std::string > m_rfids;
 	int32_t m_color;
 	std::string m_owningTeam;
 	boost::posix_time::milliseconds m_timeToCapture;

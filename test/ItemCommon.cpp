@@ -22,7 +22,8 @@ using namespace orwell::messages;
 static void const ProxySendsRobotState(
 	int32_t iServerPullerPort,
 	int32_t iServerPublisherPort,
-	std::string const & iRobotId)
+	std::string const & iRobotId,
+	std::vector< FlagAndTime > const & iFlagsAndTimes)
 {
 	log4cxx::NDC ndc("client");
 	zmq::context_t aContext(1);
@@ -47,34 +48,42 @@ static void const ProxySendsRobotState(
 	ServerRobotState aRobotState;
 	Rfid * aRfidMessage = aRobotState.add_rfid();
 
-	aRfidMessage->set_rfid("myrfidredflag");
 	aRfidMessage->set_status(ON);
-	aRfidMessage->set_timestamp(0);
-
-	orwell::com::RawMessage aMessage2("Idonotexist", "ServerRobotState", aRobotState.SerializeAsString());
-	aPusher.send(aMessage2);
-	ORWELL_LOG_INFO("message sent with wrong id = " + aRobotState.SerializeAsString());
-
-	orwell::com::RawMessage aMessage(iRobotId, "ServerRobotState", aRobotState.SerializeAsString());
-	aPusher.send(aMessage);
-	ORWELL_LOG_INFO("batman message sent = " + aRobotState.SerializeAsString());
-	orwell::com::RawMessage aResponse;
-	bool aGotWhatExpected(false);
-	while (not aGotWhatExpected)
+	for (FlagAndTime const & aFlagAndTime : iFlagsAndTimes)
 	{
-		if (not Common::ExpectMessage("GameState", aSubscriber, aResponse))
-		{
-			ORWELL_LOG_DEBUG("Expected gamestate but we got something else : " << aResponse._type);
-		}
-		else
-		{
-			GameState aGameState;
-			aGameState.ParsePartialFromString(aResponse._payload);
+		aRfidMessage->set_rfid(aFlagAndTime.m_flag);
+		aRfidMessage->set_timestamp(aFlagAndTime.m_timeStamp);
 
-			if ((not aGameState.playing()) and (aGameState.winner() == "TEAM"))
+		orwell::com::RawMessage aMessage(iRobotId, "ServerRobotState", aRobotState.SerializeAsString());
+		aPusher.send(aMessage);
+		ORWELL_LOG_INFO("batman message sent = " + aRobotState.SerializeAsString());
+		orwell::com::RawMessage aResponse;
+		bool aGotWhatExpected(false);
+		while (not aGotWhatExpected)
+		{
+			if (not Common::ExpectMessage("GameState", aSubscriber, aResponse))
 			{
-				ORWELL_LOG_DEBUG("Game stopped as expected and team TEAM won.");
-				aGotWhatExpected = true;
+				ORWELL_LOG_DEBUG("Expected gamestate but we got something else : " << aResponse._type);
+			}
+			else
+			{
+				GameState aGameState;
+				aGameState.ParsePartialFromString(aResponse._payload);
+
+				if (aFlagAndTime.m_hasWinner)
+				{
+					if ((not aGameState.playing()) and (aGameState.winner() == "TEAM"))
+					{
+						ORWELL_LOG_DEBUG("Game stopped as expected and team TEAM won.");
+						aGotWhatExpected = true;
+					}
+				}
+				else
+				{
+					assert(not ((not aGameState.playing()) and (aGameState.winner() == "TEAM")));
+					// more could be checked here
+					aGotWhatExpected = true;
+				}
 			}
 		}
 	}
@@ -103,10 +112,14 @@ orwell::Application::Parameters const & TestParameters::getParameters() const
 	return m_parameters;
 }
 
-ItemTester::ItemTester(orwell::Application::Parameters const & iParameters)
+ItemTester::ItemTester(
+		orwell::Application::Parameters const & iParameters,
+		std::vector< FlagAndTime > const & iFlagsAndTimes,
+		uint64_t const iScore)
 	: m_parameters(iParameters)
 	, m_testAgent(iParameters.m_commandLineParameters.m_agentPort.get())
 {
+	m_score = boost::lexical_cast< std::string >(iScore);
 	std::string aReply;
 	m_applicationThread = std::thread(Application, m_parameters);
 	m_testAgent.sendCommand("ping", std::string("pong"));
@@ -118,7 +131,8 @@ ItemTester::ItemTester(orwell::Application::Parameters const & iParameters)
 			ProxySendsRobotState,
 			*m_parameters.m_commandLineParameters.m_pullerPort,
 			*m_parameters.m_commandLineParameters.m_publisherPort,
-			aRobotId);
+			aRobotId,
+			iFlagsAndTimes);
 }
 
 void ItemTester::run()
@@ -126,7 +140,7 @@ void ItemTester::run()
 	m_testAgent.sendCommand("start game");
 	m_proxySendsRobotStateThread.join();
 	usleep(3 * *m_parameters.m_commandLineParameters.m_tickInterval * 1000);
-	m_testAgent.sendCommand("get team TEAM score", std::string("1"));
+	m_testAgent.sendCommand("get team TEAM score", m_score);
 	m_testAgent.sendCommand("stop application");
 	m_applicationThread.join();
 }

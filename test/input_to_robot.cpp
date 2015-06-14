@@ -73,8 +73,8 @@ static void Application(orwell::Application::Parameters const & aParameters)
 
 int main()
 {
-	orwell::support::GlobalLogger::Create("test_input", "test_input.log", true);
-	log4cxx::NDC ndc("test_input");
+	orwell::support::GlobalLogger::Create("test_input_to_robot", "test_input_to_robot.log", true);
+	log4cxx::NDC ndc("test_input_to_robot");
 	ORWELL_LOG_INFO("Test starts\n");
 	orwell::Application::Parameters aParameters;
 

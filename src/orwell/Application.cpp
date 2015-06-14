@@ -5,6 +5,7 @@
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/game/Item.hpp"
 
+#include <boost/algorithm/string.hpp>
 #include <boost/program_options.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
@@ -369,7 +370,14 @@ void Application::ParseGameConfigFromFile(
 			std::string aItemRfid = aPtree.get<std::string>(iItem + ".rfid");
 			int32_t aItemColor = aPtree.get<int32_t>(iItem + ".color");
 			ORWELL_LOG_INFO("Pushing item: " << aItemName << " (" << aItemType << ")");
-			ioParam.m_items[iItem] = Parameters::Item{aItemName, aItemType, aItemRfid, aItemColor};
+			ORWELL_LOG_INFO("rfid: " << aItemType);
+			std::set< std::string > aSetItemRfid;
+			boost::split(aSetItemRfid, aItemRfid, boost::is_any_of(" "));
+			for (std::string const & aStr : aSetItemRfid)
+			{
+				ORWELL_LOG_INFO("  - " << aStr);
+			}
+			ioParam.m_items[iItem] = Parameters::Item{aItemName, aItemType, aSetItemRfid, aItemColor};
 		}
 	}
 }
@@ -404,12 +412,30 @@ bool Application::CheckParametersConsistency(Parameters const & iParam)
 		return false;
 	}
 
+	bool aFirstRfid;
+	std::string aRfidString;
 	for (auto aPair : iParam.m_items)
 	{
 		Parameters::Item aItem = aPair.second;
-		if (aItem.m_color != -1 and not aItem.m_rfid.empty())
+		if (aItem.m_color != -1 and not aItem.m_rfids.empty())
 		{
-			ORWELL_LOG_ERROR("Item " << aPair.first << " is badly configured. rfid=" << aItem.m_rfid << ", color=" << aItem.m_color);
+			aFirstRfid = true;
+			aRfidString = "";
+			for (std::string const & aRfid : aItem.m_rfids)
+			{
+				if (aFirstRfid)
+				{
+					aFirstRfid = false;
+				}
+				else
+				{
+					aRfidString += " ";
+				}
+				aRfidString += aRfid;
+			}
+			ORWELL_LOG_ERROR(
+					"Item " << aPair.first << " is badly configured. rfid="
+					<< aRfidString.substr(1) << ", color=" << aItem.m_color);
 			return false;
 		}
 	}
@@ -577,7 +603,7 @@ void Application::initServer(Parameters const & iParam)
 		std::shared_ptr<game::Item> aNewItem = game::Item::CreateItem(
 				aItem.m_type,
 				aItem.m_name,
-				aItem.m_rfid,
+				aItem.m_rfids,
 				aItem.m_color,
 				iParam.m_ruleset);
 		ORWELL_LOG_INFO("new item in game config file : " << aNewItem->toLogString());
@@ -721,11 +747,26 @@ std::ostream & operator<<(
 		orwell::Application::Parameters::Robot const & aRobot = aPair.second;
 		ioOstream << aKey << ":" << aRobot.m_name << "@" << aRobot.m_team << ", ";
 	}
+	bool aFirstRfid;
 	for (auto const aPair : iParameters.m_items)
 	{
 		std::string const & aKey = aPair.first;
 		orwell::Application::Parameters::Item const & aItem = aPair.second;
-		ioOstream << aKey << ":" << aItem.m_name << "(" << aItem.m_type << "), rfid=" << aItem.m_rfid << ", color=" << aItem.m_color;
+		ioOstream << aKey << ":" << aItem.m_name << "(" << aItem.m_type << "), rfid=";
+		aFirstRfid = true;
+		for (std::string const & aRfid : aItem.m_rfids)
+		{
+			if (aFirstRfid)
+			{
+				aFirstRfid = false;
+			}
+			else
+			{
+				ioOstream << " ";
+			}
+			ioOstream << aRfid;
+		}
+		ioOstream << ", color=" << aItem.m_color;
 	}
 	ioOstream << "] ; ";
 	ioOstream << "teams [";
@@ -749,7 +790,7 @@ bool operator==(
 {
 	return ((iLeft.m_name == iRight.m_name)
 		and (iLeft.m_type == iRight.m_type)
-		and (iLeft.m_rfid == iRight.m_rfid)
+		and (iLeft.m_rfids == iRight.m_rfids)
 		and (iLeft.m_color == iRight.m_color));
 }
 

@@ -61,7 +61,10 @@ color = -1
 
 	TestParameters aTestParameters(aCommandLineArguments);
 
-	ItemTester aTester(aTestParameters.getParameters());
+	ItemTester aTester(
+			aTestParameters.getParameters(),
+			{{"myrfidredflag", 0, true}},
+			1);
 	aTester.run();
 	ORWELL_LOG_INFO("Test ends\n");
 	orwell::support::GlobalLogger::Clear();

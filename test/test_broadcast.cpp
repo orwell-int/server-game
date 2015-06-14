@@ -192,7 +192,7 @@ void simulateServer()
 
 int main(int argc, const char * argv [])
 {
-	orwell::support::GlobalLogger::Create("test_broadcast", "broadcast_test.log");
+	orwell::support::GlobalLogger::Create("test_broadcast", "test_broadcast.log");
 	ORWELL_LOG_INFO("\nmain");
 	log4cxx::NDC ndc("test_broadcast");
 	int aRc(0);
