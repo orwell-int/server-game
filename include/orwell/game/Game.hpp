@@ -9,6 +9,7 @@
 
 #include "orwell/game/Player.hpp"
 #include "orwell/game/Team.hpp"
+#include "orwell/game/Landmark.hpp"
 
 #include "server-game.pb.h"
 
@@ -141,6 +142,9 @@ public:
 
 	void stopIfGameIsFinished();
 
+	void setMapLimits(std::vector< orwell::game::Landmark > const & iMapLimits);
+
+	std::vector< orwell::game::Landmark > const & getMapLimits() const;
 private:
 	/// \return
 	///  A RobotID that is not already used.
@@ -181,6 +185,7 @@ private:
 	boost::optional< std::string > m_winner;
 
 	Ruleset const & m_ruleset;
+	std::vector< orwell::game::Landmark > m_mapLimits;
 };
 
 } // game

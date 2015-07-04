@@ -1,10 +1,10 @@
 #include "orwell/game/Ruleset.hpp"
 #include <boost/property_tree/ptree.hpp>
 
-
-
-namespace orwell {
-namespace game {
+namespace orwell
+{
+namespace game
+{
 
 Ruleset::Ruleset()
 	: m_timeToCapture(0)
@@ -22,5 +22,5 @@ void Ruleset::parseConfig(
 	m_timeToCapture = boost::posix_time::milliseconds(iPtree.get< uint32_t >(iRulesetName + ".time_to_capture", 0));
 }
 
-}} // namespaces
-
+}
+}

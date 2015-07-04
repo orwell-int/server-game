@@ -23,10 +23,10 @@ Flag::Flag(
 
 Flag::Flag(
 		std::string const & iName,
-		int32_t const iColorCode,
+		int32_t const iColourCode,
 		boost::posix_time::milliseconds const & iTimeToCapture,
 		uint32_t const iPointsOnCapture)
-	: Item(iName, iColorCode, iTimeToCapture)
+	: Item(iName, iColourCode, iTimeToCapture)
 	, m_pointsOnCapture(iPointsOnCapture)
 {
 }
