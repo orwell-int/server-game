@@ -103,8 +103,15 @@ void Socket::sendString(std::string const & iMessage)
 	zmq::message_t aZmqMessage(iMessage.size());
 	memcpy((void *) aZmqMessage.data(), iMessage.c_str(), iMessage.size());
 
-	m_zmqSocket->send(aZmqMessage);
-	ORWELL_LOG_TRACE("Sent " << iMessage);
+	try
+	{
+		m_zmqSocket->send(aZmqMessage);
+		ORWELL_LOG_TRACE("Sent " << iMessage);
+	}
+	catch (...)
+	{
+		ORWELL_LOG_TRACE("Failed to send zmq message.");
+	}
 }
 
 void Socket::send(RawMessage const & iMessage)
@@ -143,13 +150,13 @@ void Socket::innerReset()
 	if (ConnectionMode::BIND == m_connectionMode)
 	{
 		m_zmqSocket->bind(m_url.c_str());
-		ORWELL_LOG_INFO("Puller binds on " << m_url.c_str());
+		ORWELL_LOG_INFO("Socket " << m_socketType << " binds on " << m_url.c_str());
 	}
 	else
 	{
 		assert(ConnectionMode::CONNECT == m_connectionMode);
 		m_zmqSocket->connect(m_url.c_str());
-		ORWELL_LOG_INFO("Subscriber connects to '" << m_url.c_str() << "'");
+		ORWELL_LOG_INFO("Socket " << m_socketType << " connects to '" << m_url.c_str() << "'");
 	}
 }
 

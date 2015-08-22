@@ -47,6 +47,8 @@ public:
 
 	bool getIsRunning() const;
 
+	uint64_t getSecondsLeft() const;
+
 	void start();
 	void stop();
 
