@@ -1,3 +1,1 @@
-{"headers": {"expires": "Mon, 3 Jan 2000 12:34:56 GMT", "server": "MJPG-Streamer/0.2", "connection": "close", "pragma": "no-cache", "cache-control": "no-store, no-cache, must-revalidate, pre-check=0, post-check=0, max-age=0", "content-type": "multipart/x-mixed-replace;boundary=boundarydonotcross"}}
-1.part
-2.part
+{"headers": {"content-type": "multipart/x-mixed-replace; boundary={frame_separator}"}, "frame_separator": "frame", "frames": ["1.part", "2.part"]}
