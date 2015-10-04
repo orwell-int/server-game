@@ -571,7 +571,7 @@ color = -1
 			{"robot_B", {"Bourbaki", "Mathematicians"}},
 	};
 	aExpectedParameters.m_items = {
-			{"item_RedFlag", {"Red_Flag", "flag", "myrfidredflag", -1}},
+			{"item_RedFlag", {"Red_Flag", "flag", std::set< std::string >{"myrfidredflag"}, -1}},
 	};
 	aExpectedParameters.m_teams = {"Mathematicians", "Philosophers"};
 	aExpectedParameters.m_videoPorts = {9004, 9003, 9002, 9001};
@@ -617,7 +617,7 @@ color = 2
 )"));
 	aCommandLineArguments.m_gameFilePath = aGameConfigFile2.m_fileName;
 	aExpectedParameters.m_items = {
-			{"item_RedFlag", {"Red_Flag", "flag", "myrfidredflag", 2}},
+			{"item_RedFlag", {"Red_Flag", "flag", std::set< std::string >{"myrfidredflag"}, 2}},
 	};
 	aExpectedParameters.m_commandLineParameters = aCommandLineArguments;
 

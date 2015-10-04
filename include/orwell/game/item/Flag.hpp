@@ -19,7 +19,7 @@ class Flag : public Item
 public :
 	Flag(
 			std::string const & iName,
-			std::string const & iRfid,
+			std::set< std::string > const & iRfids,
 			boost::posix_time::milliseconds const & iTimeToCapture,
 			uint32_t const iPointsOnCapture);
 

@@ -17,14 +17,19 @@ namespace game
 
 Item::Item(
 		std::string const & iName,
-		std::string const & iRfid,
+		std::set< std::string > const & iRfids,
 		boost::posix_time::milliseconds const & iTimeToCapture)
 	: m_name(iName)
-	, m_rfid(iRfid)
+	, m_rfids(iRfids)
 	, m_color(-1)
 	, m_timeToCapture(iTimeToCapture)
 {
-	ORWELL_LOG_DEBUG("new Item (" << iName <<") by Rfid ("<< iRfid << ")");
+	std::string aStringRfid;
+	for (std::string const & aRfid : iRfids)
+	{
+		aStringRfid += " " + aRfid;
+	}
+	ORWELL_LOG_DEBUG("new Item (" << iName << ") by Rfid(s) (" << aStringRfid.substr(1) << ")");
 }
 
 Item::Item(
@@ -35,7 +40,7 @@ Item::Item(
 	, m_color(iColorCode)
 	, m_timeToCapture(iTimeToCapture)
 {
-	ORWELL_LOG_DEBUG("new Item (" << iName <<") by color ("<< iColorCode << ")");
+	ORWELL_LOG_DEBUG("new Item (" << iName << ") by color (" << iColorCode << ")");
 }
 
 Item::~Item()
@@ -53,9 +58,9 @@ std::string const & Item::getName() const
 	return m_name;
 }
 
-std::string const & Item::getRfid() const
+std::set< std::string > const & Item::getRfids() const
 {
-	return m_rfid;
+	return m_rfids;
 }
 
 int32_t Item::getColor() const
@@ -98,13 +103,13 @@ std::shared_ptr<Item> Item::GetItemByColor(
 std::shared_ptr<Item> Item::CreateItem(
 		std::string const & iType,
 		std::string const & iName,
-		std::string const & iRfid,
+		std::set< std::string > const & iRfids,
 		int32_t const iColorCode,
 		Ruleset const & iRuleset)
 {
 	if ("flag" == iType)
 	{
-		if (iRfid.empty() and -1 != iColorCode)
+		if (iRfids.empty() and -1 != iColorCode)
 		{
 			if (s_itemsByColor.find(iColorCode) != s_itemsByColor.end())
 			{
@@ -121,22 +126,26 @@ std::shared_ptr<Item> Item::CreateItem(
 				return aNewFlag;
 			}
 		}
-		else if (not iRfid.empty() and -1 == iColorCode)
+		else if (not iRfids.empty() and -1 == iColorCode)
 		{
-			if (s_itemsByRfid.find(iRfid) != s_itemsByRfid.end())
+			std::shared_ptr< item::Flag > aNewFlag = std::make_shared< item::Flag >(
+					iName,
+					iRfids,
+					iRuleset.m_timeToCapture,
+					iRuleset.m_pointsOnCapture);
+			for (std::string const & aRfid : iRfids)
 			{
-				ORWELL_LOG_ERROR("Tried to add new Item by Rfid : " << iRfid << ". Already exists.");
+				if (s_itemsByRfid.find(aRfid) != s_itemsByRfid.end())
+				{
+					ORWELL_LOG_ERROR("Tried to add new Item by Rfid : " << aRfid << ". Already exists.");
+				}
+				else
+				{
+					ORWELL_LOG_INFO("Add flag with key '" << aRfid << "'")
+					s_itemsByRfid[aRfid] = aNewFlag;
+				}
 			}
-			else
-			{
-				std::shared_ptr<item::Flag> aNewFlag = std::make_shared<item::Flag>(
-						iName,
-						iRfid,
-						iRuleset.m_timeToCapture,
-						iRuleset.m_pointsOnCapture);
-				s_itemsByRfid[iRfid] = aNewFlag;
-				return aNewFlag;
-			}
+			return aNewFlag;
 		}
 	}
 
@@ -167,9 +176,13 @@ std::ostream & operator<<(
 		orwell::game::Item const & aItem)
 {
 	ioOstream << "Item : " << aItem.getName();
-	if (not aItem.getRfid().empty())
+	if (not aItem.getRfids().empty())
 	{
-		ioOstream << " - rfid : " << aItem.getRfid();
+		ioOstream << " - rfid :";
+		for (std::string const & aRfid : aItem.getRfids())
+		{
+			ioOstream << " " << aRfid;
+		}
 	}
 	if (aItem.getColor() >= 0)
 	{

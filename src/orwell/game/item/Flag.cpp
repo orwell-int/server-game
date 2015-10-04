@@ -13,10 +13,10 @@ namespace item
 
 Flag::Flag(
 		std::string const & iName,
-		std::string const & iRfid,
+		std::set< std::string > const & iRfids,
 		boost::posix_time::milliseconds const & iTimeToCapture,
 		uint32_t const iPointsOnCapture)
-	: Item(iName, iRfid, iTimeToCapture)
+	: Item(iName, iRfids, iTimeToCapture)
 	, m_pointsOnCapture(iPointsOnCapture)
 {
 }

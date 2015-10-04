@@ -53,7 +53,7 @@ public :
 		{
 			std::string m_name;
 			std::string m_type;
-			std::string m_rfid;
+			std::set< std::string > m_rfids;
 			int32_t m_color;
 		};
 
