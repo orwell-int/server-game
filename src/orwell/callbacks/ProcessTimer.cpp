@@ -3,6 +3,7 @@
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/com/RawMessage.hpp"
 #include "orwell/game/Game.hpp"
+#include "orwell/game/Landmark.hpp"
 #include "orwell/com/Sender.hpp"
 
 #include "server-game.pb.h"
@@ -29,6 +30,17 @@ void ProcessTimer::execute()
 	GameState aGameState;
 	aGameState.set_playing(m_game->getIsRunning());
 	aGameState.set_seconds(m_game->getSecondsLeft());
+	for (game::Landmark const & aLandmark:  m_game->getMapLimits())
+	{
+		messages::Landmark * aMapLimit = aGameState.add_map_limits();
+		messages::Coordinates * aPosition = aMapLimit->mutable_position();
+		aPosition->set_x(aLandmark.getPosition().getX());
+		aPosition->set_y(aLandmark.getPosition().getY());
+		messages::RGBColour * aColour = aMapLimit->mutable_colour();
+		aColour->set_r(aLandmark.getColour().getRed());
+		aColour->set_g(aLandmark.getColour().getGreen());
+		aColour->set_b(aLandmark.getColour().getBlue());
+	}
 
 	if (m_game->getWinner())
 	{

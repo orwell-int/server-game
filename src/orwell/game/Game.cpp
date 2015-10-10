@@ -489,6 +489,15 @@ void Game::robotDropsContactWith(std::string const & iRobotId, std::shared_ptr<I
 	m_contacts.erase(iRobotId);
 }
 
+void Game::setMapLimits(std::vector< orwell::game::Landmark > const & iMapLimits)
+{
+	m_mapLimits = iMapLimits;
+}
+
+std::vector< orwell::game::Landmark > const & Game::getMapLimits() const
+{
+	return m_mapLimits;
+}
 
 } // game
 } // orwell

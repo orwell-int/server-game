@@ -11,9 +11,12 @@
 #include <boost/optional.hpp>
 
 #include "orwell/game/Ruleset.hpp"
+#include "orwell/game/Landmark.hpp"
 #include "orwell/AgentProxy.hpp"
 
-namespace orwell {
+namespace orwell
+{
+
 class Server;
 class BroadcastServer;
 class AgentProxy;
@@ -54,16 +57,17 @@ public :
 			std::string m_name;
 			std::string m_type;
 			std::set< std::string > m_rfids;
-			int32_t m_color;
+			int32_t m_colour;
 		};
 
 		CommandLineParameters m_commandLineParameters;
 		typedef std::string Team;
 		std::vector< uint16_t > m_videoPorts;
-		std::map<std::string, Robot> m_robots;
-		std::map<std::string, Item> m_items;
-		std::set<Team> m_teams;
+		std::map< std::string, Robot > m_robots;
+		std::map< std::string, Item > m_items;
+		std::set< Team > m_teams;
 		game::Ruleset m_ruleset;
+		std::vector< game::Landmark > m_mapLimits;
 	};
 
 	virtual ~Application();

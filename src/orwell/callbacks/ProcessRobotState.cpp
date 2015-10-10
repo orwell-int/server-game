@@ -61,7 +61,7 @@ void ProcessRobotState::execute()
 	}
 	for (int i = 0; i < aRobotStateMsg.colour_size() ; ++i)
 	{
-		std::shared_ptr< orwell::game::Item > aItem = game::Item::GetItemByColor(aRobotStateMsg.colour(i).colour());
+		std::shared_ptr< orwell::game::Item > aItem = game::Item::GetItemByColour(aRobotStateMsg.colour(i).colour());
 		if (not aItem)
 		{
 			continue;

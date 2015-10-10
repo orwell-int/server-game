@@ -368,7 +368,7 @@ void Application::ParseGameConfigFromFile(
 			std::string aItemName = aPtree.get<std::string>(iItem + ".name");
 			std::string aItemType = aPtree.get<std::string>(iItem + ".type");
 			std::string aItemRfid = aPtree.get<std::string>(iItem + ".rfid");
-			int32_t aItemColor = aPtree.get<int32_t>(iItem + ".color");
+			int32_t aItemColour = aPtree.get<int32_t>(iItem + ".colour");
 			ORWELL_LOG_INFO("Pushing item: " << aItemName << " (" << aItemType << ")");
 			ORWELL_LOG_INFO("rfid: " << aItemType);
 			std::set< std::string > aSetItemRfid;
@@ -377,7 +377,18 @@ void Application::ParseGameConfigFromFile(
 			{
 				ORWELL_LOG_INFO("  - " << aStr);
 			}
-			ioParam.m_items[iItem] = Parameters::Item{aItemName, aItemType, aSetItemRfid, aItemColor};
+			ioParam.m_items[iItem] = Parameters::Item{aItemName, aItemType, aSetItemRfid, aItemColour};
+		}
+	}
+	boost::optional< std::string > aMapLimitsDeclaration = aPtree.get_optional< std::string >("game.map_limits");
+	if (aMapLimitsDeclaration)
+	{
+		std::vector< std::string > aMapLimitList;
+		Application::Tokenize(aMapLimitsDeclaration.get(), aMapLimitList);
+
+		for (std::string const & aMapLimit : aMapLimitList)
+		{
+			ioParam.m_mapLimits.push_back(game::Landmark::ParseConfig(aMapLimit, aPtree));
 		}
 	}
 }
@@ -417,7 +428,7 @@ bool Application::CheckParametersConsistency(Parameters const & iParam)
 	for (auto aPair : iParam.m_items)
 	{
 		Parameters::Item aItem = aPair.second;
-		if (aItem.m_color != -1 and not aItem.m_rfids.empty())
+		if (aItem.m_colour != -1 and not aItem.m_rfids.empty())
 		{
 			aFirstRfid = true;
 			aRfidString = "";
@@ -435,7 +446,7 @@ bool Application::CheckParametersConsistency(Parameters const & iParam)
 			}
 			ORWELL_LOG_ERROR(
 					"Item " << aPair.first << " is badly configured. rfid="
-					<< aRfidString.substr(1) << ", color=" << aItem.m_color);
+					<< aRfidString.substr(1) << ", colour=" << aItem.m_colour);
 			return false;
 		}
 	}
@@ -604,10 +615,11 @@ void Application::initServer(Parameters const & iParam)
 				aItem.m_type,
 				aItem.m_name,
 				aItem.m_rfids,
-				aItem.m_color,
+				aItem.m_colour,
 				iParam.m_ruleset);
 		ORWELL_LOG_INFO("new item in game config file : " << aNewItem->toLogString());
 	}
+	m_server->accessContext().setMapLimits(iParam.m_mapLimits);
 }
 
 void Application::initBroadcastServer(Parameters const & iParam)
@@ -718,7 +730,9 @@ bool operator==(
 		and (iLeft.m_commandLineParameters.m_dryRun == iRight.m_commandLineParameters.m_dryRun)
 		and (iLeft.m_commandLineParameters.m_broadcast == iRight.m_commandLineParameters.m_broadcast)
 		and (aSameRobots)
+		and (aSameItems)
 		and (iLeft.m_teams == iRight.m_teams)
+		and (iLeft.m_mapLimits == iRight.m_mapLimits)
 		);
 }
 
@@ -766,12 +780,18 @@ std::ostream & operator<<(
 			}
 			ioOstream << aRfid;
 		}
-		ioOstream << ", color=" << aItem.m_color;
+		ioOstream << ", colour=" << aItem.m_colour;
 	}
 	ioOstream << "] ; ";
 	ioOstream << "teams [";
-	std::ostream_iterator< std::string > aOut(ioOstream,", ");
+	std::ostream_iterator< std::string > aOut(ioOstream, ", ");
 	std::copy(iParameters.m_teams.begin(), iParameters.m_teams.end(), aOut);
+	ioOstream << "] ; ";
+	ioOstream << "map limits [";
+	for (auto const & aMapLimit : iParameters.m_mapLimits)
+	{
+		ioOstream << aMapLimit << ", ";
+	}
 	ioOstream << "] ; ";
 	return ioOstream;
 }
@@ -788,9 +808,32 @@ bool operator==(
 		orwell::Application::Parameters::Item const & iLeft,
 		orwell::Application::Parameters::Item const & iRight)
 {
-	return ((iLeft.m_name == iRight.m_name)
-		and (iLeft.m_type == iRight.m_type)
-		and (iLeft.m_rfids == iRight.m_rfids)
-		and (iLeft.m_color == iRight.m_color));
+	//return ((iLeft.m_name == iRight.m_name)
+		//and (iLeft.m_type == iRight.m_type)
+		//and (iLeft.m_rfids == iRight.m_rfids)
+		//and (iLeft.m_colour == iRight.m_colour));
+	if (not (iLeft.m_name == iRight.m_name))
+	{
+		ORWELL_LOG_DEBUG("Difference on name");
+		ORWELL_LOG_DEBUG("left name = '" << iLeft.m_name << "'");
+		ORWELL_LOG_DEBUG("right name = '" << iRight.m_name << "'");
+		return false;
+	}
+	if (not (iLeft.m_type == iRight.m_type))
+	{
+		ORWELL_LOG_DEBUG("Difference on type");
+		return false;
+	}
+	if (not (iLeft.m_rfids == iRight.m_rfids))
+	{
+		ORWELL_LOG_DEBUG("Difference on RFIDs");
+		return false;
+	}
+	if (not (iLeft.m_colour == iRight.m_colour))
+	{
+		ORWELL_LOG_DEBUG("Difference on colour");
+		return false;
+	}
+	return true;
 }
 

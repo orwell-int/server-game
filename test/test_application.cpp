@@ -1,6 +1,3 @@
-#include "orwell/Server.hpp"
-#include "orwell/BroadcastServer.hpp"
-
 #include <zmq.hpp>
 
 #include <sys/wait.h>
@@ -10,17 +7,19 @@
 #include <signal.h>
 #include <cassert>
 
-#include <log4cxx/ndc.h>
-
-#include "orwell/Application.hpp"
-
-#include "orwell/support/GlobalLogger.hpp"
-
 #include <boost/lexical_cast.hpp>
 #include <boost/call_traits.hpp>
+#include <boost/format.hpp>
 
 #include <vector>
 #include <functional>
+
+#include <log4cxx/ndc.h>
+
+#include "orwell/Application.hpp"
+#include "orwell/support/GlobalLogger.hpp"
+#include "orwell/Server.hpp"
+#include "orwell/game/RGBColour.hpp"
 
 #include "Common.hpp"
 
@@ -549,7 +548,7 @@ name = Bourbaki
 name = Red Flag
 type = flag
 rfid = myrfidredflag
-color = -1 
+colour = -1 
 
 )"));
 
@@ -564,14 +563,14 @@ color = -1
 	aCommandLineArguments.m_dryRun = true;
 	aCommandLineArguments.m_broadcast = false;
 
-	orwell::Application::Parameters aExpectedParameters ;
+	orwell::Application::Parameters aExpectedParameters;
 	aExpectedParameters.m_commandLineParameters = aCommandLineArguments;
 	aExpectedParameters.m_robots = {
 			{"robot_A", {"Aristotle", "Philosophers"}},
 			{"robot_B", {"Bourbaki", "Mathematicians"}},
 	};
 	aExpectedParameters.m_items = {
-			{"item_RedFlag", {"Red_Flag", "flag", std::set< std::string >{"myrfidredflag"}, -1}},
+			{"item_RedFlag", {"Red Flag", "flag", std::set< std::string >{"myrfidredflag"}, -1}},
 	};
 	aExpectedParameters.m_teams = {"Mathematicians", "Philosophers"};
 	aExpectedParameters.m_videoPorts = {9004, 9003, 9002, 9001};
@@ -584,7 +583,7 @@ color = -1
 			),
 			aExpectedParameters);
 
-	// second test. This time item_RedFlag has both a rfid and a color... which is a no go
+	// second test. This time item_RedFlag has both a rfid and a colour... which is a no go
 	TempFile aGameConfigFile2(std::string(R"(
 [game]
 teams = team_A | team_B
@@ -612,12 +611,12 @@ name = Bourbaki
 name = Red Flag
 type = flag
 rfid = myrfidredflag
-color = 2
+colour = 2
 
 )"));
 	aCommandLineArguments.m_gameFilePath = aGameConfigFile2.m_fileName;
 	aExpectedParameters.m_items = {
-			{"item_RedFlag", {"Red_Flag", "flag", std::set< std::string >{"myrfidredflag"}, 2}},
+			{"item_RedFlag", {"Red Flag", "flag", std::set< std::string >{"myrfidredflag"}, 2}},
 	};
 	aExpectedParameters.m_commandLineParameters = aCommandLineArguments;
 
@@ -630,6 +629,113 @@ color = 2
 			aExpectedParameters);
 }
 
+static void test_parse_game_file_with_map()
+{
+	ORWELL_LOG_DEBUG("test_parse_game_file_with_map_7");
+	TempFile aTechConfigFile(std::string(R"(
+[server]
+video-ports    = 9001:9004
+)"));
+	uint64_t aRedX = 0;
+	uint64_t aRedY = 0;
+	uint64_t aGreenX = 0;
+	uint64_t aGreenY = 100;
+	uint64_t aBlueX = 100;
+	uint64_t aBlueY = 100;
+	uint64_t aYellowX = 100;
+	uint64_t aYellowY = 0;
+	TempFile aTempFile(boost::str(boost::format(std::string(R"(
+[game]
+teams = team_A | team_B
+duration = 999
+ruleset = ruleset
+map_limits = red_corner | green_corner | blue_corner | yellow_corner
+
+[ruleset]
+game_name = game
+
+[team_A]
+name = Philosophers
+robots = robot_A
+
+[team_B]
+name = Mathematicians
+robots = robot_B
+
+[robot_A]
+name = Aristotle
+
+[robot_B]
+name = Bourbaki
+
+[red_corner]
+x = %1%
+y = %2%
+r = 255
+g = 0
+b = 0
+
+[green_corner]
+x = %3%
+y = %4%
+r = 0
+g = 255
+b = 0
+
+[blue_corner]
+x = %5%
+y = %6%
+r = 0
+g = 0
+b = 255
+
+[yellow_corner]
+x = %7%
+y = %8%
+r = 255
+g = 255
+b = 0
+
+)").c_str()) % aRedX % aRedY
+	% aGreenX % aGreenY
+	% aBlueX % aBlueY
+	% aYellowX % aYellowY));
+
+	orwell::Application::CommandLineParameters aInputCommandLineArguments;
+	aInputCommandLineArguments.m_publisherPort = 1;
+	aInputCommandLineArguments.m_pullerPort = 2;
+	aInputCommandLineArguments.m_agentPort = 3;
+	aInputCommandLineArguments.m_rcFilePath = aTechConfigFile.m_fileName;
+	aInputCommandLineArguments.m_gameFilePath = aTempFile.m_fileName;
+	aInputCommandLineArguments.m_tickInterval = 666;
+	aInputCommandLineArguments.m_dryRun = true;
+	aInputCommandLineArguments.m_broadcast = false;
+
+	orwell::Application::CommandLineParameters aExpectedCommandLineArguments = aInputCommandLineArguments;
+	aExpectedCommandLineArguments.m_gameDuration = 999;
+
+	orwell::Application::Parameters aExpectedParameters;
+	aExpectedParameters.m_commandLineParameters = aExpectedCommandLineArguments;
+	aExpectedParameters.m_robots = {
+			{"robot_A", {"Aristotle", "Philosophers"}},
+			{"robot_B", {"Bourbaki", "Mathematicians"}},
+		};
+	aExpectedParameters.m_teams = {"Mathematicians", "Philosophers"};
+	aExpectedParameters.m_videoPorts = {9004, 9003, 9002, 9001};
+	aExpectedParameters.m_mapLimits = {
+		orwell::game::Landmark(orwell::game::Coordinates(aRedX, aRedY), orwell::game::RGBColour(255, 0, 0)),
+		orwell::game::Landmark(orwell::game::Coordinates(aGreenX, aGreenY), orwell::game::RGBColour(0, 255, 0)),
+		orwell::game::Landmark(orwell::game::Coordinates(aBlueX, aBlueY), orwell::game::RGBColour(0, 0, 255)),
+		orwell::game::Landmark(orwell::game::Coordinates(aYellowX, aYellowY), orwell::game::RGBColour(255, 255, 0)),
+	};
+	test_ReadParameters(
+			Status::PASS,
+			Common::GetArguments(
+				aInputCommandLineArguments,
+				true // debug log
+			),
+			aExpectedParameters);
+}
 int main()
 {
 	orwell::support::GlobalLogger::Create("test_application", "test_application.log", true);
@@ -652,6 +758,7 @@ int main()
 	test_parse_command_line_and_file_6_badConfigFile();
 	test_parse_command_line_and_file_7_moreRobotsThanVideoPorts();
 	test_parse_game_file_with_flag();
+	test_parse_game_file_with_map();
 
 	orwell::support::GlobalLogger::Clear();
 	return 0;

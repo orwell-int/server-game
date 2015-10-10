@@ -8,7 +8,7 @@
 #include <sstream>
 
 std::map<std::string, std::shared_ptr<orwell::game::Item> > orwell::game::Item::s_itemsByRfid = std::map<std::string, std::shared_ptr<orwell::game::Item> >();
-std::map<int32_t, std::shared_ptr<orwell::game::Item> > orwell::game::Item::s_itemsByColor = std::map<int32_t, std::shared_ptr<orwell::game::Item> >();
+std::map<int32_t, std::shared_ptr<orwell::game::Item> > orwell::game::Item::s_itemsByColour = std::map<int32_t, std::shared_ptr<orwell::game::Item> >();
 
 namespace orwell
 {
@@ -21,7 +21,7 @@ Item::Item(
 		boost::posix_time::milliseconds const & iTimeToCapture)
 	: m_name(iName)
 	, m_rfids(iRfids)
-	, m_color(-1)
+	, m_colour(-1)
 	, m_timeToCapture(iTimeToCapture)
 {
 	std::string aStringRfid;
@@ -34,13 +34,13 @@ Item::Item(
 
 Item::Item(
 		std::string const & iName,
-		int32_t const iColorCode,
+		int32_t const iColourCode,
 		boost::posix_time::milliseconds const & iTimeToCapture)
 	: m_name(iName)
-	, m_color(iColorCode)
+	, m_colour(iColourCode)
 	, m_timeToCapture(iTimeToCapture)
 {
-	ORWELL_LOG_DEBUG("new Item (" << iName << ") by color (" << iColorCode << ")");
+	ORWELL_LOG_DEBUG("new Item (" << iName << ") by colour (" << iColourCode << ")");
 }
 
 Item::~Item()
@@ -50,7 +50,7 @@ Item::~Item()
 void Item::InitializeStaticMaps()
 {
 	Item::s_itemsByRfid = std::map<std::string, std::shared_ptr<Item> >();
-	Item::s_itemsByColor = std::map<int32_t, std::shared_ptr<Item> >();
+	Item::s_itemsByColour = std::map<int32_t, std::shared_ptr<Item> >();
 }
 
 std::string const & Item::getName() const
@@ -63,9 +63,9 @@ std::set< std::string > const & Item::getRfids() const
 	return m_rfids;
 }
 
-int32_t Item::getColor() const
+int32_t Item::getColour() const
 {
-	return m_color;
+	return m_colour;
 }
 
 std::shared_ptr<Item> Item::GetItemByRfid(
@@ -84,18 +84,18 @@ std::shared_ptr<Item> Item::GetItemByRfid(
 	return aFound;
 }
 
-std::shared_ptr<Item> Item::GetItemByColor(
-		int32_t const iColorCode)
+std::shared_ptr<Item> Item::GetItemByColour(
+		int32_t const iColourCode)
 {
 	std::shared_ptr< Item > aFound;
-	std::map<std::int32_t, std::shared_ptr<Item> >::iterator it = s_itemsByColor.find(iColorCode);
-	if (it != s_itemsByColor.end())
+	std::map<std::int32_t, std::shared_ptr<Item> >::iterator it = s_itemsByColour.find(iColourCode);
+	if (it != s_itemsByColour.end())
 	{
 		aFound = it->second;
 	}
 	else
 	{
-		ORWELL_LOG_ERROR("Tried to retrieve Item by Color code : " << iColorCode << ". Not found");
+		ORWELL_LOG_ERROR("Tried to retrieve Item by Colour code : " << iColourCode << ". Not found");
 	}
 	return aFound;
 }
@@ -104,29 +104,29 @@ std::shared_ptr<Item> Item::CreateItem(
 		std::string const & iType,
 		std::string const & iName,
 		std::set< std::string > const & iRfids,
-		int32_t const iColorCode,
+		int32_t const iColourCode,
 		Ruleset const & iRuleset)
 {
 	if ("flag" == iType)
 	{
-		if (iRfids.empty() and -1 != iColorCode)
+		if (iRfids.empty() and -1 != iColourCode)
 		{
-			if (s_itemsByColor.find(iColorCode) != s_itemsByColor.end())
+			if (s_itemsByColour.find(iColourCode) != s_itemsByColour.end())
 			{
-				ORWELL_LOG_ERROR("Tried to add new Item by Color code : " << iColorCode << ". Already exists.");
+				ORWELL_LOG_ERROR("Tried to add new Item by Colour code : " << iColourCode << ". Already exists.");
 			}
 			else
 			{
 				std::shared_ptr<item::Flag> aNewFlag = std::make_shared<item::Flag>(
 						iName,
-						iColorCode,
+						iColourCode,
 						iRuleset.m_timeToCapture,
 						iRuleset.m_pointsOnCapture);
-				s_itemsByColor[iColorCode] = aNewFlag;
+				s_itemsByColour[iColourCode] = aNewFlag;
 				return aNewFlag;
 			}
 		}
-		else if (not iRfids.empty() and -1 == iColorCode)
+		else if (not iRfids.empty() and -1 == iColourCode)
 		{
 			std::shared_ptr< item::Flag > aNewFlag = std::make_shared< item::Flag >(
 					iName,
@@ -184,9 +184,9 @@ std::ostream & operator<<(
 			ioOstream << " " << aRfid;
 		}
 	}
-	if (aItem.getColor() >= 0)
+	if (aItem.getColour() >= 0)
 	{
-		ioOstream << " - color : " << aItem.getColor();
+		ioOstream << " - colour : " << aItem.getColour();
 	}
 	return ioOstream;
 }

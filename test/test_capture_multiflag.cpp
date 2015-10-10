@@ -46,13 +46,13 @@ name = toto
 name = Red Flag
 type = flag
 rfid = A B C
-color = -1 
+colour = -1 
 
 [item_GreenFlag]
 name = Freen Flag
 type = flag
 rfid = XX
-color = -1 
+colour = -1 
 
 )"));
 	orwell::Application::CommandLineParameters aCommandLineArguments;
