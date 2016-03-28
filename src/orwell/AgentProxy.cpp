@@ -295,7 +295,10 @@ bool AgentProxy::step(
 		std::string aObject;
 		aStream >> aObject;
 		std::string aName;
-		ReadName(aStream, aName);
+		if (("robot" == aObject) or ("team" == aObject))
+		{
+			ReadName(aStream, aName);
+		}
 		std::string aProperty;
 		aStream >> aProperty;
 		if ("robot" == aObject)
@@ -306,6 +309,11 @@ bool AgentProxy::step(
 		else if ("team" == aObject)
 		{
 			getTeam(aName, aProperty, ioReply);
+			aResult = true;
+		}
+		else if ("game" == aObject)
+		{
+			getGame(aProperty, ioReply);
 			aResult = true;
 		}
 	}
@@ -544,7 +552,6 @@ void AgentProxy::listPlayer(std::string & ioReply)
 	}
 }
 
-
 void AgentProxy::addPlayer(std::string const & iPlayerName)
 {
 	ORWELL_LOG_INFO("add player " << iPlayerName);
@@ -567,6 +574,40 @@ void AgentProxy::stopGame()
 {
 	ORWELL_LOG_INFO("stop game");
 	m_application.accessServer()->accessContext().stop();
+}
+
+void AgentProxy::getGame(
+		std::string const & iProperty,
+		std::string & oValue)
+{
+	ORWELL_LOG_INFO("get game " << iProperty);
+	try
+	{
+		if ("time" == iProperty)
+		{
+			oValue = boost::lexical_cast< std::string >(
+					m_application.accessServer()
+						->accessContext().getSecondsLeft());
+			ORWELL_LOG_INFO("time = " << oValue);
+		}
+		else if ("running" == iProperty)
+		{
+			oValue = boost::lexical_cast< std::string >(
+					m_application.accessServer()
+						->accessContext().getIsRunning());
+			ORWELL_LOG_INFO("running = " << oValue);
+		}
+		else
+		{
+			oValue = "KO";
+			ORWELL_LOG_WARN(
+					"Unknown property for a game: '" << iProperty << "'");
+		}
+	}
+	catch (std::exception const & anException)
+	{
+		ORWELL_LOG_ERROR(anException.what());
+	}
 }
 
 // protected

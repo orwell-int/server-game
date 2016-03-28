@@ -89,6 +89,12 @@ public :
 
 	/// stop game
 	void stopGame() override;
+
+	/// get property <property> of game
+	void getGame(
+				std::string const & iProperty,
+				std::string & oValue) override;
+
 protected :
 
 private :

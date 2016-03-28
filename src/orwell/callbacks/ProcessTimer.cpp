@@ -28,6 +28,7 @@ void ProcessTimer::execute()
 	ORWELL_LOG_TRACE("ProcessTimer::execute : broadcast Gamestate");
 
 	GameState aGameState;
+	ORWELL_LOG_DEBUG("Is game running ? " << m_game->getIsRunning());
 	aGameState.set_playing(m_game->getIsRunning());
 	aGameState.set_seconds(m_game->getSecondsLeft());
 	for (game::Landmark const & aLandmark:  m_game->getMapLimits())
