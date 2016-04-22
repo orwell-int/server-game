@@ -35,11 +35,11 @@ BroadcastServer::~BroadcastServer()
 void BroadcastServer::runBroadcastReceiver()
 {
 	int aBsdSocket;
-	unsigned int aClientLength(0);
 	struct sockaddr_in aBroadcastServerAddress;
 	struct sockaddr_in aClientAddress;
 	char aMessageBuffer[UDP_MESSAGE_LIMIT];
-	
+	unsigned int aClientLength = sizeof(aClientAddress);
+
 	/* This is used to set a RCV Timeout on the socket */
 	struct timeval tv;
 	tv.tv_sec = 3;
@@ -66,8 +66,6 @@ void BroadcastServer::runBroadcastReceiver()
 	_mainLoopRunning = true;
 	while (_mainLoopRunning)
 	{
-		aClientLength = sizeof(aClientAddress);
-
 		// Wait for message and fill the ClientAddress structure we will use to reply
 		if (recvfrom(aBsdSocket, aMessageBuffer, UDP_MESSAGE_LIMIT, 0, (struct sockaddr *) &aClientAddress, &aClientLength) == -1)
 		{
@@ -111,4 +109,3 @@ void BroadcastServer::stop()
 }
 
 }
-

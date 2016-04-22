@@ -44,7 +44,7 @@
 
 namespace orwell
 {
-class Application_CommandLineParameters;
+struct Application_CommandLineParameters;
 
 namespace com
 {

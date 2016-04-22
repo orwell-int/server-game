@@ -118,9 +118,6 @@ uint64_t Game::getSecondsLeft() const
 	if (m_isRunning)
 	{
 		boost::posix_time::time_duration aEllapsed = m_time - m_startTime;
-		ORWELL_LOG_DEBUG("aEllapsed = " << aEllapsed);
-		ORWELL_LOG_DEBUG("seconds left = "
-				<< (m_gameDuration.total_seconds() - aEllapsed.total_seconds()));
 		return (m_gameDuration.total_seconds() - aEllapsed.total_seconds());
 	}
 	else
@@ -512,4 +509,3 @@ std::vector< orwell::game::Landmark > const & Game::getMapLimits() const
 
 } // game
 } // orwell
-
