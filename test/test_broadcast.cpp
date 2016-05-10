@@ -33,6 +33,7 @@
 #include <sstream>
 #include <signal.h>
 
+#define MULTICAST_GROUP "225.0.0.42"
 
 using namespace log4cxx;
 
@@ -103,6 +104,7 @@ uint32_t simulateClient()
 	int aSocket;
 	ssize_t aMessageLength;
 	struct sockaddr_in aDestination;
+	struct ip_mreq aGroup;
 	unsigned int aDestinationLength;
 	char aReply[256];
 
@@ -145,6 +147,15 @@ uint32_t simulateClient()
 	if ((setsockopt(aSocket, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(int))) == -1)
 	{
 		ORWELL_LOG_ERROR("Not allowed to send broadcast");
+		return 255;
+	}
+
+	bzero(&aGroup, sizeof(aGroup));
+	aGroup.imr_multiaddr.s_addr = inet_addr(MULTICAST_GROUP);
+	aGroup.imr_interface.s_addr = htonl(INADDR_ANY);
+	if (setsockopt(aSocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &aGroup, sizeof(aGroup)) < 0)
+	{
+		ORWELL_LOG_ERROR("Failed to join multicast group (" << MULTICAST_GROUP << ")");
 		return 255;
 	}
 
