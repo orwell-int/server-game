@@ -85,8 +85,8 @@ public :
 	
 	/// get property <property> of game
 	virtual void getGame(
-				std::string const & iProperty,
-				std::string & oValue) = 0;
+			std::string const & iProperty,
+			std::string & oValue) = 0;
 
 };
 }
