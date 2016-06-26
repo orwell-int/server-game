@@ -403,7 +403,7 @@ void Game::stopIfGameIsFinished()
 	uint64_t aSecondsLeft(getSecondsLeft());
 	if (aSecondsLeft <= 0)
 	{
-		ORWELL_LOG_INFO("stop ; game duration " << m_time - m_startTime);
+		ORWELL_LOG_INFO("stop ; excessive time spent " << aSecondsLeft);
 		stop();
 	}
 	else
