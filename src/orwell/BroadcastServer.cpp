@@ -13,6 +13,7 @@
 #include "orwell/support/GlobalLogger.hpp"
 
 #define UDP_MESSAGE_LIMIT 512
+#define MULTICAST_GROUP "225.0.0.42"
 
 namespace orwell
 {
@@ -37,6 +38,7 @@ void BroadcastServer::runBroadcastReceiver()
 	int aBsdSocket;
 	struct sockaddr_in aBroadcastServerAddress;
 	struct sockaddr_in aClientAddress;
+	struct ip_mreq aGroup;
 	char aMessageBuffer[UDP_MESSAGE_LIMIT];
 	unsigned int aClientLength = sizeof(aClientAddress);
 
@@ -51,6 +53,7 @@ void BroadcastServer::runBroadcastReceiver()
 	// Just to be sure, init the two structs to zeroes.
 	bzero(&aBroadcastServerAddress, sizeof(aBroadcastServerAddress));
 	bzero(&aClientAddress, sizeof(aClientAddress));
+	bzero(&aGroup, sizeof(aGroup));
 
 	/* Fill in structure for server's address */
 	aBroadcastServerAddress.sin_family = AF_INET;
@@ -59,7 +62,16 @@ void BroadcastServer::runBroadcastReceiver()
 
 	/* Bind server socket */
 	bind(aBsdSocket, (struct sockaddr *) &aBroadcastServerAddress, sizeof(aBroadcastServerAddress));
-	
+
+	/* use setsockopt() to request that the kernel join a multicast group */
+	aGroup.imr_multiaddr.s_addr = inet_addr(MULTICAST_GROUP);
+	aGroup.imr_interface.s_addr = htonl(INADDR_ANY);
+	if (setsockopt(aBsdSocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &aGroup, sizeof(aGroup)) < 0)
+	{
+		perror("setsockopt");
+		exit(1);
+	}
+
 	/* Set the RCV Timeout */
 	setsockopt(aBsdSocket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 
