@@ -15,21 +15,9 @@
 #include "orwell/com/Receiver.hpp"
 #include "orwell/com/Url.hpp"
 
-#include "orwell/support/GlobalLogger.hpp"
-
 #include "Common.hpp"
 
 bool gOK;
-
-#define ORWELL_ASSERT(Expected, Received, Message) \
-{\
-	if (Expected != Received)\
-	{\
-		ORWELL_LOG_ERROR("expected: " << Expected);\
-		ORWELL_LOG_ERROR(Message);\
-		return;\
-	}\
-}\
 
 static void test_1(orwell::Application & ioApplication)
 {

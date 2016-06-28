@@ -82,6 +82,11 @@ public :
 
 	/// stop game
 	virtual void stopGame() = 0;
+	
+	/// get property <property> of game
+	virtual void getGame(
+			std::string const & iProperty,
+			std::string & oValue) = 0;
 
 };
 }

@@ -115,8 +115,15 @@ bool Game::getIsRunning() const
 
 uint64_t Game::getSecondsLeft() const
 {
-	boost::posix_time::time_duration aEllapsed = m_startTime - m_time;
-	return (m_gameDuration.total_seconds() - aEllapsed.total_seconds());
+	if (m_isRunning)
+	{
+		boost::posix_time::time_duration aEllapsed = m_time - m_startTime;
+		return (m_gameDuration.total_seconds() - aEllapsed.total_seconds());
+	}
+	else
+	{
+		return m_gameDuration.total_seconds();
+	}
 }
 
 void Game::start()
@@ -124,7 +131,7 @@ void Game::start()
 	ORWELL_LOG_DEBUG("Game::start");
 	if (not m_isRunning)
 	{
-		for ( auto const aPair : m_robots )
+		for (auto const aPair : m_robots)
 		{
 			std::shared_ptr< Robot > aRobot = aPair.second;
 			std::stringstream aCommandLine;
@@ -166,7 +173,7 @@ void Game::stop()
 			std::shared_ptr< Robot > aRobot = aPair.second;
 			m_server.sendServerCommand(aRobot->getRobotId(), "stop");
 		}
-		for ( auto const aFileName: m_tmpFiles )
+		for (auto const aFileName: m_tmpFiles)
 		{
 			// This is a bit of a hack to wait for the processes to write in the pid file
 			// (this only happens when exiting very quickly, like in tests)
@@ -393,9 +400,10 @@ void Game::setTime(boost::posix_time::ptime const & iCurrentTime)
 
 void Game::stopIfGameIsFinished()
 {
-	if (m_gameDuration <= m_startTime - m_time)
+	uint64_t aSecondsLeft(getSecondsLeft());
+	if (aSecondsLeft <= 0)
 	{
-		ORWELL_LOG_INFO("stop ; game duration " << m_startTime - m_time);
+		ORWELL_LOG_INFO("stop ; excessive time spent " << aSecondsLeft);
 		stop();
 	}
 	else
@@ -501,4 +509,3 @@ std::vector< orwell::game::Landmark > const & Game::getMapLimits() const
 
 } // game
 } // orwell
-

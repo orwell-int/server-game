@@ -21,9 +21,30 @@
 #  define PATH_SEPARATOR "/"
 #endif
 
+#include "orwell/support/GlobalLogger.hpp"
+
+#define ORWELL_ASSERT(Expected, Received, Message) \
+{\
+	if (Expected != Received)\
+	{\
+		ORWELL_LOG_ERROR("expected: " << Expected);\
+		ORWELL_LOG_ERROR(Message);\
+		return;\
+	}\
+}\
+
+#define ORWELL_ASSERT_TRUE(Condition, Message) \
+{\
+	if (!Condition)\
+	{\
+		ORWELL_LOG_ERROR(Message);\
+		return;\
+	}\
+}\
+
 namespace orwell
 {
-class Application_CommandLineParameters;
+struct Application_CommandLineParameters;
 
 namespace com
 {
@@ -119,6 +140,11 @@ public :
 	MOCK_METHOD0(startGame, void());
 
 	MOCK_METHOD0(stopGame, void());
+
+	MOCK_METHOD2(getGame, void(
+			std::string const & iProperty,
+			std::string & oValue));
+
 };
 
 struct TempFile

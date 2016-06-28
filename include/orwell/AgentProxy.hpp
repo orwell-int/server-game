@@ -40,9 +40,9 @@ public :
 
 	/// get property <property> of team <name>
 	void getTeam(
-				std::string const & iTeamName,
-				std::string const & iProperty,
-				std::string & oValue) override;
+			std::string const & iTeamName,
+			std::string const & iProperty,
+			std::string & oValue) override;
 
 	/// List all the robots present.
 	///
@@ -89,6 +89,12 @@ public :
 
 	/// stop game
 	void stopGame() override;
+
+	/// get property <property> of game
+	void getGame(
+			std::string const & iProperty,
+			std::string & oValue) override;
+
 protected :
 
 private :

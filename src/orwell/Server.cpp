@@ -63,9 +63,9 @@ Server::Server(
 				orwell::com::ConnectionMode::BIND,
 				m_zmqContext,
 				0))
-	, m_game(boost::posix_time::milliseconds(iGameDuration), iRuleset, *this)
+	, m_game(boost::posix_time::seconds(iGameDuration), iRuleset, *this)
 	, m_decider(m_game, m_publisher)
-	, m_ticDuration( boost::posix_time::milliseconds(iTicDuration) )
+	, m_ticDuration(boost::posix_time::milliseconds(iTicDuration))
 	, m_previousTic(boost::posix_time::microsec_clock::local_time())
 	, m_mainLoopRunning(false)
 	, m_forcedStop(false)
@@ -101,7 +101,7 @@ void Server::loopUntilOneMessageIsProcessed()
 		aCurrentTic = boost::posix_time::microsec_clock::local_time();
 		m_game.setTime(aCurrentTic);
 		aDuration = aCurrentTic - m_previousTic;
-		if ( aDuration < m_ticDuration )
+		if (aDuration < m_ticDuration)
 		{
 			if (processMessageIfAvailable())
 			{
