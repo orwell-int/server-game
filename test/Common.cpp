@@ -265,15 +265,16 @@ void TestAgent::reset()
 
 TempFile::TempFile(std::string const & iContent)
 {
-	char aFileName[L_tmpnam];
-	tmpnam(aFileName);
-	FILE * aFile = fopen(aFileName, "w");
-	if (fputs(iContent.c_str(), aFile) < 0)
+	char aTempName [] = "/tmp/test-file.XXXXXX";
+	int aFileDescriptor = mkstemp(aTempName);
+	if (-1 == aFileDescriptor)
 	{
 		std::cerr << "Temporary file not created properly." << std::endl;
+		abort();
 	}
-	fclose(aFile);
-	m_fileName = std::string(aFileName);
+	write(aFileDescriptor, iContent.c_str(), iContent.size());
+	close(aFileDescriptor);
+	m_fileName = std::string(aTempName);
 }
 
 TempFile::~TempFile()

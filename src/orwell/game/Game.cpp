@@ -140,8 +140,16 @@ void Game::start()
 				ORWELL_LOG_WARN("Robot " << aRobot->getName() << " has wrong connection parameters : url=" << aRobot->getVideoUrl());
 				continue;
 			}
-			char * aTempName = tmpnam(nullptr);
-			std::ofstream(aTempName).close();
+			char aTempName [] = "/tmp/video-forward.pid.XXXXXX";
+			int aFileDescriptor = mkstemp(aTempName);
+			if (-1 == aFileDescriptor)
+			{
+				ORWELL_LOG_ERROR("Unable to create temporary file (" << aTempName << ") for robot with id " << aPair.first);
+				m_isRunning = true;
+				stop();
+				abort();
+			}
+			close(aFileDescriptor);
 
 			aCommandLine << " cd server-web && make start ARGS='-u \"" <<
 				aRobot->getVideoUrl() <<
