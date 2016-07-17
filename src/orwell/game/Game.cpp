@@ -134,34 +134,37 @@ void Game::start()
 		for (auto const aPair : m_robots)
 		{
 			std::shared_ptr< Robot > aRobot = aPair.second;
-			std::stringstream aCommandLine;
-			if (aRobot->getVideoUrl().empty())
+			if (aRobot->getVideoUrl().find("nc:") != 0)
 			{
-				ORWELL_LOG_WARN("Robot " << aRobot->getName() << " has wrong connection parameters : url=" << aRobot->getVideoUrl());
-				continue;
-			}
-			char aTempName [] = "/tmp/video-forward.pid.XXXXXX";
-			int aFileDescriptor = mkstemp(aTempName);
-			if (-1 == aFileDescriptor)
-			{
-				ORWELL_LOG_ERROR("Unable to create temporary file (" << aTempName << ") for robot with id " << aPair.first);
-				m_isRunning = true;
-				stop();
-				abort();
-			}
-			close(aFileDescriptor);
+				std::stringstream aCommandLine;
+				if (aRobot->getVideoUrl().empty())
+				{
+					ORWELL_LOG_WARN("Robot " << aRobot->getName() << " has wrong connection parameters : url=" << aRobot->getVideoUrl());
+					continue;
+				}
+				char aTempName [] = "/tmp/video-forward.pid.XXXXXX";
+				int aFileDescriptor = mkstemp(aTempName);
+				if (-1 == aFileDescriptor)
+				{
+					ORWELL_LOG_ERROR("Unable to create temporary file (" << aTempName << ") for robot with id " << aPair.first);
+					m_isRunning = true;
+					stop();
+					abort();
+				}
+				close(aFileDescriptor);
 
-			aCommandLine << " cd server-web && make start ARGS='-u \"" <<
-				aRobot->getVideoUrl() <<
-				"\" -p " << aRobot->getVideoRetransmissionPort() <<
-				" -l " <<  aRobot->getServerCommandPort() <<
-				" --pid-file " << aTempName << "'";
-			ORWELL_LOG_INFO("new tmp file : " << aTempName);
-			ORWELL_LOG_DEBUG("command line : " << aCommandLine.str());
-			int aCode = system(aCommandLine.str().c_str());
-			ORWELL_LOG_INFO("code at creation of webserver: " << aCode);
+				aCommandLine << " cd server-web && make start ARGS='-u \"" <<
+					aRobot->getVideoUrl() <<
+					"\" -p " << aRobot->getVideoRetransmissionPort() <<
+					" -l " <<  aRobot->getServerCommandPort() <<
+					" --pid-file " << aTempName << "'";
+				ORWELL_LOG_INFO("new tmp file : " << aTempName);
+				ORWELL_LOG_DEBUG("command line : " << aCommandLine.str());
+				int aCode = system(aCommandLine.str().c_str());
+				ORWELL_LOG_INFO("code at creation of webserver: " << aCode);
 
-			m_tmpFiles.push_back(aTempName);
+				m_tmpFiles.push_back(aTempName);
+			}
 
 			m_server.addServerCommandSocket(aRobot->getRobotId(), aRobot->getServerCommandPort());
 		}
