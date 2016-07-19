@@ -69,7 +69,7 @@ void ProcessHello::execute()
 					size_t aAddressIndex = aAvailableRobot->getVideoUrl().find(":");
 					size_t aPortIndex = aAvailableRobot->getVideoUrl().find(":", aAddressIndex + 1);
 					std::string const aAddress = aAvailableRobot->getVideoUrl().substr(
-							aAddressIndex + 1, aPortIndex - aAddressIndex - 2);
+							aAddressIndex + 1, aPortIndex - aAddressIndex - 1);
 					std::string aPortStr = aAvailableRobot->getVideoUrl().substr(aPortIndex + 1);
 					ORWELL_LOG_INFO("aAddress = " << aAddress << " ; aPortStr = " << aPortStr);
 					uint16_t aPort = boost::lexical_cast< uint16_t >(aPortStr);
