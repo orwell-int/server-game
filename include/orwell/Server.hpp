@@ -78,6 +78,8 @@ public:
 			std::string const & iRobotId,
 			std::string & oMessage);
 
+	zmq::context_t & getContext();
+	zmq::context_t const & getContext() const;
 private:
 	zmq::context_t m_zmqContext;
 	orwell::IAgentProxy & m_agentProxy;

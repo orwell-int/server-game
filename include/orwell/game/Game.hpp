@@ -40,6 +40,7 @@ public:
 //	std::shared_ptr< com::Sender > getPublisher();
 
 	std::shared_ptr<Robot> accessRobot(std::string const & iRobotName);
+	std::shared_ptr<Robot> accessRobotById(std::string const & iRobotId);
 	bool getHasRobotById(std::string const & iRobotId) const;
 	std::map<std::string, std::shared_ptr<Robot> > const & getRobots() const;
 
@@ -120,8 +121,6 @@ public:
 	///  True if and only if the robot was found and removed.
 	bool removeRobot(std::string const & iName);
 
-	void fire(std::string const & iRobotId);
-
 	/// Perform actions that need to be performed every tic
 	void step();
 
@@ -179,8 +178,6 @@ private:
 	std::map<std::string, std::unique_ptr<Contact> > m_contacts;
 
 	Server & m_server;
-	/// robot ids for which an image has been requested
-	std::set< std::string > m_pendingImage;
 
 	boost::optional< std::string > m_winner;
 

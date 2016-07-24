@@ -5,6 +5,10 @@
 #include <string>
 #include <memory>
 
+#include <zmq.hpp>
+
+#include "orwell/com/Socket.hpp"
+
 namespace orwell
 {
 
@@ -54,6 +58,12 @@ public:
 
 	bool const getIsAvailable() const;
 
+	void fire();
+	void stop();
+
+	void readImage();
+
+	void startVideo();
 //	void fillRobotStateMessage( messages::RobotState & oMessage );
 
 private:
@@ -65,6 +75,12 @@ private:
 	uint16_t m_serverCommandPort; // the port used to give instructions to the retransmitter.
 	bool m_hasRealRobot;
 	std::weak_ptr< Player > m_player;
+	zmq::context_t m_zmqContext;
+	orwell::com::Socket m_serverCommandSocket;
+	/// true if and only if the robot is waiting for an answer to a capture
+	/// command that will contain an image
+	bool m_pendingImage;
+	std::string m_tempFile;
 };
 
 }} //end namespace

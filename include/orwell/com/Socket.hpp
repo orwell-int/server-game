@@ -58,9 +58,9 @@ public :
 
 	bool receive(RawMessage & oMessage);
 
-	void sendString(std::string const & iMessage);
+	void sendString(std::string const & iMessage) const;
 
-	void send(RawMessage const & iMessage);
+	void send(RawMessage const & iMessage) const;
 
 	std::string const & getUrl() const;
 

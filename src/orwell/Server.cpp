@@ -217,5 +217,15 @@ bool Server::receiveCommandResponse(
 	return m_serverCommandSockets[iRobotId]->receiveString(oMessage, false);
 }
 
+zmq::context_t & Server::getContext()
+{
+	return m_zmqContext;
+}
+
+zmq::context_t const & Server::getContext() const
+{
+	return m_zmqContext;
+}
+
 }
 

@@ -98,7 +98,7 @@ bool Socket::receive(RawMessage & oMessage)
 	return aReceived;
 }
 
-void Socket::sendString(std::string const & iMessage)
+void Socket::sendString(std::string const & iMessage) const
 {
 	zmq::message_t aZmqMessage(iMessage.size());
 	memcpy((void *) aZmqMessage.data(), iMessage.c_str(), iMessage.size());
@@ -114,7 +114,7 @@ void Socket::sendString(std::string const & iMessage)
 	}
 }
 
-void Socket::send(RawMessage const & iMessage)
+void Socket::send(RawMessage const & iMessage) const
 {
 	string aMessage;
 	aMessage += iMessage._routingId;
