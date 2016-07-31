@@ -12,20 +12,25 @@
 
 #include "orwell/com/ConnectionMode.hpp"
 #include "orwell/support/GlobalLogger.hpp"
+#include "orwell/support/ISystemProxy.hpp"
 
 
 using namespace std;
 
-namespace orwell {
-namespace game {
+namespace orwell
+{
+namespace game
+{
 
 Robot::Robot(
+		support::ISystemProxy const & iSystemProxy,
 		string const & iName,
 		std::string const & iRobotId,
 		Team & iTeam,
 		uint16_t const & iVideoRetransmissionPort,
 		uint16_t const & iServerCommandPort)
-	: m_name(iName)
+	: m_systemProxy(iSystemProxy)
+	, m_name(iName)
 	, m_robotId(iRobotId)
 	, m_team(iTeam)
 	, m_videoRetransmissionPort(iVideoRetransmissionPort)
@@ -216,5 +221,4 @@ void Robot::startVideo()
 //}
 
 }
-} // namespaces
-
+}

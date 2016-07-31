@@ -14,6 +14,7 @@
 #include <zmq.hpp>
 
 #include "orwell/support/GlobalLogger.hpp"
+#include "orwell/support/ISystemProxy.hpp"
 #include "orwell/game/Robot.hpp"
 #include "orwell/game/Player.hpp"
 #include "orwell/game/Contact.hpp"
@@ -35,10 +36,12 @@ namespace game
 {
 
 Game::Game(
+		support::ISystemProxy const & iSystemProxy,
 		boost::posix_time::time_duration const & iGameDuration,
 		Ruleset const & iRuleset,
 		Server & ioServer)
-	: m_isRunning(false)
+	: m_systemProxy(iSystemProxy)
+	, m_isRunning(false)
 	, m_gameDuration(iGameDuration)
 	, m_server(ioServer)
 	, m_ruleset(iRuleset)
@@ -234,6 +237,7 @@ bool Game::addRobot(
 		if (m_teams.end() != aTeamIterator)
 		{
 			shared_ptr<Robot> aRobot = make_shared<Robot>(
+					m_systemProxy,
 					iName,
 					iRobotId,
 					aTeamIterator->second,

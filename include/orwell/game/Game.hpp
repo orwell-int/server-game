@@ -17,10 +17,16 @@ namespace orwell
 {
 class Server;
 
+namespace support
+{
+class ISystemProxy;
+} // namespace support
+
 namespace com
 {
 class Sender;
 } // com
+
 namespace game
 {
 class Robot;
@@ -32,6 +38,7 @@ class Game
 {
 public:
 	Game(
+			support::ISystemProxy const & iSystemProxy,
 			boost::posix_time::time_duration const & iGameDuration,
 			Ruleset const & iRuleset,
 			Server & ioServer);
@@ -154,6 +161,7 @@ private:
 	/// Loop over the different contacts and give them the new time.
 	void handleContacts();
 
+	support::ISystemProxy const & m_systemProxy;
 	/// True if and only if the game is running
 	bool m_isRunning;
 	/// Each connected robot has a robotContext in this map. The key is the robot name.

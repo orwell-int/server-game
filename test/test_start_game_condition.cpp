@@ -9,6 +9,7 @@
 #include <sys/wait.h>
 
 #include "orwell/support/GlobalLogger.hpp"
+#include "orwell/support/ISystemProxy.hpp"
 #include "orwell/com/Sender.hpp"
 #include "orwell/com/Receiver.hpp"
 #include "orwell/Server.hpp"
@@ -111,6 +112,7 @@ static void const server(
 
 int main()
 {
+	using ::testing::_;
 	orwell::support::GlobalLogger::Create(
 			"test_start_game_condition",
 			"test_start_game_condition.log",
@@ -119,8 +121,12 @@ int main()
 	FakeAgentProxy aFakeAgentProxy;
 	orwell::game::Ruleset aRuleset;
 	aRuleset.m_scoreToWin = 1;
+	FakeSystemProxy aFakeSystemProxy;
+	EXPECT_CALL(aFakeSystemProxy, mkstemp(_)).Times(0);
+	EXPECT_CALL(aFakeSystemProxy, system(_)).Times(0);
 	std::shared_ptr< orwell::Server > aServer =
 		std::make_shared< orwell::Server >(
+			aFakeSystemProxy,
 			aFakeAgentProxy,
 			aRuleset,
 			"tcp://*:9003",

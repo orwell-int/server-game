@@ -12,6 +12,11 @@
 namespace orwell
 {
 
+namespace support
+{
+class ISystemProxy;
+} // namespace support
+
 namespace game
 {
 class Player;
@@ -22,6 +27,7 @@ class Robot
 {
 public:
 	Robot(
+			support::ISystemProxy const & iSystemProxy,
 			std::string const & iName,
 			std::string const & iRobotId,
 			Team & iTeam,
@@ -47,12 +53,6 @@ public:
 
 	uint16_t getServerCommandPort() const;
 
-//	void setVideoAddress(std::string const & iVideoAddress);
-//	std::string const & getVideoAddress() const;
-//
-//	void setVideoPort(uint32_t const iVideoPort);
-//	uint32_t getVideoPort() const;
-
 	std::string const & getName() const;
 	std::string const & getRobotId() const;
 
@@ -67,6 +67,7 @@ public:
 //	void fillRobotStateMessage( messages::RobotState & oMessage );
 
 private:
+	support::ISystemProxy const & m_systemProxy;
 	std::string m_name;
 	std::string m_robotId;
 	Team & m_team;
@@ -83,5 +84,5 @@ private:
 	std::string m_tempFile;
 };
 
-}} //end namespace
-
+} // namespace game
+} // namespace orwell

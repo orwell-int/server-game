@@ -11,6 +11,7 @@
 #include <zmq.hpp>
 
 #include "orwell/IAgentProxy.hpp"
+#include "orwell/support/ISystemProxy.hpp"
 #include "orwell/com/Socket.hpp"
 
 #include "gmock/gmock.h"
@@ -172,7 +173,15 @@ private:
 	orwell::com::Socket m_agentSocket;
 };
 
+
+class FakeSystemProxy : public orwell::support::ISystemProxy
+{
+public :
+	MOCK_CONST_METHOD1(mkstemp, void(char * ioTemplate));
+
+	MOCK_CONST_METHOD1(system, int(char const * iCommand));
+};
+
 std::ostream & operator<<(
 		std::ostream & ioOstream,
 		Arguments const & iArguments);
-

@@ -17,6 +17,11 @@
 namespace orwell
 {
 
+namespace support
+{
+class ISystemProxy;
+} // namespace support
+
 class Server;
 class BroadcastServer;
 class AgentProxy;
@@ -87,7 +92,7 @@ protected :
 	orwell::Server * accessServer(bool const iUnsafe = false);
 
 private:
-	Application();
+	Application(support::ISystemProxy const & iSystemProxy);
 	Application(Application const & iRight);
 	Application & operator=(Application const & iRight);
 
@@ -113,9 +118,10 @@ private:
 	///takes the last port of m_availableVideoPorts, returns it and put it in m_takenVideoPorts
 	uint16_t popPort();
 
-	// Instance of the server running
+	support::ISystemProxy const & m_systemProxy;
+	/// Instance of the server running
 	orwell::Server * m_server;
-	// Broadcast server for UDP discovery
+	/// Broadcast server for UDP discovery
 	orwell::BroadcastServer * m_broadcastServer;
 
 	enum class State

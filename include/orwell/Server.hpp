@@ -35,6 +35,7 @@ public:
 	/// \param iGameDuration
 	///  Duration of the game in seconds.
 	Server(
+			support::ISystemProxy const & iSystemProxy,
 			orwell::IAgentProxy & ioAgentProxy,
 			game::Ruleset const & iRuleset,
 			std::string const & iAgentUrl =  "tcp://*:9003",
