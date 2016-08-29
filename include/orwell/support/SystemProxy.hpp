@@ -9,7 +9,9 @@ namespace support
 class SystemProxy : public ISystemProxy
 {
 public :
-	void mkstemp(char * ioTemplate) const override;
+	int mkstemp(char * ioTemplate) const override;
+
+	int close(int const iFileDescriptor) const override;
 
 	int system(char const * iCommand) const override;
 };

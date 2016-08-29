@@ -177,7 +177,9 @@ private:
 class FakeSystemProxy : public orwell::support::ISystemProxy
 {
 public :
-	MOCK_CONST_METHOD1(mkstemp, void(char * ioTemplate));
+	MOCK_CONST_METHOD1(mkstemp, int(char * ioTemplate));
+
+	MOCK_CONST_METHOD1(close, int(int const iFileDescriptor));
 
 	MOCK_CONST_METHOD1(system, int(char const * iCommand));
 };

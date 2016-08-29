@@ -9,7 +9,9 @@ class ISystemProxy
 public :
 	virtual ~ISystemProxy();
 
-	virtual void mkstemp(char * ioTemplate) const = 0;
+	virtual int mkstemp(char * ioTemplate) const = 0;
+
+	virtual int close(int const iFileDescriptor) const = 0;
 
 	virtual int system(char const * iCommand) const = 0;
 };

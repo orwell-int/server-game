@@ -179,22 +179,26 @@ void Robot::readImage()
 
 void Robot::startVideo()
 {
-	if (m_videoUrl.find("nc:") != 0)
+	if (m_videoUrl.empty())
+	{
+		ORWELL_LOG_WARN("Robot " << m_name << " has wrong connection parameters : url='" << m_videoUrl << "'");
+		return;
+	}
+	if (m_videoUrl.find("nc:") == 0)
+	{
+		ORWELL_LOG_INFO("No need to start the video from the game server with nc.");
+	}
+	else
 	{
 		std::stringstream aCommandLine;
-		if (m_videoUrl.empty())
-		{
-			ORWELL_LOG_WARN("Robot " << m_name << " has wrong connection parameters : url=" << m_videoUrl);
-			return;
-		}
 		char aTempName [] = "/tmp/video-forward.pid.XXXXXX";
-		int aFileDescriptor = mkstemp(aTempName);
+		int aFileDescriptor = m_systemProxy.mkstemp(aTempName);
 		if (-1 == aFileDescriptor)
 		{
 			ORWELL_LOG_ERROR("Unable to create temporary file (" << aTempName << ") for robot with id " << m_robotId);
 			throw std::system_error(std::error_code(1, std::system_category()));
 		}
-		close(aFileDescriptor);
+		m_systemProxy.close(aFileDescriptor);
 
 		aCommandLine << " cd server-web && make start ARGS='-u \"" <<
 			m_videoUrl <<
@@ -203,7 +207,7 @@ void Robot::startVideo()
 			" --pid-file " << aTempName << "'";
 		ORWELL_LOG_INFO("new tmp file : " << aTempName);
 		ORWELL_LOG_DEBUG("command line : " << aCommandLine.str());
-		int aCode = system(aCommandLine.str().c_str());
+		int aCode = m_systemProxy.system(aCommandLine.str().c_str());
 		ORWELL_LOG_INFO("code at creation of webserver: " << aCode);
 
 		m_tempFile = aTempName;
