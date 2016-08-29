@@ -6,3 +6,6 @@
 	path = server-web
 	url = https://github.com/orwell-int/server-web
 	ignore = untracked
+[submodule "third_party/googletest"]
+	path = third_party/googletest
+	url = https://github.com/google/googletest.git
