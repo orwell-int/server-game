@@ -35,6 +35,7 @@ public:
 	/// \param iGameDuration
 	///  Duration of the game in seconds.
 	Server(
+			support::ISystemProxy const & iSystemProxy,
 			orwell::IAgentProxy & ioAgentProxy,
 			game::Ruleset const & iRuleset,
 			std::string const & iAgentUrl =  "tcp://*:9003",
@@ -78,6 +79,8 @@ public:
 			std::string const & iRobotId,
 			std::string & oMessage);
 
+	zmq::context_t & getContext();
+	zmq::context_t const & getContext() const;
 private:
 	zmq::context_t m_zmqContext;
 	orwell::IAgentProxy & m_agentProxy;

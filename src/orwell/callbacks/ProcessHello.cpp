@@ -64,8 +64,23 @@ void ProcessHello::execute()
 				aWelcome.set_team("team_red"); //currently stupidly hard coded
 				aWelcome.set_id(aAvailableRobot->getRobotId());
 
-				aWelcome.set_video_address("localhost");
-				aWelcome.set_video_port(aAvailableRobot->getVideoRetransmissionPort());
+				if (aAvailableRobot->getVideoUrl().find("nc:") == 0)
+				{
+					size_t aAddressIndex = aAvailableRobot->getVideoUrl().find(":");
+					size_t aPortIndex = aAvailableRobot->getVideoUrl().find(":", aAddressIndex + 1);
+					std::string const aAddress = aAvailableRobot->getVideoUrl().substr(
+							aAddressIndex + 1, aPortIndex - aAddressIndex - 1);
+					std::string aPortStr = aAvailableRobot->getVideoUrl().substr(aPortIndex + 1);
+					ORWELL_LOG_INFO("aAddress = " << aAddress << " ; aPortStr = " << aPortStr);
+					uint16_t aPort = boost::lexical_cast< uint16_t >(aPortStr);
+					aWelcome.set_video_address(aAddress);
+					aWelcome.set_video_port(aPort);
+				}
+				else
+				{
+					aWelcome.set_video_address("localhost");
+					aWelcome.set_video_port(aAvailableRobot->getVideoRetransmissionPort());
+				}
 
 				RawMessage aReply(aClientID, "Welcome", aWelcome.SerializeAsString());
 				m_publisher->send(aReply);

@@ -17,10 +17,16 @@ namespace orwell
 {
 class Server;
 
+namespace support
+{
+class ISystemProxy;
+} // namespace support
+
 namespace com
 {
 class Sender;
 } // com
+
 namespace game
 {
 class Robot;
@@ -32,6 +38,7 @@ class Game
 {
 public:
 	Game(
+			support::ISystemProxy const & iSystemProxy,
 			boost::posix_time::time_duration const & iGameDuration,
 			Ruleset const & iRuleset,
 			Server & ioServer);
@@ -40,6 +47,7 @@ public:
 //	std::shared_ptr< com::Sender > getPublisher();
 
 	std::shared_ptr<Robot> accessRobot(std::string const & iRobotName);
+	std::shared_ptr<Robot> accessRobotById(std::string const & iRobotId);
 	bool getHasRobotById(std::string const & iRobotId) const;
 	std::map<std::string, std::shared_ptr<Robot> > const & getRobots() const;
 
@@ -120,8 +128,6 @@ public:
 	///  True if and only if the robot was found and removed.
 	bool removeRobot(std::string const & iName);
 
-	void fire(std::string const & iRobotId);
-
 	/// Perform actions that need to be performed every tic
 	void step();
 
@@ -155,6 +161,7 @@ private:
 	/// Loop over the different contacts and give them the new time.
 	void handleContacts();
 
+	support::ISystemProxy const & m_systemProxy;
 	/// True if and only if the game is running
 	bool m_isRunning;
 	/// Each connected robot has a robotContext in this map. The key is the robot name.
@@ -179,8 +186,6 @@ private:
 	std::map<std::string, std::unique_ptr<Contact> > m_contacts;
 
 	Server & m_server;
-	/// robot ids for which an image has been requested
-	std::set< std::string > m_pendingImage;
 
 	boost::optional< std::string > m_winner;
 

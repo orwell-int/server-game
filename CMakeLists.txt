@@ -97,6 +97,10 @@ find_package(ZMQ REQUIRED)
 find_package(LOG4CXX_LIBRARIES REQUIRED)
 find_package(OpenCV REQUIRED)
 
+# googletest (+googlemock)
+enable_testing()
+add_subdirectory(third_party/googletest/)
+
 # Helpful debug stuff?
 #message ("-- cmake current bin dir "${CMAKE_CURRENT_BINARY_DIR})
 #message ("-- cmake zmq bin dir "${ZMQ_INCLUDE_DIRS})

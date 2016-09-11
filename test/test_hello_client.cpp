@@ -113,12 +113,17 @@ static void const server(std::shared_ptr< orwell::Server > ioServer)
 
 int main()
 {
+	using ::testing::_;
 	orwell::support::GlobalLogger::Create("test_hello_client", "test_hello_client.log");
 	log4cxx::NDC ndc("test_hello_client");
 	FakeAgentProxy aFakeAgentProxy;
 	orwell::game::Ruleset aRuleset;
+	FakeSystemProxy aFakeSystemProxy;
+	EXPECT_CALL(aFakeSystemProxy, mkstemp(_)).Times(0);
+	EXPECT_CALL(aFakeSystemProxy, system(_)).Times(0);
 	std::shared_ptr< orwell::Server > aServer =
 		std::make_shared< orwell::Server >(
+			aFakeSystemProxy,
 			aFakeAgentProxy,
 			aRuleset,
 			"tcp://*:9003",

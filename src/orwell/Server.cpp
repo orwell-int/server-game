@@ -36,6 +36,7 @@ namespace orwell
 {
 
 Server::Server(
+		support::ISystemProxy const & iSystemProxy,
 		orwell::IAgentProxy & ioAgentProxy,
 		game::Ruleset const & iRuleset,
 		std::string const & iAgentUrl,
@@ -63,7 +64,7 @@ Server::Server(
 				orwell::com::ConnectionMode::BIND,
 				m_zmqContext,
 				0))
-	, m_game(boost::posix_time::seconds(iGameDuration), iRuleset, *this)
+	, m_game(iSystemProxy, boost::posix_time::seconds(iGameDuration), iRuleset, *this)
 	, m_decider(m_game, m_publisher)
 	, m_ticDuration(boost::posix_time::milliseconds(iTicDuration))
 	, m_previousTic(boost::posix_time::microsec_clock::local_time())
@@ -215,6 +216,16 @@ bool Server::receiveCommandResponse(
 		std::string & oMessage)
 {
 	return m_serverCommandSockets[iRobotId]->receiveString(oMessage, false);
+}
+
+zmq::context_t & Server::getContext()
+{
+	return m_zmqContext;
+}
+
+zmq::context_t const & Server::getContext() const
+{
+	return m_zmqContext;
 }
 
 }

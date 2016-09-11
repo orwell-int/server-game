@@ -468,8 +468,8 @@ void AgentProxy::setRobot(
 		std::string const & iProperty,
 		std::string const & iValue)
 {
-	ORWELL_LOG_INFO("set robot " << iRobotName <<
-		" " << iProperty << " " << iValue);
+	ORWELL_LOG_INFO("set robot '" << iRobotName <<
+		"' '" << iProperty << "' '" << iValue << "'");
 	try
 	{
 		std::shared_ptr< orwell::game::Robot > aRobot =

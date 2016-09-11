@@ -6,6 +6,7 @@
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/com/Sender.hpp"
 #include "orwell/game/Game.hpp"
+#include "orwell/game/Robot.hpp"
 #include "orwell/com/RawMessage.hpp"
 
 using orwell::messages::Input;
@@ -39,7 +40,13 @@ void ProcessInput::execute()
 		if (anInputMsg.fire().weapon1())
 		{
 			ORWELL_LOG_DEBUG("FIRE");
-			m_game->fire(aDestination);
+			if (not m_game->getHasRobotById(aDestination))
+			{
+				ORWELL_LOG_WARN(
+					"Wrong destination for message ; robot ID unknown: '" << aDestination << "'");
+				return;
+			}
+			m_game->accessRobotById(aDestination)->fire();
 		}
 		ORWELL_LOG_DEBUG("Forward Input message");
 		m_publisher->send(aReply);

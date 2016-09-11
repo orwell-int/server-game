@@ -23,14 +23,6 @@ before_install:
     - tar xzf lcov-1.10.tar.gz
     - cd lcov-1.10 && make && sudo make install
     - cd ..
-    - wget -nc --no-check-certificate https://googlemock.googlecode.com/files/gmock-1.7.0.zip
-    - unzip gmock-1.7.0.zip
-    - cd gmock-1.7.0
-    - cmake -DCMAKE_BUILD_TYPE=RELEASE
-    - make
-    - export GTEST_ROOT=$(pwd)/gtest/
-    - export GMOCK_ROOT=$(pwd)/
-    - cd ..
     - cd ..
 
 script:

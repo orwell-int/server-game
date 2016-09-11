@@ -3,6 +3,7 @@
 #include "orwell/Server.hpp"
 #include "orwell/BroadcastServer.hpp"
 #include "orwell/support/GlobalLogger.hpp"
+#include "orwell/support/SystemProxy.hpp"
 #include "orwell/game/Item.hpp"
 
 #include <boost/algorithm/string.hpp>
@@ -29,12 +30,14 @@ namespace orwell
 
 Application & Application::GetInstance()
 {
-	static Application m_application;
+	static support::SystemProxy m_systemProxy;
+	static Application m_application(m_systemProxy);
 	return m_application;
 }
 
-Application::Application()
-	: m_server(nullptr)
+Application::Application(support::ISystemProxy const & iSystemProxy)
+	: m_systemProxy(iSystemProxy)
+	, m_server(nullptr)
 	, m_broadcastServer(nullptr)
 	, m_state(State::CREATED)
 	, m_agentProxy(*this)
@@ -584,6 +587,7 @@ void Application::initServer(Parameters const & iParam)
 	std::string aPullerAddress = "tcp://*:" + boost::lexical_cast<std::string>(*iParam.m_commandLineParameters.m_pullerPort);
 
 	m_server = new orwell::Server(
+			m_systemProxy,
 			m_agentProxy,
 			iParam.m_ruleset,
 			aAgentAddress,

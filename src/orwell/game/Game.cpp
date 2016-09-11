@@ -4,16 +4,17 @@
 
 #include <stdlib.h>
 #include <sstream>
-#include <fstream>
-#include <signal.h>
 #include <iostream>
 #include <utility>
+#include <exception>
+#include <system_error>
 
 #include <boost/lexical_cast.hpp>
 
 #include <zmq.hpp>
 
 #include "orwell/support/GlobalLogger.hpp"
+#include "orwell/support/ISystemProxy.hpp"
 #include "orwell/game/Robot.hpp"
 #include "orwell/game/Player.hpp"
 #include "orwell/game/Contact.hpp"
@@ -35,10 +36,12 @@ namespace game
 {
 
 Game::Game(
+		support::ISystemProxy const & iSystemProxy,
 		boost::posix_time::time_duration const & iGameDuration,
 		Ruleset const & iRuleset,
 		Server & ioServer)
-	: m_isRunning(false)
+	: m_systemProxy(iSystemProxy)
+	, m_isRunning(false)
 	, m_gameDuration(iGameDuration)
 	, m_server(ioServer)
 	, m_ruleset(iRuleset)
@@ -54,6 +57,11 @@ Game::~Game()
 shared_ptr<Robot> Game::accessRobot(string const & iRobotName)
 {
 	return m_robots.at(iRobotName);
+}
+
+shared_ptr< Robot > Game::accessRobotById(string const & iRobotName)
+{
+	return m_robotsById.at(iRobotName);
 }
 
 bool Game::getHasRobotById(std::string const & iRobotId) const
@@ -134,36 +142,16 @@ void Game::start()
 		for (auto const aPair : m_robots)
 		{
 			std::shared_ptr< Robot > aRobot = aPair.second;
-			std::stringstream aCommandLine;
-			if (aRobot->getVideoUrl().empty())
+			try
 			{
-				ORWELL_LOG_WARN("Robot " << aRobot->getName() << " has wrong connection parameters : url=" << aRobot->getVideoUrl());
-				continue;
+				aRobot->startVideo();
 			}
-			char aTempName [] = "/tmp/video-forward.pid.XXXXXX";
-			int aFileDescriptor = mkstemp(aTempName);
-			if (-1 == aFileDescriptor)
+			catch (std::system_error const & aError)
 			{
-				ORWELL_LOG_ERROR("Unable to create temporary file (" << aTempName << ") for robot with id " << aPair.first);
 				m_isRunning = true;
 				stop();
 				abort();
 			}
-			close(aFileDescriptor);
-
-			aCommandLine << " cd server-web && make start ARGS='-u \"" <<
-				aRobot->getVideoUrl() <<
-				"\" -p " << aRobot->getVideoRetransmissionPort() <<
-				" -l " <<  aRobot->getServerCommandPort() <<
-				" --pid-file " << aTempName << "'";
-			ORWELL_LOG_INFO("new tmp file : " << aTempName);
-			ORWELL_LOG_DEBUG("command line : " << aCommandLine.str());
-			int aCode = system(aCommandLine.str().c_str());
-			ORWELL_LOG_INFO("code at creation of webserver: " << aCode);
-
-			m_tmpFiles.push_back(aTempName);
-
-			m_server.addServerCommandSocket(aRobot->getRobotId(), aRobot->getServerCommandPort());
 		}
 		ORWELL_LOG_INFO("game starts");
 		m_startTime = boost::posix_time::microsec_clock::local_time();
@@ -179,38 +167,7 @@ void Game::stop()
 		for (auto const aPair : m_robots)
 		{
 			std::shared_ptr< Robot > aRobot = aPair.second;
-			m_server.sendServerCommand(aRobot->getRobotId(), "stop");
-		}
-		for (auto const aFileName: m_tmpFiles)
-		{
-			// This is a bit of a hack to wait for the processes to write in the pid file
-			// (this only happens when exiting very quickly, like in tests)
-			size_t aSize;
-			while (true)
-			{
-				 std::ifstream aInput(aFileName, std::ifstream::ate | std::ifstream::binary);
-				 aSize = aInput.tellg();
-				 ORWELL_LOG_DEBUG("pid file size = " << aSize);
-				 if (aSize > 0)
-				 {
-					 break;
-				 }
-				 else
-				 {
-					 usleep(1000 * 50);
-				 }
-			}
-			std::ifstream aFile(aFileName, std::ifstream::in | std::ifstream::binary);
-			int aPid = 0;
-			aFile >> aPid;
-			if (0 != aPid)
-			{
-				kill(aPid, SIGABRT);
-			}
-			else
-			{
-				ORWELL_LOG_ERROR("Could not kill a python web server ; from file " << aFileName);
-			}
+			aRobot->stop();
 		}
 		ORWELL_LOG_INFO( "game stops" );
 		m_isRunning = false;
@@ -280,7 +237,12 @@ bool Game::addRobot(
 		if (m_teams.end() != aTeamIterator)
 		{
 			shared_ptr<Robot> aRobot = make_shared<Robot>(
-					iName, iRobotId, aTeamIterator->second, iVideoRetransmissionPort, iServerCommandPort);
+					m_systemProxy,
+					iName,
+					iRobotId,
+					aTeamIterator->second,
+					iVideoRetransmissionPort,
+					iServerCommandPort);
 			m_robots.insert( pair<string, shared_ptr<Robot> >( iName, aRobot ) );
 			m_robotsById.insert(pair< string, shared_ptr< Robot > >(iRobotId, aRobot));
 			ORWELL_LOG_INFO("new Robot added with name='" << iName << "', " <<
@@ -301,20 +263,6 @@ bool Game::removeRobot(string const & iName)
 		aRemovedRobotSuccess = true;
 	}
 	return aRemovedRobotSuccess;
-}
-
-void Game::fire(std::string const & iRobotId)
-{
-	ORWELL_LOG_DEBUG("Try fire from robot: " << iRobotId);
-	if (m_robotsById.end() != m_robotsById.find(iRobotId))
-	{
-		m_server.sendServerCommand(iRobotId, "capture");
-		m_pendingImage.insert(iRobotId);
-	}
-	else
-	{
-		ORWELL_LOG_INFO("Try to fire from missing robot: " << iRobotId);
-	}
 }
 
 void Game::step()
@@ -468,17 +416,9 @@ std::string Game::getNewRobotId() const
 
 void Game::readImages()
 {
-	std::set< std::string >::iterator aPending = m_pendingImage.begin();
-	while (m_pendingImage.end() != aPending)
+	for (pair<string, std::shared_ptr<Robot>> const & aElemement : m_robots)
 	{
-		std::set< std::string >::iterator aCurrent = aPending++;
-		std::string const & aRobotId = *aCurrent;
-		std::string aImage;
-		if (m_server.receiveCommandResponse(aRobotId, aImage))
-		{
-			m_pendingImage.erase(aCurrent);
-			ORWELL_LOG_INFO("Image received to be processed (FIRE1)");
-		}
+		aElemement.second->readImage();
 	}
 }
 
