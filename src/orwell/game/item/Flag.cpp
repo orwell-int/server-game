@@ -2,7 +2,10 @@
 
 #include <ostream>
 
+#include "MissingFromTheStandard.hpp"
+
 #include "orwell/game/Team.hpp"
+#include "orwell/game/item/FlagEncoder.hpp"
 
 namespace orwell
 {
@@ -33,6 +36,12 @@ Flag::Flag(
 
 Flag::~Flag()
 {
+}
+
+std::unique_ptr< ItemEncoder > Flag::getEncoder() const
+{
+	//return std::unique_ptr< ItemEncoder >(new FlagEncoder(*this));
+	return make_unique< FlagEncoder >(*this);
 }
 
 void Flag::innerCapture(Team & ioTeam)

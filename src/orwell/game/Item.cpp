@@ -22,6 +22,7 @@ Item::Item(
 	: m_name(iName)
 	, m_rfids(iRfids)
 	, m_colour(-1)
+	, m_captureState(CaptureState::PENDING)
 	, m_timeToCapture(iTimeToCapture)
 {
 	std::string aStringRfid;
@@ -68,11 +69,16 @@ int32_t Item::getColour() const
 	return m_colour;
 }
 
+std::string const & Item::getTeam() const
+{
+	return m_owningTeam;
+}
+
 std::shared_ptr<Item> Item::GetItemByRfid(
 		std::string const & iRfid)
 {
 	std::shared_ptr< Item > aFound;
-	std::map<std::string, std::shared_ptr<Item> >::iterator it = s_itemsByRfid.find(iRfid);
+	std::map< std::string, std::shared_ptr< Item > >::iterator it = s_itemsByRfid.find(iRfid);
 	if (it != s_itemsByRfid.end())
 	{
 		aFound = it->second;
@@ -84,11 +90,11 @@ std::shared_ptr<Item> Item::GetItemByRfid(
 	return aFound;
 }
 
-std::shared_ptr<Item> Item::GetItemByColour(
+std::shared_ptr< Item > Item::GetItemByColour(
 		int32_t const iColourCode)
 {
 	std::shared_ptr< Item > aFound;
-	std::map<std::int32_t, std::shared_ptr<Item> >::iterator it = s_itemsByColour.find(iColourCode);
+	std::map< std::int32_t, std::shared_ptr< Item > >::iterator it = s_itemsByColour.find(iColourCode);
 	if (it != s_itemsByColour.end())
 	{
 		aFound = it->second;
@@ -100,7 +106,7 @@ std::shared_ptr<Item> Item::GetItemByColour(
 	return aFound;
 }
 
-std::shared_ptr<Item> Item::CreateItem(
+std::shared_ptr< Item > Item::CreateItem(
 		std::string const & iType,
 		std::string const & iName,
 		std::set< std::string > const & iRfids,
@@ -117,7 +123,7 @@ std::shared_ptr<Item> Item::CreateItem(
 			}
 			else
 			{
-				std::shared_ptr<item::Flag> aNewFlag = std::make_shared<item::Flag>(
+				std::shared_ptr< item::Flag > aNewFlag = std::make_shared< item::Flag >(
 						iName,
 						iColourCode,
 						iRuleset.m_timeToCapture,
@@ -159,12 +165,39 @@ std::string Item::toLogString() const
 	return aLogString.str();
 }
 
+void Item::startCapture(std::string const & iCapturingTeam)
+{
+	m_capturingTeam = iCapturingTeam;
+	m_captureState = CaptureState::STARTED;
+}
+
+void Item::abortCapture()
+{
+	m_captureState = CaptureState::FAILED;
+}
+
+std::string const & Item::getCapturingTeam() const
+{
+	return m_capturingTeam;
+}
+
+CaptureState Item::getCaptureState() const
+{
+	return m_captureState;
+}
+
 void Item::capture(Team & ioTeam)
 {
 	if (ioTeam.getName() != m_owningTeam)
 	{
 		innerCapture(ioTeam);
 		m_owningTeam = ioTeam.getName();
+		m_captureState = CaptureState::SUCCEEDED;
+	}
+	else
+	{
+		// not sure that it should go back to PENDING
+		m_captureState = CaptureState::PENDING;
 	}
 }
 

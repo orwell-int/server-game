@@ -424,7 +424,7 @@ void Game::readImages()
 
 void Game::handleContacts()
 {
-	for(auto & aContactPair : m_contacts)
+	for (auto & aContactPair : m_contacts)
 	{
 		aContactPair.second->step(m_time);
 	}

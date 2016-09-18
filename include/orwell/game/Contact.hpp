@@ -24,11 +24,11 @@ public:
 	StepSignal step(boost::posix_time::ptime const & iCurrentTime) override;
 
 private:
-	std::shared_ptr<Robot> m_robot;
-	std::shared_ptr<Item> m_item;
+	std::shared_ptr< Robot > m_robot;
+	std::shared_ptr< Item > m_item;
 	boost::posix_time::ptime const m_stopTime;
+	bool m_finished;
 };
 
 }
-} //end namespace
-
+}

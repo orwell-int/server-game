@@ -31,6 +31,7 @@ public :
 
 	virtual ~Flag();
 
+	std::unique_ptr< ItemEncoder > getEncoder() const override;
 
 private :
 	uint32_t m_pointsOnCapture;
