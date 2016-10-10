@@ -3,6 +3,8 @@
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/com/RawMessage.hpp"
 #include "orwell/game/Game.hpp"
+#include "orwell/game/Item.hpp"
+#include "orwell/game/ItemEncoder.hpp"
 #include "orwell/game/Landmark.hpp"
 #include "orwell/com/Sender.hpp"
 
@@ -42,7 +44,11 @@ void ProcessTimer::execute()
 		aColour->set_g(aLandmark.getColour().getGreen());
 		aColour->set_b(aLandmark.getColour().getBlue());
 	}
-
+	for (auto const aItem: game::Item::GetAllItems())
+	{
+		messages::Item * aMessageItem = aGameState.add_items();
+		aItem->getEncoder()->encode(*aMessageItem);
+	}
 	if (m_game->getWinner())
 	{
 		aGameState.set_winner(*m_game->getWinner());
@@ -52,5 +58,5 @@ void ProcessTimer::execute()
 	m_publisher->send(aMessage);
 }
 
-}
-}
+} // namespace callbacks
+} // namespace orwell

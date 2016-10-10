@@ -1,7 +1,5 @@
 #include "orwell/game/ItemEncoder.hpp"
 
-#include <stdexcept>
-
 #include "orwell/game/Item.hpp"
 #include "server-game.pb.h"
 
@@ -45,7 +43,8 @@ void ItemEncoder::encode(orwell::messages::Item & ioItem) const
 		}
 		case CaptureState::PENDING:
 		{
-			throw std::logic_error("PENDING should never have to be encoded");
+			// just do not include it
+			break;
 		}
 	}
 }

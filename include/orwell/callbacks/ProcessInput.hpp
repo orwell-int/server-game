@@ -2,9 +2,10 @@
 
 #include "orwell/callbacks/InterfaceProcess.hpp"
 
-namespace orwell {
-
-namespace callbacks {
+namespace orwell
+{
+namespace callbacks
+{
 
 class ProcessInput : public InterfaceProcess
 {
@@ -19,4 +20,5 @@ private:
 
 };
 
-}} //namespaces
+} // namespace callbacks
+} // namespace orwell

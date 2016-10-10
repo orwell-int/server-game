@@ -108,8 +108,9 @@ void ProcessRobotState::execute()
 	for (std::shared_ptr< orwell::game::Item > aItem: aVisitedItems)
 	{
 		PlayerState aPlayerState;
-		Item aPbItem = *aPlayerState.mutable_item();
-		aItem->getEncoder()->encode(aPbItem);
+		Item * aPbItem = aPlayerState.mutable_item();
+		assert(nullptr != aPbItem);
+		aItem->getEncoder()->encode(*aPbItem);
 		RawMessage aMessage(
 				aDestination,
 				"PlayerState",

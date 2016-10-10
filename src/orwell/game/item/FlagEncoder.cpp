@@ -1,6 +1,7 @@
 #include "orwell/game/item/FlagEncoder.hpp"
 
 #include "server-game.pb.h"
+
 #include "orwell/game/item/Flag.hpp"
 
 namespace orwell

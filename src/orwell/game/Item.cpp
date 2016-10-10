@@ -158,6 +158,20 @@ std::shared_ptr< Item > Item::CreateItem(
 	return nullptr;
 }
 
+std::vector< std::shared_ptr< Item > > Item::GetAllItems()
+{
+	std::vector< std::shared_ptr< Item > > aResult;
+	for (auto const & aPair: s_itemsByRfid)
+	{
+		aResult.push_back(aPair.second);
+	}
+	for (auto const & aPair: s_itemsByColour)
+	{
+		aResult.push_back(aPair.second);
+	}
+	return aResult;
+}
+
 std::string Item::toLogString() const
 {
 	std::stringstream aLogString;
