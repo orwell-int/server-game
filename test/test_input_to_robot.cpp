@@ -12,6 +12,7 @@
 #include "controller.pb.h"
 
 #include "orwell/Application.hpp"
+#include "orwell/game/Game.hpp"
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/com/Sender.hpp"
 #include "orwell/com/Receiver.hpp"

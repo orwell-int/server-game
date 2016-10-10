@@ -3,17 +3,13 @@
 #include <memory>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+#include "orwell/IServer.hpp"
+
 #include "orwell/callbacks/ProcessDecider.hpp"
 
 #include "orwell/game/Game.hpp"
 
 #include <zmq.hpp>
-
-
-//namespace zmq
-//{
-//class context_t;
-//} // namespace zmq
 
 namespace orwell
 {
@@ -26,7 +22,7 @@ class Sender;
 
 class IAgentProxy;
 
-class Server
+class Server : public IServer
 {
 public:
 	/// \param iTicDuration
@@ -47,40 +43,20 @@ public:
 	~Server();
 
 	/// processMessageIfAvailable
-	bool processMessageIfAvailable();
+	bool processMessageIfAvailable() override;
 	///// run the broadcast receiver
 	//void runBroadcastReceiver();
 	/// Wait for 1 message and process it. Execute timed operations if needed.
-	void loopUntilOneMessageIsProcessed();
+	void loopUntilOneMessageIsProcessed() override;
 	/// Loop eternaly to process all incoming messages.
-	void loop();
+	void loop() override;
 	/// Correctly stop the server
-	void stop();
+	void stop() override;
 
-	orwell::game::Game & accessContext();
+	orwell::game::Game & accessContext() override;
 
-	void feedAgentProxy();
+	void feedAgentProxy() override;
 
-	/// Create a temporary socket to connect to #iUrl and send #iMessage.
-	/// TODO: do we need some type of error handling at this stage ?
-	void push(
-			std::string const & iUrl,
-			std::string const & iMessage);
-
-	void addServerCommandSocket(
-			std::string const & iAssociatedRobotId,
-			uint16_t const iPort);
-
-	void sendServerCommand(
-			std::string const & iRobotId,
-			std::string const & iCommand);
-
-	bool receiveCommandResponse(
-			std::string const & iRobotId,
-			std::string & oMessage);
-
-	zmq::context_t & getContext();
-	zmq::context_t const & getContext() const;
 private:
 	zmq::context_t m_zmqContext;
 	orwell::IAgentProxy & m_agentProxy;
@@ -100,4 +76,3 @@ private:
 };
 
 }
-

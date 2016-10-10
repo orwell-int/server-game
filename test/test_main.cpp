@@ -3,6 +3,8 @@
 
 #include <log4cxx/ndc.h>
 
+#include "orwell/game/Game.hpp"
+
 #include "orwell/support/GlobalLogger.hpp"
 
 #include "Common.hpp"

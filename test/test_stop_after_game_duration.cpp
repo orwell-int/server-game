@@ -6,6 +6,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include "orwell/support/GlobalLogger.hpp"
+#include "orwell/game/Game.hpp"
 #include "orwell/game/Landmark.hpp"
 #include "orwell/game/RGBColour.hpp"
 #include "orwell/com/Receiver.hpp"

@@ -7,32 +7,26 @@
 
 #include <log4cxx/ndc.h>
 
-//#include <gtest/gtest.hpp>
-
-#include "orwell/game/Game.hpp"
-
 #include "orwell/support/GlobalLogger.hpp"
+#include "orwell/game/Item.hpp"
+#include "orwell/game/Flag.hpp"
 
 #include "Common.hpp"
 
 
-class TestOrwellGameRobot : public ::testing::Test
+class TestOrwellGameItemEncoder : public ::testing::Test
 {
 protected:
-	TestOrwellGameRobot()
-		: m_teamName("Team Name")
-		, m_robotName("Robot Name")
-		, m_robotId("robot_id")
-		, m_videoPort(42)
-		, m_commandPort(43)
-		, m_team(m_teamName)
-		, m_robot(
-			m_fakeSystemProxy,
-			m_robotName,
-			m_robotId,
-			m_team,
-			m_videoPort,
-			m_commandPort)
+	TestOrwellGameItemEncoder()
+		: m_type("flag")
+		, m_name("FLAG")
+		, m_rfids{"RFID1"}
+		, m_colourCode(0)
+		, m_flag(
+				m_type,
+				m_name,
+				m_rfids,
+				m_colourCode)
 	{
 	}
 
@@ -44,18 +38,16 @@ protected:
 	{
 	}
 
-	FakeSystemProxy m_fakeSystemProxy;
-	std::string const m_teamName;
-	std::string const m_robotName;
-	std::string const m_robotId;
-	uint16_t const m_videoPort;
-	uint16_t const m_commandPort;
-	orwell::game::Team m_team;
-	orwell::game::Robot m_robot;
+	std::string m_type;
+	std::string m_name;
+	std::set< std::string > m_rfids;
+	int32_t m_colourCode;
+	orwell::game::Ruleset m_ruleSet;
+	orwell::game::Flag m_flag;
 };
 
 
-TEST_F(TestOrwellGameRobot, Create)
+TEST_F(TestOrwellGameItemEncoder, Create)
 {
 	EXPECT_EQ(m_teamName, m_robot.getTeam().getName())
 		<< "The team should be the same.";
@@ -76,7 +68,7 @@ TEST_F(TestOrwellGameRobot, Create)
 }
 
 
-TEST_F(TestOrwellGameRobot, StartVideoWithoutURL)
+TEST_F(TestOrwellGameItemEncoder, StartVideoWithoutURL)
 {
 	using ::testing::_;
 	EXPECT_CALL(m_fakeSystemProxy, mkstemp(_)).Times(0);
@@ -86,7 +78,7 @@ TEST_F(TestOrwellGameRobot, StartVideoWithoutURL)
 }
 
 
-TEST_F(TestOrwellGameRobot, StartVideoWithURL)
+TEST_F(TestOrwellGameItemEncoder, StartVideoWithURL)
 {
 	using ::testing::_;
 	EXPECT_CALL(m_fakeSystemProxy, mkstemp(_)).Times(1);
@@ -97,7 +89,7 @@ TEST_F(TestOrwellGameRobot, StartVideoWithURL)
 }
 
 
-TEST_F(TestOrwellGameRobot, StartVideoWithURL_nc)
+TEST_F(TestOrwellGameItemEncoder, StartVideoWithURL_nc)
 {
 	using ::testing::_;
 	m_robot.setVideoUrl("nc:12.34.56.78:90");
@@ -109,8 +101,8 @@ TEST_F(TestOrwellGameRobot, StartVideoWithURL_nc)
 
 int main(int argc, char ** argv)
 {
-	orwell::support::GlobalLogger::Create("test_orwell_game_Robot", "test_orwell_game_Robot.log", true);
-	log4cxx::NDC ndc("test_orwell_game_Robot");
+	orwell::support::GlobalLogger::Create("test_orwell_game_ItemEncoder", "test_orwell_game_ItemEncoder.log", true);
+	log4cxx::NDC ndc("test_orwell_game_ItemEncoder");
 	ORWELL_LOG_INFO("Test starts\n");
 	::testing::InitGoogleTest(&argc, argv);
 	int aResult = RUN_ALL_TESTS();

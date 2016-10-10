@@ -39,7 +39,7 @@ Game::Game(
 		support::ISystemProxy const & iSystemProxy,
 		boost::posix_time::time_duration const & iGameDuration,
 		Ruleset const & iRuleset,
-		Server & ioServer)
+		IServer & ioServer)
 	: m_systemProxy(iSystemProxy)
 	, m_isRunning(false)
 	, m_gameDuration(iGameDuration)
@@ -424,9 +424,23 @@ void Game::readImages()
 
 void Game::handleContacts()
 {
-	for (auto & aContactPair : m_contacts)
+	ContactMap::const_iterator aIter = m_contacts.begin();
+	while (m_contacts.end() != aIter)
 	{
-		aContactPair.second->step(m_time);
+		auto const & aContactPair = *aIter;
+		StepSignal const aSignal = aContactPair.second->step(m_time);
+		switch (aSignal)
+		{
+			case StepSignal::SILENCEIKILLU:
+			{
+				aIter = m_contacts.erase(aIter);
+				break;
+			}
+			default:
+			{
+				++aIter;
+			}
+		}
 	}
 }
 
@@ -455,5 +469,5 @@ std::vector< orwell::game::Landmark > const & Game::getMapLimits() const
 	return m_mapLimits;
 }
 
-} // game
-} // orwell
+} // namespace game
+} // namespace orwell

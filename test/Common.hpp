@@ -13,6 +13,7 @@
 #include "orwell/IAgentProxy.hpp"
 #include "orwell/support/ISystemProxy.hpp"
 #include "orwell/com/Socket.hpp"
+#include "orwell/IServer.hpp"
 
 #include "gmock/gmock.h"
 
@@ -182,6 +183,24 @@ public :
 	MOCK_CONST_METHOD1(close, int(int const iFileDescriptor));
 
 	MOCK_CONST_METHOD1(system, int(char const * iCommand));
+};
+
+class FakeServer: public orwell::IServer
+{
+public:
+	MOCK_METHOD0(processMessageIfAvailable, bool());
+
+	MOCK_METHOD0(loopUntilOneMessageIsProcessed, void());
+
+	/// Loop eternaly to process all incoming messages.
+	MOCK_METHOD0(loop, void());
+
+	/// Correctly stop the server
+	MOCK_METHOD0(stop, void());
+
+	MOCK_METHOD0(accessContext, orwell::game::Game & ());
+
+	MOCK_METHOD0(feedAgentProxy, void());
 };
 
 std::ostream & operator<<(

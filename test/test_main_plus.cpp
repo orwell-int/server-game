@@ -4,6 +4,7 @@
 #include <log4cxx/ndc.h>
 
 #include "orwell/support/GlobalLogger.hpp"
+#include "orwell/game/Game.hpp"
 #include "orwell/game/Landmark.hpp"
 #include "orwell/game/RGBColour.hpp"
 #include "orwell/com/Receiver.hpp"
