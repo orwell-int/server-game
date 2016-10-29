@@ -89,6 +89,8 @@ add_orwell_test(test_stop_after_game_duration "test_stop_after_game_duration.cpp
 add_orwell_test(test_orwell_game_Clock "test_orwell_game_Clock.cpp")
 add_orwell_test(test_orwell_game_Robot "test_orwell_game_Robot.cpp")
 add_orwell_test(test_orwell_game_Game "test_orwell_game_Game.cpp")
+add_orwell_test(test_orwell_game_Item "test_orwell_game_Item.cpp")
+add_orwell_test(test_orwell_game_ItemEncoder "test_orwell_game_ItemEncoder.cpp")
 add_dependencies(test_main server_main)
 add_dependencies(test_main_plus server_main)
 foreach(image ${IMAGES})

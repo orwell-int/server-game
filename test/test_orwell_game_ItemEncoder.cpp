@@ -9,7 +9,11 @@
 
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/game/Item.hpp"
-#include "orwell/game/Flag.hpp"
+#include "orwell/game/ItemEncoder.hpp"
+#include "orwell/game/Ruleset.hpp"
+#include "orwell/game/item/Flag.hpp"
+#include "orwell/game/Game.hpp"
+#include "server-game.pb.h"
 
 #include "Common.hpp"
 
@@ -21,12 +25,19 @@ protected:
 		: m_type("flag")
 		, m_name("FLAG")
 		, m_rfids{"RFID1"}
+		, m_timeToCapture(5000)
 		, m_colourCode(0)
-		, m_flag(
-				m_type,
+		, m_pointsOnCapture(1)
+		, m_flagRFID(
 				m_name,
 				m_rfids,
-				m_colourCode)
+				m_timeToCapture,
+				m_pointsOnCapture)
+		, m_flagColour(
+				m_name,
+				m_colourCode,
+				m_timeToCapture,
+				m_pointsOnCapture)
 	{
 	}
 
@@ -41,61 +52,32 @@ protected:
 	std::string m_type;
 	std::string m_name;
 	std::set< std::string > m_rfids;
+	boost::posix_time::milliseconds m_timeToCapture;
 	int32_t m_colourCode;
-	orwell::game::Ruleset m_ruleSet;
-	orwell::game::Flag m_flag;
+	orwell::game::Ruleset m_ruleset;
+	uint32_t m_pointsOnCapture;
+	orwell::game::item::Flag m_flagRFID;
+	orwell::game::item::Flag m_flagColour;
 };
 
 
 TEST_F(TestOrwellGameItemEncoder, Create)
 {
-	EXPECT_EQ(m_teamName, m_robot.getTeam().getName())
-		<< "The team should be the same.";
-	EXPECT_EQ(m_robotName, m_robot.getName())
-		<< "The robot name should be the same.";
-	EXPECT_EQ(m_robotId, m_robot.getRobotId())
-		<< "The robot id should be the same.";
-	EXPECT_EQ(m_videoPort, m_robot.getVideoRetransmissionPort())
-		<< "The video port should be the same.";
-	EXPECT_EQ(m_commandPort, m_robot.getServerCommandPort())
-		<< "The command port should be the same.";
-	EXPECT_FALSE(m_robot.getIsAvailable())
-		<< "A robot should start as NOT available.";
-	EXPECT_FALSE(m_robot.getHasPlayer())
-		<< "A robot should start without a player.";
-	EXPECT_EQ("", m_robot.getVideoUrl())
-		<< "A robot should start without a video URL.";
-}
+	EXPECT_EQ(m_name, m_flagRFID.getName());
+	EXPECT_EQ(m_rfids, m_flagRFID.getRfids());
+	EXPECT_EQ(-1, m_flagRFID.getColour());
+	EXPECT_EQ(m_name, m_flagColour.getName());
+	EXPECT_EQ(m_colourCode, m_flagColour.getColour());
+	EXPECT_EQ(0, m_flagColour.getRfids().size());
+	EXPECT_EQ("", m_flagRFID.getTeam());
+	EXPECT_EQ("", m_flagColour.getTeam());
 
-
-TEST_F(TestOrwellGameItemEncoder, StartVideoWithoutURL)
-{
-	using ::testing::_;
-	EXPECT_CALL(m_fakeSystemProxy, mkstemp(_)).Times(0);
-	EXPECT_CALL(m_fakeSystemProxy, close(_)).Times(0);
-	EXPECT_CALL(m_fakeSystemProxy, system(_)).Times(0);
-	m_robot.startVideo();
-}
-
-
-TEST_F(TestOrwellGameItemEncoder, StartVideoWithURL)
-{
-	using ::testing::_;
-	EXPECT_CALL(m_fakeSystemProxy, mkstemp(_)).Times(1);
-	EXPECT_CALL(m_fakeSystemProxy, close(_)).Times(1);
-	EXPECT_CALL(m_fakeSystemProxy, system(_)).Times(1);
-	m_robot.setVideoUrl("http://url.test:1234");
-	m_robot.startVideo();
-}
-
-
-TEST_F(TestOrwellGameItemEncoder, StartVideoWithURL_nc)
-{
-	using ::testing::_;
-	m_robot.setVideoUrl("nc:12.34.56.78:90");
-	m_robot.startVideo();
-	EXPECT_CALL(m_fakeSystemProxy, mkstemp(_)).Times(0);
-	EXPECT_CALL(m_fakeSystemProxy, system(_)).Times(0);
+	std::unique_ptr< orwell::game::ItemEncoder > aRFIDEncoder = m_flagRFID.getEncoder();
+	orwell::messages::Item lItem;
+	aRFIDEncoder->encode(lItem);
+	EXPECT_EQ(orwell::messages::FLAG, lItem.type());
+	EXPECT_EQ(m_name, lItem.name());
+	EXPECT_FALSE(lItem.has_capture_status());
 }
 
 
