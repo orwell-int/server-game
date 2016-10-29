@@ -57,4 +57,3 @@ std::ostream& operator<<(std::ostream& oOstream, const Flag & aFlag)
 } // item
 } // game
 } // orwell
-

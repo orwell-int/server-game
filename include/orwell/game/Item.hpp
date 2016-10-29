@@ -77,6 +77,7 @@ private:
 
 	static std::map< std::string, std::shared_ptr< Item > > s_itemsByRfid;
 	static std::map< int32_t, std::shared_ptr< Item > > s_itemsByColour;
+	static std::vector< std::shared_ptr< Item > > s_allItems;
 
 	virtual void innerCapture(Team & ioTeam) = 0;
 };

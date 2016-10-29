@@ -7,8 +7,9 @@
 
 #include <sstream>
 
-std::map<std::string, std::shared_ptr<orwell::game::Item> > orwell::game::Item::s_itemsByRfid = std::map<std::string, std::shared_ptr<orwell::game::Item> >();
-std::map<int32_t, std::shared_ptr<orwell::game::Item> > orwell::game::Item::s_itemsByColour = std::map<int32_t, std::shared_ptr<orwell::game::Item> >();
+std::map< std::string, std::shared_ptr< orwell::game::Item > > orwell::game::Item::s_itemsByRfid = std::map<std::string, std::shared_ptr<orwell::game::Item> >();
+std::map< int32_t, std::shared_ptr< orwell::game::Item > > orwell::game::Item::s_itemsByColour = std::map<int32_t, std::shared_ptr<orwell::game::Item> >();
+std::vector< std::shared_ptr< orwell::game::Item > > orwell::game::Item::s_allItems = std::vector< std::shared_ptr< orwell::game::Item > >();
 
 namespace orwell
 {
@@ -50,8 +51,8 @@ Item::~Item()
 
 void Item::InitializeStaticMaps()
 {
-	Item::s_itemsByRfid = std::map<std::string, std::shared_ptr<Item> >();
-	Item::s_itemsByColour = std::map<int32_t, std::shared_ptr<Item> >();
+	Item::s_itemsByRfid = std::map< std::string, std::shared_ptr< Item > >();
+	Item::s_itemsByColour = std::map< int32_t, std::shared_ptr< Item > >();
 }
 
 std::string const & Item::getName() const
@@ -129,6 +130,7 @@ std::shared_ptr< Item > Item::CreateItem(
 						iRuleset.m_timeToCapture,
 						iRuleset.m_pointsOnCapture);
 				s_itemsByColour[iColourCode] = aNewFlag;
+				s_allItems.push_back(aNewFlag);
 				return aNewFlag;
 			}
 		}
@@ -151,6 +153,7 @@ std::shared_ptr< Item > Item::CreateItem(
 					s_itemsByRfid[aRfid] = aNewFlag;
 				}
 			}
+			s_allItems.push_back(aNewFlag);
 			return aNewFlag;
 		}
 	}
@@ -160,16 +163,7 @@ std::shared_ptr< Item > Item::CreateItem(
 
 std::vector< std::shared_ptr< Item > > Item::GetAllItems()
 {
-	std::vector< std::shared_ptr< Item > > aResult;
-	for (auto const & aPair: s_itemsByRfid)
-	{
-		aResult.push_back(aPair.second);
-	}
-	for (auto const & aPair: s_itemsByColour)
-	{
-		aResult.push_back(aPair.second);
-	}
-	return aResult;
+	return s_allItems;
 }
 
 std::string Item::toLogString() const
