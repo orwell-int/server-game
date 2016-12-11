@@ -11,7 +11,7 @@ class Game;
 class IServer
 {
 public:
-	virtual  ~IServer();
+	virtual ~IServer();
 
 	virtual bool processMessageIfAvailable() = 0;
 

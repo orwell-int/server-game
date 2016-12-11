@@ -2,9 +2,23 @@
 
 #include "orwell/callbacks/InterfaceProcess.hpp"
 
-namespace orwell {
+#include <set>
 
-namespace callbacks {
+namespace orwell
+{
+
+namespace game
+{
+class Item;
+} // namespace game
+
+namespace messages
+{
+class ServerRobotState;
+} // namespace messages
+
+namespace callbacks
+{
 
 class ProcessRobotState : public InterfaceProcess
 {
@@ -15,6 +29,16 @@ public:
 
 	void execute();
 
+	void lookForRfid(
+			std::string const & iDestination,
+			orwell::messages::ServerRobotState const & iRobotStateMsg,
+			std::set< std::shared_ptr< orwell::game::Item > > & ioVisitedItems);
+
+	void lookForColour(
+			std::string const & iDestination,
+			orwell::messages::ServerRobotState const & iRobotStateMsg,
+			std::set< std::shared_ptr< orwell::game::Item > > & ioVisitedItems);
 };
 
-}} //namespaces
+} // namespace callbacks
+} // namespace orwell

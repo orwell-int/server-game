@@ -9,6 +9,7 @@
 #include "orwell/com/Sender.hpp"
 #include "orwell/game/Item.hpp"
 #include "orwell/game/ItemEncoder.hpp"
+#include "orwell/game/item/FlagDetector.hpp"
 
 #include "controller.pb.h"
 #include "server-game.pb.h"
@@ -45,54 +46,8 @@ void ProcessRobotState::execute()
 
 	std::set< std::shared_ptr< orwell::game::Item > > aVisitedItems;
 
-	for (int i = 0; i < aRobotStateMsg.rfid_size() ; ++i)
-	{
-		std::shared_ptr< orwell::game::Item > aItem = game::Item::GetItemByRfid(aRobotStateMsg.rfid(i).rfid());
-		if (not aItem)
-		{
-			continue;
-		}
-		aVisitedItems.insert(aItem);
-		switch (aRobotStateMsg.rfid(i).status())
-		{
-		case messages::Status::ON :
-			ORWELL_LOG_INFO("Robot " << aDestination <<
-					" records contact with RFID " << aRobotStateMsg.rfid(i).rfid() <<
-					" at " << aRobotStateMsg.rfid(i).timestamp());
-			m_game->robotIsInContactWith(aDestination, aItem);
-			break;
-		case messages::Status::OFF :
-			ORWELL_LOG_INFO("Robot " << aDestination <<
-					" stops contact with RFID " << aRobotStateMsg.rfid(i).rfid() <<
-					" at " << aRobotStateMsg.rfid(i).timestamp());
-			m_game->robotDropsContactWith(aDestination, aItem);
-			break;
-		}
-	}
-	for (int i = 0; i < aRobotStateMsg.colour_size() ; ++i)
-	{
-		std::shared_ptr< orwell::game::Item > aItem = game::Item::GetItemByColour(aRobotStateMsg.colour(i).colour());
-		if (not aItem)
-		{
-			continue;
-		}
-		aVisitedItems.insert(aItem);
-		switch (aRobotStateMsg.colour(i).status())
-		{
-		case messages::Status::ON :
-			ORWELL_LOG_INFO("Robot " << aDestination <<
-					" records contact with Colour tag " << aRobotStateMsg.colour(i).colour() <<
-					" at " << aRobotStateMsg.colour(i).timestamp());
-			m_game->robotIsInContactWith(aDestination, aItem);
-			break;
-		case messages::Status::OFF :
-			ORWELL_LOG_INFO("Robot " << aDestination <<
-					" stops contact with Colour tag " << aRobotStateMsg.colour(i).colour() <<
-					" at " << aRobotStateMsg.colour(i).timestamp());
-			m_game->robotDropsContactWith(aDestination, aItem);
-			break;
-		}
-	}
+	lookForRfid(aDestination, aRobotStateMsg, aVisitedItems);
+	lookForColour(aDestination, aRobotStateMsg, aVisitedItems);
 
 	//todo : what do we forward to the player ?
 	// forward this message to each controler
@@ -116,6 +71,66 @@ void ProcessRobotState::execute()
 				"PlayerState",
 				aPlayerState.SerializeAsString());
 		m_publisher->send(aMessage);
+	}
+}
+
+void ProcessRobotState::lookForRfid(
+		std::string const & iDestination,
+		orwell::messages::ServerRobotState const & iRobotStateMsg,
+		std::set< std::shared_ptr< orwell::game::Item > > & ioVisitedItems)
+{
+	for (int i = 0; i < iRobotStateMsg.rfid_size() ; ++i)
+	{
+		std::shared_ptr< orwell::game::Item > aItem = game::Item::GetItemByRfid(iRobotStateMsg.rfid(i).rfid());
+		if (not aItem)
+		{
+			continue;
+		}
+		ioVisitedItems.insert(aItem);
+		switch (iRobotStateMsg.rfid(i).status())
+		{
+		case messages::Status::ON :
+			ORWELL_LOG_INFO("Robot " << iDestination <<
+					" records contact with RFID " << iRobotStateMsg.rfid(i).rfid() <<
+					" at " << iRobotStateMsg.rfid(i).timestamp());
+			m_game->robotIsInContactWith(iDestination, aItem);
+			break;
+		case messages::Status::OFF :
+			ORWELL_LOG_INFO("Robot " << iDestination <<
+					" stops contact with RFID " << iRobotStateMsg.rfid(i).rfid() <<
+					" at " << iRobotStateMsg.rfid(i).timestamp());
+			m_game->robotDropsContactWith(iDestination, aItem);
+			break;
+		}
+	}
+}
+
+void ProcessRobotState::lookForColour(
+		std::string const & iDestination,
+		orwell::messages::ServerRobotState const & iRobotStateMsg,
+		std::set< std::shared_ptr< orwell::game::Item > > & ioVisitedItems)
+{
+	boost::posix_time::ptime aEpoch(boost::gregorian::date(1970, boost::gregorian::Jan, 1));
+	for (int i = 0; i < iRobotStateMsg.colour_size() ; ++i)
+	{
+		std::weak_ptr< orwell::game::item::FlagDetector > aPossibleFlagDetector = m_game->getFlagDetector(iDestination);
+		if (auto aFlagDetector = aPossibleFlagDetector.lock())
+		{
+			orwell::messages::Colour aMessageColour = iRobotStateMsg.colour(i);
+			ORWELL_LOG_INFO("visiting colour " << i << " sent by the robot for '"
+					<< iDestination << "' and colour '" << aMessageColour.colour() << "'");
+			std::weak_ptr< orwell::game::Item > aPossibleItem = aFlagDetector->setColour(
+					aMessageColour.colour(),
+					aEpoch + boost::posix_time::milliseconds(aMessageColour.timestamp()));
+			if (auto aItem = aPossibleItem.lock())
+			{
+				ioVisitedItems.insert(aItem);
+			}
+		}
+		else
+		{
+			ORWELL_LOG_WARN("No flag detector found for this robot: '" << iDestination << "'");
+		}
 	}
 }
 

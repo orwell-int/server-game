@@ -7,6 +7,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
 
+#include "orwell/game/IContactHandler.hpp"
 #include "orwell/game/Player.hpp"
 #include "orwell/game/Team.hpp"
 #include "orwell/game/Landmark.hpp"
@@ -33,8 +34,12 @@ class Robot;
 class Item;
 class Contact;
 class Ruleset;
+namespace item
+{
+class FlagDetector;
+} // namespace item
 
-class Game
+class Game : public IContactHandler
 {
 public:
 	Game(
@@ -139,18 +144,23 @@ public:
 
 	void robotIsInContactWith(
 			std::string const & iRobotId,
-			std::shared_ptr<Item> const iItem);
+			std::shared_ptr< Item > const iItem) override;
+
 	void robotDropsContactWith(
 			std::string const & iRobotId,
-			std::shared_ptr<Item> const iItem);
+			std::shared_ptr< Item > const iItem) override;
 
 	void setTime(boost::posix_time::ptime const & iCurrentTime);
+
+	boost::posix_time::ptime const & getTime() const;
 
 	void stopIfGameIsFinished();
 
 	void setMapLimits(std::vector< orwell::game::Landmark > const & iMapLimits);
 
 	std::vector< orwell::game::Landmark > const & getMapLimits() const;
+
+	std::weak_ptr< orwell::game::item::FlagDetector > getFlagDetector(std::string const & iRobotId);
 private:
 	/// \return
 	///  A RobotID that is not already used.
@@ -165,8 +175,8 @@ private:
 	/// True if and only if the game is running
 	bool m_isRunning;
 	/// Each connected robot has a robotContext in this map. The key is the robot name.
-	std::map<std::string, std::shared_ptr<Robot> > m_robots;
-	/// Same as #m_robots except that the kid is the ID instead of the name
+	std::map<std::string, std::shared_ptr< Robot > > m_robots;
+	/// Same as #m_robots except that the key is the ID instead of the name
 	std::map< std::string, std::shared_ptr< Robot > > m_robotsById;
 	/// Each connected controller has a playerContext in this map. The key is the player name.
 	std::map< std::string, std::shared_ptr< Player > > m_players;
@@ -192,6 +202,7 @@ private:
 
 	Ruleset const & m_ruleset;
 	std::vector< orwell::game::Landmark > m_mapLimits;
+	std::map< std::string, std::shared_ptr< orwell::game::item::FlagDetector > > m_flagDetectorsByRobot;
 };
 
 } // namespace game

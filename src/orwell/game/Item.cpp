@@ -20,7 +20,8 @@ Item::Item(
 		std::string const & iName,
 		std::set< std::string > const & iRfids,
 		boost::posix_time::milliseconds const & iTimeToCapture)
-	: m_name(iName)
+	: m_kind(Kind::RFIDS)
+	, m_name(iName)
 	, m_rfids(iRfids)
 	, m_colour(-1)
 	, m_captureState(CaptureState::PENDING)
@@ -38,7 +39,8 @@ Item::Item(
 		std::string const & iName,
 		int32_t const iColourCode,
 		boost::posix_time::milliseconds const & iTimeToCapture)
-	: m_name(iName)
+	: m_kind(Kind::COLOUR)
+	, m_name(iName)
 	, m_colour(iColourCode)
 	, m_timeToCapture(iTimeToCapture)
 {

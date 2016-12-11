@@ -1,5 +1,3 @@
-/*  */
-
 #include "orwell/game/Item.hpp"
 
 #pragma once

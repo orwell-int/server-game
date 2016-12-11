@@ -67,6 +67,12 @@ public:
 	void capture(Team & ioTeam);
 
 private:
+	enum class Kind
+	{
+		COLOUR,
+		RFIDS
+	};
+	Kind m_kind;
 	std::string m_name;
 	std::set< std::string > m_rfids;
 	int32_t m_colour;

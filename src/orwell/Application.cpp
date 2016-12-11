@@ -373,12 +373,16 @@ void Application::ParseGameConfigFromFile(
 			std::string aItemRfid = aPtree.get<std::string>(iItem + ".rfid");
 			int32_t aItemColour = aPtree.get<int32_t>(iItem + ".colour");
 			ORWELL_LOG_INFO("Pushing item: " << aItemName << " (" << aItemType << ")");
-			ORWELL_LOG_INFO("rfid: " << aItemType);
+			ORWELL_LOG_INFO(" colour: " << aItemColour);
+			ORWELL_LOG_INFO(" rfid: '" << aItemRfid << "'");
 			std::set< std::string > aSetItemRfid;
-			boost::split(aSetItemRfid, aItemRfid, boost::is_any_of(" "));
-			for (std::string const & aStr : aSetItemRfid)
+			if (not aItemRfid.empty())
 			{
-				ORWELL_LOG_INFO("  - " << aStr);
+				boost::split(aSetItemRfid, aItemRfid, boost::is_any_of(" "));
+				for (std::string const & aStr : aSetItemRfid)
+				{
+					ORWELL_LOG_INFO("  - '" << aStr << "'");
+				}
 			}
 			ioParam.m_items[iItem] = Parameters::Item{aItemName, aItemType, aSetItemRfid, aItemColour};
 		}
@@ -449,7 +453,7 @@ bool Application::CheckParametersConsistency(Parameters const & iParam)
 			}
 			ORWELL_LOG_ERROR(
 					"Item " << aPair.first << " is badly configured. rfid="
-					<< aRfidString.substr(1) << ", colour=" << aItem.m_colour);
+					<< aRfidString << ", colour=" << aItem.m_colour);
 			return false;
 		}
 	}

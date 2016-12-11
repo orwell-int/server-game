@@ -14,6 +14,7 @@
 #include "orwell/support/ISystemProxy.hpp"
 #include "orwell/com/Socket.hpp"
 #include "orwell/IServer.hpp"
+#include "orwell/game/IContactHandler.hpp"
 
 #include "gmock/gmock.h"
 
@@ -53,7 +54,11 @@ namespace com
 class Receiver;
 class RawMessage;
 }
-}
+namespace game
+{
+class Item;
+} // namespace game
+} // namespace orwell
 
 enum class Status
 {
@@ -93,7 +98,7 @@ public:
 
 class FakeAgentProxy : public orwell::IAgentProxy
 {
-public :
+public:
 	MOCK_METHOD2(step, bool(
 				std::string const & iCommand,
 				std::string & ioReply));
@@ -177,7 +182,7 @@ private:
 
 class FakeSystemProxy : public orwell::support::ISystemProxy
 {
-public :
+public:
 	MOCK_CONST_METHOD1(mkstemp, int(char * ioTemplate));
 
 	MOCK_CONST_METHOD1(close, int(int const iFileDescriptor));
@@ -201,6 +206,18 @@ public:
 	MOCK_METHOD0(accessContext, orwell::game::Game & ());
 
 	MOCK_METHOD0(feedAgentProxy, void());
+};
+
+class FakeContactHandler : public orwell::game::IContactHandler
+{
+public:
+	MOCK_METHOD2(robotIsInContactWith, void(
+		std::string const & iRobotId,
+		std::shared_ptr< orwell::game::Item > const iItem));
+
+	MOCK_METHOD2(robotDropsContactWith, void(
+		std::string const & iRobotId,
+		std::shared_ptr< orwell::game::Item > const iItem));
 };
 
 std::ostream & operator<<(

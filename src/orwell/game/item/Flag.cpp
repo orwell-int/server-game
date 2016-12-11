@@ -49,7 +49,7 @@ void Flag::innerCapture(Team & ioTeam)
 	ioTeam.increaseScore(m_pointsOnCapture);
 }
 
-std::ostream& operator<<(std::ostream& oOstream, const Flag & aFlag)
+std::ostream & operator<<(std::ostream& oOstream, const Flag & aFlag)
 {
 	return oOstream << " this is a flag";
 }
