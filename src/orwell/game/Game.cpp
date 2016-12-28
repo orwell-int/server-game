@@ -21,6 +21,7 @@
 #include "orwell/com/Sender.hpp"
 #include "orwell/Server.hpp"
 #include "orwell/game/Ruleset.hpp"
+#include "orwell/game/item/FlagDetector.hpp"
 
 #include "MissingFromTheStandard.hpp"
 
@@ -39,7 +40,7 @@ Game::Game(
 		support::ISystemProxy const & iSystemProxy,
 		boost::posix_time::time_duration const & iGameDuration,
 		Ruleset const & iRuleset,
-		Server & ioServer)
+		IServer & ioServer)
 	: m_systemProxy(iSystemProxy)
 	, m_isRunning(false)
 	, m_gameDuration(iGameDuration)
@@ -243,10 +244,12 @@ bool Game::addRobot(
 					aTeamIterator->second,
 					iVideoRetransmissionPort,
 					iServerCommandPort);
-			m_robots.insert( pair<string, shared_ptr<Robot> >( iName, aRobot ) );
+			m_robots.insert(pair< string, shared_ptr< Robot > >(iName, aRobot));
 			m_robotsById.insert(pair< string, shared_ptr< Robot > >(iRobotId, aRobot));
 			ORWELL_LOG_INFO("new Robot added with name='" << iName << "', " <<
 					"ID='" << iRobotId << "'");
+			std::shared_ptr< item::FlagDetector > aFlagDetector = make_shared< item::FlagDetector >(*this, aRobot);
+			m_flagDetectorsByRobot.insert(pair< string, shared_ptr< item::FlagDetector > >(iRobotId, aFlagDetector));
 			aAddedRobotSuccess = true;
 		}
 	}
@@ -354,6 +357,11 @@ void Game::setTime(boost::posix_time::ptime const & iCurrentTime)
 	m_time = iCurrentTime;
 }
 
+boost::posix_time::ptime const & Game::getTime() const
+{
+	return m_time;
+}
+
 void Game::stopIfGameIsFinished()
 {
 	uint64_t aSecondsLeft(getSecondsLeft());
@@ -424,14 +432,29 @@ void Game::readImages()
 
 void Game::handleContacts()
 {
-	for(auto & aContactPair : m_contacts)
+	ContactMap::const_iterator aIter = m_contacts.begin();
+	while (m_contacts.end() != aIter)
 	{
-		aContactPair.second->step(m_time);
+		auto const & aContactPair = *aIter;
+		StepSignal const aSignal = aContactPair.second->step(m_time);
+		switch (aSignal)
+		{
+			case StepSignal::SILENCEIKILLU:
+			{
+				aIter = m_contacts.erase(aIter);
+				break;
+			}
+			default:
+			{
+				++aIter;
+			}
+		}
 	}
 }
 
 void Game::robotIsInContactWith(std::string const & iRobotId, std::shared_ptr<Item> const iItem)
 {
+	ORWELL_LOG_INFO("Robot " << iRobotId << " records contact with item " << iItem);
 	// here we suppose that a robot can only be in contact with one item.
 	m_contacts[iRobotId] = make_unique<Contact>(
 			m_time,
@@ -442,6 +465,7 @@ void Game::robotIsInContactWith(std::string const & iRobotId, std::shared_ptr<It
 
 void Game::robotDropsContactWith(std::string const & iRobotId, std::shared_ptr<Item> const iItem)
 {
+	ORWELL_LOG_INFO("Robot " << iRobotId << " drops contact with item " << iItem);
 	m_contacts.erase(iRobotId);
 }
 
@@ -455,5 +479,16 @@ std::vector< orwell::game::Landmark > const & Game::getMapLimits() const
 	return m_mapLimits;
 }
 
-} // game
-} // orwell
+std::weak_ptr< orwell::game::item::FlagDetector > Game::getFlagDetector(std::string const & iRobotId)
+{
+	std::weak_ptr< orwell::game::item::FlagDetector > aResult;
+	auto const aFound = m_flagDetectorsByRobot.find(iRobotId);
+	if (m_flagDetectorsByRobot.end() != aFound)
+	{
+		aResult = aFound->second;
+	}
+	return aResult;
+}
+
+} // namespace game
+} // namespace orwell

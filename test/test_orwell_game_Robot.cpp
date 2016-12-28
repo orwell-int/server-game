@@ -9,6 +9,8 @@
 
 //#include <gtest/gtest.hpp>
 
+#include "orwell/game/Game.hpp"
+
 #include "orwell/support/GlobalLogger.hpp"
 
 #include "Common.hpp"

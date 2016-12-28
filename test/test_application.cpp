@@ -524,7 +524,7 @@ video-ports    = 9001:9004
 	TempFile aGameConfigFile(std::string(R"(
 [game]
 teams = team_A | team_B
-items = item_RedFlag
+items = item_RedFlag | item_BlueFlag
 ruleset = ruleset
 
 [ruleset]
@@ -550,6 +550,11 @@ type = flag
 rfid = myrfidredflag
 colour = -1 
 
+[item_BlueFlag]
+name = Blue Flag
+type = flag
+rfid =
+colour = 2
 )"));
 
 	orwell::Application::CommandLineParameters aCommandLineArguments;
@@ -571,6 +576,7 @@ colour = -1
 	};
 	aExpectedParameters.m_items = {
 			{"item_RedFlag", {"Red Flag", "flag", std::set< std::string >{"myrfidredflag"}, -1}},
+			{"item_BlueFlag", {"Blue Flag", "flag", std::set< std::string >{}, 2}},
 	};
 	aExpectedParameters.m_teams = {"Mathematicians", "Philosophers"};
 	aExpectedParameters.m_videoPorts = {9004, 9003, 9002, 9001};

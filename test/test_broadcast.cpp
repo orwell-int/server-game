@@ -12,6 +12,7 @@
 #include "server-game.pb.h"
 
 #include "orwell/support/GlobalLogger.hpp"
+#include "orwell/game/Game.hpp"
 #include "orwell/com/Sender.hpp"
 #include "orwell/com/Receiver.hpp"
 #include "orwell/BroadcastServer.hpp"

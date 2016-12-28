@@ -34,7 +34,7 @@ script:
     - export ORWELL_DISABLE_TEST_BROADCAST=1
     - cmake ..
     - ifconfig
-    - ctest -V
+    - ctest || ctest -V
     - cd ..
     - if [ "$CXX" = "g++-4.8" ] ; then cd .. && mkdir -p build_coverage && cd build_coverage ; fi
     - if [ "$CXX" = "g++-4.8" ] ; then cmake .. -DORWELL_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug ; fi

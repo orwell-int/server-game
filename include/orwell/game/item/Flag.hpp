@@ -1,5 +1,3 @@
-/*  */
-
 #include "orwell/game/Item.hpp"
 
 #pragma once
@@ -31,6 +29,7 @@ public :
 
 	virtual ~Flag();
 
+	std::unique_ptr< ItemEncoder > getEncoder() const override;
 
 private :
 	uint32_t m_pointsOnCapture;
@@ -41,4 +40,3 @@ private :
 } // item
 } // game
 } // orwell
-

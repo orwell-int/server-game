@@ -2,6 +2,7 @@
 
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/Application.hpp"
+#include "orwell/game/Game.hpp"
 
 #include "Common.hpp"
 #include "ItemCommon.hpp"
