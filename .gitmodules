@@ -1,6 +1,6 @@
 [submodule "messages"]
 	path = messages
-	url = https://github.com/dchilot/messages
+	url = https://github.com/orwell-int/messages
 	ignore = untracked
 [submodule "server-web"]
 	path = server-web
