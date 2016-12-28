@@ -26,9 +26,6 @@ protected:
 		: m_type("flag")
 		, m_name("FLAG")
 		, m_colourCode(12)
-		//, m_timeToCapture(boost::posix_time::milliseconds(30))
-		//, m_pointsOnCapture(1)
-		//, m_flag(m_name, m_colourCode, m_timeToCapture, m_pointsOnCapture)
 		, m_teamName("Team Name")
 		, m_robotName("Robot Name")
 		, m_robotId("robot_id")
@@ -67,7 +64,6 @@ protected:
 	std::set< std::string > m_rfids;
 	int32_t const m_colourCode;
 	orwell::game::Ruleset m_ruleset;
-	//orwell::game::item::Flag m_flag;
 	FakeSystemProxy m_fakeSystemProxy;
 	std::string const m_teamName;
 	std::string const m_robotName;
@@ -124,8 +120,9 @@ TEST_F(TestOrwellGameItemFlagDetector, Frontier_Colour_Frontier)
 
 int main(int argc, char ** argv)
 {
-	orwell::support::GlobalLogger::Create("test_orwell_game_item_FlagDetector", "test_orwell_game_item_FlagDetector.log", true);
-	log4cxx::NDC ndc("test_orwell_game_item_FlagDetector");
+	std::string const aName = "test_orwell_game_item_FlagDetector";
+	orwell::support::GlobalLogger::Create(aName, aName, true);
+	log4cxx::NDC ndc(aName);
 	ORWELL_LOG_INFO("Test starts\n");
 	::testing::InitGoogleTest(&argc, argv);
 	int aResult = RUN_ALL_TESTS();
