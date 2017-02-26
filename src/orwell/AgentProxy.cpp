@@ -567,7 +567,7 @@ void AgentProxy::removePlayer(std::string const & iPlayerName)
 void AgentProxy::startGame()
 {
 	ORWELL_LOG_INFO("start game");
-	m_application.accessServer()->accessContext().start();
+	m_application.accessServer()->accessContext().start(true);
 }
 
 void AgentProxy::stopGame()

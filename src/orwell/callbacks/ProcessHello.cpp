@@ -38,11 +38,11 @@ void ProcessHello::execute()
 {
 	ORWELL_LOG_INFO("ProcessHello::execute");
 
-	orwell::messages::Hello const & anHelloMsg = static_cast<orwell::messages::Hello const & >(*m_msg);
+	orwell::messages::Hello const & aHelloMessage = static_cast<orwell::messages::Hello const & >(*m_msg);
 	std::string const & aClientID = getArgument("RoutingID");
     
-	string aNewPlayerName = anHelloMsg.name();
-	bool const aPlayerAddedSuccess = m_game->addPlayer( aNewPlayerName );
+	string aNewPlayerName = aHelloMessage.name();
+	bool const aPlayerAddedSuccess = m_game->addPlayer(aNewPlayerName);
 	bool aFailure = not aPlayerAddedSuccess;
 	if (aPlayerAddedSuccess)
 	{
@@ -51,7 +51,7 @@ void ProcessHello::execute()
 
 		if (aAvailableRobot.get() != nullptr)
 		{
-			ORWELL_LOG_INFO( "Player " << aNewPlayerName << " is now linked to robot " << aAvailableRobot->getName() );
+			ORWELL_LOG_INFO("Player " << aNewPlayerName << " is now linked to robot " << aAvailableRobot->getName());
 
 			std::shared_ptr< game::Player > aPlayer = m_game->accessPlayer(aNewPlayerName);
 			if (nullptr != aPlayer)
@@ -86,9 +86,12 @@ void ProcessHello::execute()
 				m_publisher->send(aReply);
 				aFailure = false;
 
-				if (m_game->getAvailableRobot() == nullptr)
+				if (aHelloMessage.has_ready() and aHelloMessage.ready())
 				{
-					m_game->start();
+					if (m_game->getAvailableRobot() == nullptr)
+					{
+						m_game->start(true);
+					}
 				}
 			}
 			else

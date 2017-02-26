@@ -63,7 +63,9 @@ public:
 
 	uint64_t getSecondsLeft() const;
 
-	void start();
+	void start(
+			bool const iForceStop,
+			boost::optional< boost::posix_time::ptime > const iForcedStartTime = boost::none);
 	void stop();
 
 	//add empty PlayerContext
