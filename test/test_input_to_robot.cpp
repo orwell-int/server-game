@@ -23,7 +23,7 @@
 
 #include "Common.hpp"
 
-bool gOK;
+bool gInputReceived;
 
 static void const ClientSendsInput(
 	int32_t iServerPullerPort,
@@ -55,13 +55,13 @@ static void const ClientSendsInput(
 	std::string aType = "Input";
 	RawMessage aMessage(iRobotId, aType, aInputMessage.SerializeAsString());
 	aPusher.send(aMessage);
-	if ( not Common::ExpectMessage(aType, aSubscriber, aMessage, 100) )
+	if (not Common::ExpectMessage(aType, aSubscriber, aMessage, 100))
 	{
-		gOK = false;
+		gInputReceived = false;
 	}
 	else
 	{
-		gOK = true;
+		gInputReceived = true;
 	}
 }
 
@@ -112,46 +112,31 @@ int main()
 			*aParameters.m_commandLineParameters.m_publisherPort,
 			aRobotId);
 	aClientSendsInputThread.join();
-	 // because the game is not started yet, the Input message is supposed to be dropped by the server
-	assert(not gOK);
-	char aPath[FILENAME_MAX];
-	getcwd(aPath, sizeof(aPath));
-	std::string aFullPath = std::string(aPath) + PATH_SEPARATOR + "master.part";
-	ORWELL_LOG_INFO("Path to stream file: " + aFullPath);
-	aTestAgent.sendCommand("set robot toto video_url " + aFullPath);
+	// because the game is not started yet, the Input message is supposed to be dropped by the server
+	assert(not gInputReceived);
+	// The video is now going through a different channel
+	// There is no solution for video captures with current architecture (nc)
+	// Going back to processes started by the game server might be needed
+	// For now the tests are deactivated
+	aTestAgent.sendCommand("set robot toto video_url nc:fake");
 	aTestAgent.sendCommand("start game");
-	{
-		aReply = aTestAgent.sendCommand("get robot toto video_port", boost::none);
-		std::string aCommand("cd server-web && make client ARGS='-u http://127.0.0.1:" + aReply + " -l 9020 -d 8'");
-		int aCode = system(aCommand.c_str());
-		ORWELL_LOG_INFO("fake client started (return code is " << aCode << ").");
-	}
-	TestAgent aFakeClientConnector(9020);
-	aFakeClientConnector.sendCommand("ping", std::string("pong"));
-	{
-		aReply = aTestAgent.sendCommand("get robot toto video_command_port", boost::none);
-		size_t aIndex = aReply.rfind(":");
-		uint16_t aPort = boost::lexical_cast< uint16_t >(aReply.substr(aIndex + 1));
-
-		TestAgent aTestClient(aPort);
-		ORWELL_LOG_INFO("ping video server");
-		aTestClient.sendCommand("ping", std::string("pong"));
-		ClientSendsInput(
-				*aParameters.m_commandLineParameters.m_pullerPort,
-				*aParameters.m_commandLineParameters.m_publisherPort,
-				aRobotId);
-		ORWELL_LOG_INFO("make sure one image was captured.");
-		aTestClient.sendCommand("status", std::string("captured = 1"));
-	}
-
-	assert(gOK);
-	aTestAgent.sendCommand("stop game");
-	aFakeClientConnector.sendCommand("stop", std::string("stopping"));
 	ClientSendsInput(
 			*aParameters.m_commandLineParameters.m_pullerPort,
 			*aParameters.m_commandLineParameters.m_publisherPort,
 			aRobotId);
-	assert(not gOK);
+
+	while (not gInputReceived)
+	{
+		usleep(100);
+	}
+	assert(gInputReceived);
+	aTestAgent.sendCommand("stop game");
+	//aFakeClientConnector.sendCommand("stop", std::string("stopping"));
+	ClientSendsInput(
+			*aParameters.m_commandLineParameters.m_pullerPort,
+			*aParameters.m_commandLineParameters.m_publisherPort,
+			aRobotId);
+	assert(not gInputReceived);
 	aTestAgent.sendCommand("stop application");
 	aApplicationThread.join();
 	ORWELL_LOG_INFO("Test ends\n");
