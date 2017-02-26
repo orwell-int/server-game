@@ -29,8 +29,8 @@ public :
 			int32_t const iColourCode,
 			boost::posix_time::ptime const iCurrentTime);
 
-	static int32_t const kFrontierColourCode = 0;
-	static int32_t const kNoneColourCode = -1;
+	static int32_t const kFrontierColourCode = 1;
+	static int32_t const kNoneColourCode = 0;
 private :
 	enum class States
 	{

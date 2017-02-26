@@ -6,6 +6,7 @@
 #include "orwell/Server.hpp"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/optional/optional_io.hpp>
 
 #include <set>
 #include <iostream>

@@ -35,109 +35,108 @@ std::weak_ptr< orwell::game::Item > FlagDetector::setColour(
 	{
 		case States::OUTSIDE:
 		{
+			ORWELL_LOG_DEBUG("OUTSIDE");
 			if (FlagDetector::kFrontierColourCode == iColourCode)
 			{
 				m_state = States::FRONTIER;
+				ORWELL_LOG_DEBUG(" -> FRONTIER");
 			}
 			break;
 		}
 		case States::FRONTIER:
 		{
+			ORWELL_LOG_DEBUG("FRONTIER");
 			std::shared_ptr< orwell::game::Item > aItem = game::Item::GetItemByColour(iColourCode);
 			if (aItem)
 			{
 				m_state = States::INSIDE;
+				ORWELL_LOG_DEBUG(" -> INSIDE");
 				m_lastItem = aItem;
+				m_colourCode = iColourCode;
 				aItemChanged = true;
 				m_contactHandler.robotIsInContactWith(m_robot->getRobotId(), aItem);
 			}
 			else
 			{
-				if (not m_lastItem.expired())
-				{
-					m_lastItem.reset();
-					m_contactHandler.robotDropsContactWith(m_robot->getRobotId(), aItem);
-				}
 				m_state = States::UNKNOWN_FROM_FRONTIER;
+				ORWELL_LOG_DEBUG(" -> UNKNOWN_FROM_FRONTIER");
 			}
 			break;
 		}
 		case States::UNKNOWN_FROM_FRONTIER:
 		{
+			ORWELL_LOG_DEBUG("UNKNOWN_FROM_FRONTIER");
 			std::shared_ptr< orwell::game::Item > aItem = game::Item::GetItemByColour(iColourCode);
 			if (aItem)
 			{
+				m_colourCode = iColourCode;
 				auto aLastItem = m_lastItem.lock();
-				if ((aLastItem) and (aItem.get() == aLastItem.get()))
+				if (aLastItem)
 				{
-					m_state = States::INSIDE;
+					if ((aItem.get() == aLastItem.get()))
+					{
+					}
+					else
+					{
+						ORWELL_LOG_WARN("Finding a different item from the frontier ?");
+					}
 				}
 				else
 				{
-					ORWELL_LOG_WARN("Inconsistent colour transition, force UNKNOWN_FROM_FRONTIER -> OUTSIDE");
-					m_state = States::OUTSIDE;
-					if (not m_lastItem.expired())
-					{
-						m_lastItem.reset();
-						m_contactHandler.robotDropsContactWith(m_robot->getRobotId(), aItem);
-					}
+					m_lastItem = aItem;
+					aItemChanged = true;
+					m_contactHandler.robotIsInContactWith(m_robot->getRobotId(), aItem);
 				}
+				m_state = States::INSIDE;
+				ORWELL_LOG_DEBUG(" -> INSIDE");
 			}
 			break;
 		}
 		case States::INSIDE:
 		{
-			std::shared_ptr< orwell::game::Item > aItem = game::Item::GetItemByColour(iColourCode);
-			if (aItem)
+			ORWELL_LOG_DEBUG("INSIDE");
+			if (FlagDetector::kFrontierColourCode == iColourCode)
 			{
-				if (not m_lastItem.expired())
+				m_state = States::FRONTIER;
+				m_colourCode = kFrontierColourCode;
+				auto aLastItem = m_lastItem.lock();
+				if (aLastItem)
 				{
-					ORWELL_LOG_WARN("Inconsistent colour transition, force INSIDE -> OUTSIDE");
-					m_state = States::OUTSIDE;
-					m_lastItem.reset();
-					m_contactHandler.robotDropsContactWith(m_robot->getRobotId(), aItem);
+					m_contactHandler.robotDropsContactWith(m_robot->getRobotId(), aLastItem);
 				}
+				m_lastItem.reset();
+				ORWELL_LOG_DEBUG(" -> FRONTIER");
 			}
-			else
+			else if (iColourCode != m_colourCode)
 			{
 				m_state = States::TRANSITION_FROM_INSIDE;
+				ORWELL_LOG_DEBUG(" -> TRANSITION_FROM_INSIDE");
 			}
 			break;
 		}
 		case States::TRANSITION_FROM_INSIDE:
 		{
-			std::shared_ptr< orwell::game::Item > aItem = game::Item::GetItemByColour(iColourCode);
-			if (aItem)
+			ORWELL_LOG_DEBUG("TRANSITION_FROM_INSIDE");
+			if (iColourCode == m_colourCode)
 			{
 				auto aLastItem = m_lastItem.lock();
-				if ((aLastItem) and (aItem.get() == aLastItem.get()))
+				if (aLastItem)
 				{
 					m_state = States::INSIDE;
-				}
-				else
-				{
-					ORWELL_LOG_WARN("Inconsistent colour transition, force TRANSITION_FROM_INSIDE -> OUTSIDE");
-					m_state = States::OUTSIDE;
-					m_lastItem.reset();
-					m_contactHandler.robotDropsContactWith(m_robot->getRobotId(), aItem);
+					ORWELL_LOG_DEBUG(" -> INSIDE");
 				}
 			}
-			else
+			else if (FlagDetector::kFrontierColourCode == iColourCode)
 			{
-				if (FlagDetector::kFrontierColourCode == iColourCode)
+				m_state = States::FRONTIER;
+				m_colourCode = kFrontierColourCode;
+				auto aLastItem = m_lastItem.lock();
+				if (aLastItem)
 				{
-					m_state = States::FRONTIER;
+					m_contactHandler.robotDropsContactWith(m_robot->getRobotId(), aLastItem);
 				}
-				else
-				{
-					ORWELL_LOG_WARN("Inconsistent colour transition, force UNKNOWN_FROM_FRONTIER -> OUTSIDE");
-					m_state = States::OUTSIDE;
-					if (not m_lastItem.expired())
-					{
-						m_lastItem.reset();
-					}
-					m_contactHandler.robotDropsContactWith(m_robot->getRobotId(), aItem);
-				}
+				m_lastItem.reset();
+				ORWELL_LOG_DEBUG(" -> FRONTIER");
 			}
 			break;
 		}
