@@ -135,6 +135,16 @@ uint64_t Game::getSecondsLeft() const
 	}
 }
 
+boost::posix_time::time_duration const & Game::getDuration() const
+{
+	return m_gameDuration;
+}
+
+void Game::setDuration(boost::posix_time::time_duration const & iSeconds)
+{
+	m_gameDuration = iSeconds;
+}
+
 void Game::start(
 		bool const iForceStop,
 		boost::optional< boost::posix_time::ptime > const iForcedStartTime)

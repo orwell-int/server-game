@@ -18,6 +18,7 @@
 #include "Common.hpp"
 
 bool gOK;
+uint32_t const gGameDuration = 10;
 
 static void test_1(orwell::Application & ioApplication)
 {
@@ -108,6 +109,14 @@ static void test_1(orwell::Application & ioApplication)
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
 	aExpectedRobotList = (R"(Robots:
 )");
+	// get and set game duration {
+	assert(aAgentProxy.step("get game duration", aAgentReply));
+	ASSERT_EQ(boost::lexical_cast< std::string >(gGameDuration), aAgentReply);
+	std::string const aNewGameDuration = "30";
+	assert(aAgentProxy.step("set game duration " + aNewGameDuration, aAgentReply));
+	assert(aAgentProxy.step("get game duration", aAgentReply));
+	ASSERT_EQ(aNewGameDuration, aAgentReply);
+	// } get and set game duration
 	ORWELL_ASSERT(aExpectedRobotList, aRobotList, "empty robot KO");
 	assert(aAgentProxy.step("stop application", aAgentReply));
 	gOK = true;
@@ -130,6 +139,7 @@ int main()
 		aCommandLineArguments.m_gameDuration = 300;
 		aCommandLineArguments.m_dryRun = true;
 		aCommandLineArguments.m_broadcast = false;
+		aCommandLineArguments.m_gameDuration = gGameDuration;
 
 		Arguments aArguments = Common::GetArguments(
 				aCommandLineArguments, true);

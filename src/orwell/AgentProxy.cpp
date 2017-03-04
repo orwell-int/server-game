@@ -275,14 +275,26 @@ bool AgentProxy::step(
 	{
 		std::string aObject;
 		aStream >> aObject;
-		std::string aName;
-		ReadName(aStream, aName);
-		std::string aProperty;
-		aStream >> aProperty;
-		std::string aValue;
-		aStream >> aValue;
-		if ("robot" == aObject)
+		if ("game" == aObject)
 		{
+			std::string aProperty;
+			aStream >> aProperty;
+			uint32_t aValue;
+			aStream >> aValue;
+			Dispatch(
+					aStream,
+					std::bind(&AgentProxy::setGame, this, aProperty, aValue),
+					aResult,
+					ioReply);
+		}
+		else if ("robot" == aObject)
+		{
+			std::string aName;
+			ReadName(aStream, aName);
+			std::string aProperty;
+			aStream >> aProperty;
+			std::string aValue;
+			aStream >> aValue;
 			Dispatch(
 					aStream,
 					std::bind(&AgentProxy::setRobot, this, aName, aProperty, aValue),
@@ -597,6 +609,13 @@ void AgentProxy::getGame(
 						->accessContext().getIsRunning());
 			ORWELL_LOG_INFO("running = " << oValue);
 		}
+		else if ("duration" == iProperty)
+		{
+			oValue = boost::lexical_cast< std::string >(
+					m_application.accessServer()
+						->accessContext().getDuration().total_seconds());
+			ORWELL_LOG_INFO("running = " << oValue);
+		}
 		else
 		{
 			oValue = "KO";
@@ -610,7 +629,29 @@ void AgentProxy::getGame(
 	}
 }
 
+void AgentProxy::setGame(
+		std::string const & iProperty,
+		uint32_t const iValue)
+{
+	ORWELL_LOG_INFO("set game '" << iProperty << "' '" << iValue << "'");
+	try
+	{
+		if ("duration" == iProperty)
+		{
+			m_application.accessServer()->accessContext().setDuration(
+				boost::posix_time::seconds(iValue));
+		}
+		else
+		{
+			ORWELL_LOG_WARN("Unknown property for the game: '" << iProperty << "'");
+		}
+	}
+	catch (std::exception const & anException)
+	{
+		ORWELL_LOG_ERROR(anException.what());
+	}
+}
+
 // protected
 
 }
-

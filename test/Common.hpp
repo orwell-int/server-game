@@ -152,6 +152,9 @@ public:
 			std::string const & iProperty,
 			std::string & oValue));
 
+	MOCK_METHOD2(setGame, void(
+			std::string const & iProperty,
+			uint32_t const iValue));
 };
 
 struct TempFile
