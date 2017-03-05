@@ -79,12 +79,12 @@ add_subdirectory(messages)
 add_subdirectory(test)
 
 message(CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR})
+message(CMAKE_CURRENT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR})
 
 # Get together all the source files and all the headers
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.cc)
 file(GLOB_RECURSE EXPORTABLEHEADERS include/*.hpp include/*.h)
 file(GLOB CONFIG *.ini)
-file(GLOB IMAGES ${CMAKE_SOURCE_DIR}/test/*.part)
 file(GLOB OPENCV_IMAGES ${CMAKE_SOURCE_DIR}/test/*.jpg)
 
 # Required libraries
@@ -119,11 +119,9 @@ install(TARGETS orwell_server_game LIBRARY DESTINATION lib)
 install(FILES ${EXPORTABLEHEADERS} DESTINATION include)
 install(FILES ${PROTO_HDRS} DESTINATION include)
 foreach(configFile ${CONFIG})
-	add_custom_command(TARGET orwell_server_game COMMAND ${CMAKE_COMMAND} -E copy ${configFile} ${CMAKE_BINARY_DIR})
+	MESSAGE("Copy CONFIG from ${configFile} to ${CMAKE_CURRENT_BINARY_DIR}")
+	add_custom_command(TARGET orwell_server_game COMMAND ${CMAKE_COMMAND} -E copy_if_different ${configFile} ${CMAKE_BINARY_DIR})
 endforeach(configFile)
-foreach(image ${IMAGES} ${OPENCV_IMAGES})
-	add_custom_command(TARGET orwell_server_game  COMMAND ${CMAKE_COMMAND} -E copy ${image} ${CMAKE_CURRENT_BINARY_DIR})
-endforeach(image)
 
 
 include_directories(
