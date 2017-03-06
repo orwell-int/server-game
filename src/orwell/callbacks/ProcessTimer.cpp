@@ -33,6 +33,7 @@ void ProcessTimer::execute()
 	ORWELL_LOG_DEBUG("Is game running ? " << m_game->getIsRunning());
 	aGameState.set_playing(m_game->getIsRunning());
 	aGameState.set_seconds(m_game->getSecondsLeft());
+	aGameState.set_total_seconds(m_game->getDuration().total_seconds());
 	for (game::Landmark const & aLandmark:  m_game->getMapLimits())
 	{
 		messages::Landmark * aMapLimit = aGameState.add_map_limits();
