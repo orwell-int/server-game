@@ -201,6 +201,7 @@ void Game::stop()
 		}
 		ORWELL_LOG_INFO("game stops");
 		m_isRunning = false;
+		orwell::game::Item::ResetAllItems();
 	}
 }
 
