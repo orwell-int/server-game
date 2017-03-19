@@ -48,6 +48,11 @@ uint32_t Team::getScore() const
 	return m_score;
 }
 
+void Team::setScore(uint32_t const iScore)
+{
+	m_score = iScore;
+}
+
 void Team::resetScore()
 {
 	m_score = 0;
@@ -73,4 +78,11 @@ void Team::captureItem(std::shared_ptr< Item > ioItem)
 
 } // game
 } // orwell
+
+bool operator ==(
+		orwell::game::Team const & iLeft,
+		orwell::game::Team const & iRight)
+{
+	return (iLeft.getName() == iRight.getName());
+}
 

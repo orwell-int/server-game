@@ -116,6 +116,11 @@ public:
 			std::string const & iProperty,
 			std::string & oValue));
 
+	MOCK_METHOD3(setTeam, void(
+			std::string const & iTeamName,
+			std::string const & iProperty,
+			std::string const & iValue));
+
 	MOCK_METHOD1(listRobot, void(std::string & ioReply));
 
 	MOCK_METHOD2(addRobot, void(

@@ -301,6 +301,20 @@ bool AgentProxy::step(
 					aResult,
 					ioReply);
 		}
+		else if ("team" == aObject)
+		{
+			std::string aName;
+			ReadName(aStream, aName);
+			std::string aProperty;
+			aStream >> aProperty;
+			std::string aValue;
+			aStream >> aValue;
+			Dispatch(
+					aStream,
+					std::bind(&AgentProxy::setTeam, this, aName, aProperty, aValue),
+					aResult,
+					ioReply);
+		}
 	}
 	else if ("get" == aAction)
 	{
@@ -384,6 +398,11 @@ void AgentProxy::getTeam(
 	{
 		orwell::game::Team aTeam =
 				m_application.accessServer()->accessContext().getTeam(iTeamName);
+		if (orwell::game::Team::GetNeutralTeam() == aTeam)
+		{
+			ORWELL_LOG_WARN("Invalid team name '" << iTeamName << "'");
+			return;
+		}
 		if ("score" == iProperty)
 		{
 			oValue = boost::lexical_cast< std::string >(aTeam.getScore());
@@ -392,6 +411,36 @@ void AgentProxy::getTeam(
 		else
 		{
 			oValue = "KO";
+			ORWELL_LOG_WARN("Unknown property for a team: '" << iProperty << "'");
+		}
+	}
+	catch (std::exception const & anException)
+	{
+		ORWELL_LOG_ERROR(anException.what());
+	}
+}
+
+void AgentProxy::setTeam(
+		std::string const & iTeamName,
+		std::string const & iProperty,
+		std::string const & iValue)
+{
+	ORWELL_LOG_INFO("get team " << iTeamName << " " << iProperty);
+	try
+	{
+		orwell::game::Team & aTeam =
+				m_application.accessServer()->accessContext().accessTeam(iTeamName);
+		if (orwell::game::Team::GetNeutralTeam() == aTeam)
+		{
+			ORWELL_LOG_WARN("Invalid team name '" << iTeamName << "'");
+			return;
+		}
+		if ("score" == iProperty)
+		{
+			aTeam.setScore(boost::lexical_cast< uint32_t >(iValue));
+		}
+		else
+		{
 			ORWELL_LOG_WARN("Unknown property for a team: '" << iProperty << "'");
 		}
 	}

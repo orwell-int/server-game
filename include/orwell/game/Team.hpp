@@ -26,6 +26,8 @@ public:
 
 	uint32_t getScore() const;
 
+	void setScore(uint32_t const iScore);
+
 	void resetScore();
 
 	void addPlayer(std::shared_ptr<Player> ioPlayer);
@@ -40,3 +42,7 @@ private:
 
 } // game
 } // orwell
+
+bool operator ==(
+		orwell::game::Team const & iLeft,
+		orwell::game::Team const & iRight);
