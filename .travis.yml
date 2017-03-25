@@ -30,7 +30,6 @@ script:
     - lcov --version | grep "1.10"
     - mkdir -p ./build
     - cd ./build && cmake .. && make && cd ./test
-    - cd server-web ; make develop ; cd -
     - export ORWELL_DISABLE_TEST_BROADCAST=1
     - cmake ..
     - ifconfig

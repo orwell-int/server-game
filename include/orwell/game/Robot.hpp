@@ -77,11 +77,6 @@ private:
 	bool m_hasRealRobot;
 	std::weak_ptr< Player > m_player;
 	zmq::context_t m_zmqContext;
-	orwell::com::Socket m_serverCommandSocket;
-	/// true if and only if the robot is waiting for an answer to a capture
-	/// command that will contain an image
-	bool m_pendingImage;
-	std::string m_tempFile;
 };
 
 } // namespace game

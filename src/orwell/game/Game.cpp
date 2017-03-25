@@ -170,7 +170,7 @@ void Game::stop()
 			std::shared_ptr< Robot > aRobot = aPair.second;
 			aRobot->stop();
 		}
-		ORWELL_LOG_INFO( "game stops" );
+		ORWELL_LOG_INFO("game stops");
 		m_isRunning = false;
 	}
 }

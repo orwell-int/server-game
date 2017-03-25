@@ -89,9 +89,9 @@ TEST_F(TestOrwellGameRobot, StartVideoWithoutURL)
 TEST_F(TestOrwellGameRobot, StartVideoWithURL)
 {
 	using ::testing::_;
-	EXPECT_CALL(m_fakeSystemProxy, mkstemp(_)).Times(1);
-	EXPECT_CALL(m_fakeSystemProxy, close(_)).Times(1);
-	EXPECT_CALL(m_fakeSystemProxy, system(_)).Times(1);
+	EXPECT_CALL(m_fakeSystemProxy, mkstemp(_)).Times(0);
+	EXPECT_CALL(m_fakeSystemProxy, close(_)).Times(0);
+	EXPECT_CALL(m_fakeSystemProxy, system(_)).Times(0);
 	m_robot.setVideoUrl("http://url.test:1234");
 	m_robot.startVideo();
 }
@@ -100,10 +100,10 @@ TEST_F(TestOrwellGameRobot, StartVideoWithURL)
 TEST_F(TestOrwellGameRobot, StartVideoWithURL_nc)
 {
 	using ::testing::_;
-	m_robot.setVideoUrl("nc:12.34.56.78:90");
-	m_robot.startVideo();
 	EXPECT_CALL(m_fakeSystemProxy, mkstemp(_)).Times(0);
 	EXPECT_CALL(m_fakeSystemProxy, system(_)).Times(0);
+	m_robot.setVideoUrl("nc:12.34.56.78:90");
+	m_robot.startVideo();
 }
 
 

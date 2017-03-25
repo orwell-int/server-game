@@ -681,6 +681,7 @@ uint16_t Application::popPort()
 		uint16_t aReturnPort = m_availablePorts.back();
 		m_availablePorts.pop_back();
 		m_takenPorts.push_back(aReturnPort);
+		ORWELL_LOG_DEBUG("popPort() -> " << aReturnPort);
 		return aReturnPort;
 	}
 	else

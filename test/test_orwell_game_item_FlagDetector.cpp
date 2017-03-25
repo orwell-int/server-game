@@ -59,6 +59,8 @@ protected:
 	{
 	}
 
+	void sendColour(uint32_t iColourCode);
+
 	std::string m_type;
 	std::string const m_name;
 	std::set< std::string > m_rfids;
@@ -76,32 +78,32 @@ protected:
 	orwell::game::item::FlagDetector m_flagDetector;
 };
 
+void TestOrwellGameItemFlagDetector::sendColour(uint32_t iColourCode)
+{
+	m_flagDetector.setColour(
+			iColourCode,
+			boost::posix_time::microsec_clock::local_time());
+}
 
 TEST_F(TestOrwellGameItemFlagDetector, Frontier)
 {
 	EXPECT_CALL(m_contactHandler, robotIsInContactWith(_, _)).Times(0);
 	EXPECT_CALL(m_contactHandler, robotDropsContactWith(_, _)).Times(0);
-	m_flagDetector.setColour(
-			orwell::game::item::FlagDetector::kFrontierColourCode,
-			boost::posix_time::microsec_clock::local_time());
+	sendColour(orwell::game::item::FlagDetector::kFrontierColourCode);
 }
 
 TEST_F(TestOrwellGameItemFlagDetector, Frontier_Colour_Frontier_Outside)
 {
 	EXPECT_CALL(m_contactHandler, robotIsInContactWith(_, _)).Times(1);
 	EXPECT_CALL(m_contactHandler, robotDropsContactWith(_, _)).Times(1);
-	m_flagDetector.setColour(
-			orwell::game::item::FlagDetector::kFrontierColourCode,
-			boost::posix_time::microsec_clock::local_time());
-	m_flagDetector.setColour(
-			m_colourCode,
-			boost::posix_time::microsec_clock::local_time());
-	m_flagDetector.setColour(
-			orwell::game::item::FlagDetector::kFrontierColourCode,
-			boost::posix_time::microsec_clock::local_time());
-	m_flagDetector.setColour(
-			orwell::game::item::FlagDetector::kNoneColourCode,
-			boost::posix_time::microsec_clock::local_time());
+	ORWELL_LOG_DEBUG("Send kFrontierColourCode");
+	sendColour(orwell::game::item::FlagDetector::kFrontierColourCode);
+	ORWELL_LOG_DEBUG("Send " << m_colourCode);
+	sendColour(m_colourCode);
+	ORWELL_LOG_DEBUG("Send kFrontierColourCode");
+	sendColour(orwell::game::item::FlagDetector::kFrontierColourCode);
+	ORWELL_LOG_DEBUG("Send kNoneColourCode");
+	sendColour(orwell::game::item::FlagDetector::kNoneColourCode);
 }
 
 
@@ -109,12 +111,37 @@ TEST_F(TestOrwellGameItemFlagDetector, Frontier_Colour_Frontier)
 {
 	EXPECT_CALL(m_contactHandler, robotIsInContactWith(_, _)).Times(1);
 	EXPECT_CALL(m_contactHandler, robotDropsContactWith(_, _)).Times(0);
-	m_flagDetector.setColour(
-			orwell::game::item::FlagDetector::kFrontierColourCode,
-			boost::posix_time::microsec_clock::local_time());
-	m_flagDetector.setColour(
-			m_colourCode,
-			boost::posix_time::microsec_clock::local_time());
+	sendColour(orwell::game::item::FlagDetector::kFrontierColourCode);
+	sendColour(m_colourCode);
+}
+
+
+TEST_F(TestOrwellGameItemFlagDetector, Frontier_Colour_Frontier_Outside_with_None)
+{
+	EXPECT_CALL(m_contactHandler, robotIsInContactWith(_, _)).Times(1);
+	EXPECT_CALL(m_contactHandler, robotDropsContactWith(_, _)).Times(1);
+	ORWELL_LOG_DEBUG("Send kFrontierColourCode");
+	sendColour(orwell::game::item::FlagDetector::kFrontierColourCode);
+	ORWELL_LOG_DEBUG("Send kNoneColourCode");
+	sendColour(orwell::game::item::FlagDetector::kNoneColourCode);
+	ORWELL_LOG_DEBUG("Send " << m_colourCode);
+	sendColour(m_colourCode);
+	ORWELL_LOG_DEBUG("Send kNoneColourCode");
+	sendColour(orwell::game::item::FlagDetector::kNoneColourCode);
+	ORWELL_LOG_DEBUG("Send kFrontierColourCode");
+	sendColour(orwell::game::item::FlagDetector::kFrontierColourCode);
+	ORWELL_LOG_DEBUG("Send kNoneColourCode");
+	sendColour(orwell::game::item::FlagDetector::kNoneColourCode);
+}
+
+
+TEST_F(TestOrwellGameItemFlagDetector, Frontier_Colour_Frontier_with_None)
+{
+	EXPECT_CALL(m_contactHandler, robotIsInContactWith(_, _)).Times(1);
+	EXPECT_CALL(m_contactHandler, robotDropsContactWith(_, _)).Times(0);
+	sendColour(orwell::game::item::FlagDetector::kFrontierColourCode);
+	sendColour(orwell::game::item::FlagDetector::kNoneColourCode);
+	sendColour(m_colourCode);
 }
 
 

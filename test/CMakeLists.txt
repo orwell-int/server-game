@@ -103,7 +103,6 @@ foreach(image ${OPENCV_IMAGES})
 	MESSAGE("Copy IMAGES (test) from ${OPENCV_IMAGES} to ${CMAKE_CURRENT_BINARY_DIR}")
 	add_custom_command(TARGET test_opencv COMMAND ${CMAKE_COMMAND} -E copy ${image} ${CMAKE_CURRENT_BINARY_DIR})
 endforeach(image)
-execute_process(COMMAND ln -fs ${CMAKE_SOURCE_DIR}/server-web ${CMAKE_CURRENT_BINARY_DIR}/server-web)
 
 get_property(VAR_ALL_TEST_TARGETS GLOBAL PROPERTY P_ALL_TEST_TARGETS)
 ADD_CUSTOM_TARGET(ctest
