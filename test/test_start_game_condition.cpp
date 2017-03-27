@@ -83,6 +83,7 @@ static void client()
 
 	Hello aHelloMessage;
 	aHelloMessage.set_name("playername");
+	aHelloMessage.set_ready(true);
 	RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
 	aPusher.send(aMessage);
 

@@ -135,9 +135,20 @@ uint64_t Game::getSecondsLeft() const
 	}
 }
 
-void Game::start()
+void Game::start(
+		bool const iForceStop,
+		boost::optional< boost::posix_time::ptime > const iForcedStartTime)
 {
 	ORWELL_LOG_DEBUG("Game::start");
+	if (iForceStop)
+	{
+		m_winner.reset();
+		for (auto & aPair : m_teams)
+		{
+			aPair.second.resetScore();
+		}
+		stop();
+	}
 	if (not m_isRunning)
 	{
 		for (auto const aPair : m_robots)
@@ -155,7 +166,15 @@ void Game::start()
 			}
 		}
 		ORWELL_LOG_INFO("game starts");
-		m_startTime = boost::posix_time::microsec_clock::local_time();
+		if (iForcedStartTime)
+		{
+			m_startTime = *iForcedStartTime;
+		}
+		else
+		{
+			m_startTime = boost::posix_time::microsec_clock::local_time();
+		}
+		m_time = m_startTime;
 		m_isRunning = true;
 	}
 }

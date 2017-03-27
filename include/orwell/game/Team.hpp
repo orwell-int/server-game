@@ -26,6 +26,8 @@ public:
 
 	uint32_t getScore() const;
 
+	void resetScore();
+
 	void addPlayer(std::shared_ptr<Player> ioPlayer);
 	void removePlayer(std::shared_ptr<Player> ioPlayer);
 

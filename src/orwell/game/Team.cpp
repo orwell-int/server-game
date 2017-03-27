@@ -48,6 +48,11 @@ uint32_t Team::getScore() const
 	return m_score;
 }
 
+void Team::resetScore()
+{
+	m_score = 0;
+}
+
 void Team::addPlayer(std::shared_ptr<Player> ioPlayer)
 {
 	if (std::find(m_players.begin(), m_players.end(), ioPlayer) == m_players.end())
