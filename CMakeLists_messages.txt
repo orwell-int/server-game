@@ -2,7 +2,7 @@
 find_package(Protobuf REQUIRED)
 
 # Generate the protobuf messages
-PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ./robot.proto ./server-game.proto ./controller.proto ./server-web.proto)
+PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ./common.proto ./robot.proto ./server-game.proto ./controller.proto ./server-web.proto)
 
 include_directories(
 	${CMAKE_CURRENT_BINARY_DIR}
