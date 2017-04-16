@@ -227,7 +227,7 @@ int main(int argc, const char * argv [])
 			break;
 		default:
 			// parent
-			ServerPtr = new orwell::BroadcastServer(aPullerUrl, aPublisherUrl);
+			ServerPtr = new orwell::BroadcastServer(9080, aPullerUrl, aPublisherUrl);
 			simulateServer();
 			ORWELL_LOG_INFO("Delete server in parent");
 			delete ServerPtr;

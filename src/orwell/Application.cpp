@@ -48,7 +48,7 @@ bool Application::ReadParameters(
 		char * argv[],
 		Parameters & oParam)
 {
-	if ( not ParseParametersFromCommandLine(argc, argv, oParam) )
+	if (not ParseParametersFromCommandLine(argc, argv, oParam))
 	{
 		return false;
 	}
@@ -105,6 +105,11 @@ bool Application::ReadParameters(
 	{
 		oParam.m_commandLineParameters.m_dryRun = false;
 	}
+	if (not oParam.m_commandLineParameters.m_broadcastPort)
+	{
+		oParam.m_commandLineParameters.m_broadcastPort = 9080;
+		ORWELL_LOG_DEBUG("by default, broadcast-port = " << oParam.m_commandLineParameters.m_broadcastPort);
+	}
 
 	return CheckParametersConsistency(oParam);
 }
@@ -114,7 +119,7 @@ bool Application::ParseParametersFromCommandLine(
 		Application::Parameters & oParam)
 {
 	// Parse the command line arguments
-	options_description aDescription("Usage: " + std::string(argv[0]) + " [PpAvTdrhn]");
+	options_description aDescription("Usage: " + std::string(argv[0]) + " [PpAvTdrhnB]");
 
 	// ??? : Do we want to have default values or not? Feel free to add them when integrating.
 	aDescription.add_options()
@@ -129,7 +134,8 @@ bool Application::ParseParametersFromCommandLine(
 				("version,v",                              "Print version number and exits")
 				("debug-log,d",                            "Print debug logs on the console")
 				("no-broadcast",                           "Do not start the broadcast.")
-				("dry-run,n",                              "Do not start the server.");
+				("dry-run,n",                              "Do not start the server.")
+				("broadcast-port,B", value<uint16_t>(),    "Broadcast port");
 
 	variables_map aVariablesMap;
 	try
@@ -217,6 +223,13 @@ bool Application::ParseParametersFromCommandLine(
 		oParam.m_commandLineParameters.m_broadcast = false;
 		ORWELL_LOG_DEBUG("do not start broadcast server");
 	}
+
+	if (aVariablesMap.count("broadcast-port"))
+	{
+		oParam.m_commandLineParameters.m_broadcastPort = aVariablesMap["broadcast-port"].as< uint16_t >();
+		ORWELL_LOG_DEBUG("broadcast-port from command line = " << oParam.m_commandLineParameters.m_broadcastPort);
+	}
+
 	return true;
 }
 
@@ -310,6 +323,16 @@ bool Application::ParseParametersFromConfigFile(
 		}
 	}
 
+	if (not ioParam.m_commandLineParameters.m_broadcastPort)
+	{
+		boost::optional<uint16_t> aBroadcastPort = aPtree.get_optional<uint16_t>("server.broadcast-port");
+		if (aBroadcastPort)
+		{
+			ioParam.m_commandLineParameters.m_broadcastPort = aBroadcastPort;
+			ORWELL_LOG_DEBUG("broadcast-port from config file = " << ioParam.m_commandLineParameters.m_broadcastPort);
+		}
+	}
+
 	return true;
 }
 
@@ -397,6 +420,11 @@ void Application::ParseGameConfigFromFile(
 			ioParam.m_mapLimits.push_back(game::Landmark::ParseConfig(aMapLimit, aPtree));
 		}
 	}
+	if (not ioParam.m_commandLineParameters.m_broadcastPort)
+	{
+		ioParam.m_commandLineParameters.m_broadcastPort = aPtree.get_optional< uint32_t >("server.broadcast-port");
+	}
+
 }
 
 bool Application::CheckParametersConsistency(Parameters const & iParam)
@@ -416,11 +444,32 @@ bool Application::CheckParametersConsistency(Parameters const & iParam)
 		ORWELL_LOG_ERROR("Puller and agent ports have the same value (" << iParam.m_commandLineParameters.m_agentPort << ") which is not allowed.");
 		return false;
 	}
+	if (iParam.m_commandLineParameters.m_publisherPort == iParam.m_commandLineParameters.m_broadcastPort)
+	{
+		ORWELL_LOG_ERROR("Publisher and broadcaster ports have the same value (" << iParam.m_commandLineParameters.m_broadcastPort << ") which is not allowed.");
+		return false;
+	}
+	if (iParam.m_commandLineParameters.m_pullerPort == iParam.m_commandLineParameters.m_broadcastPort)
+	{
+		ORWELL_LOG_ERROR("Puller and broadcaster ports have the same value (" << iParam.m_commandLineParameters.m_broadcastPort << ") which is not allowed.");
+		return false;
+	}
+	if (iParam.m_commandLineParameters.m_broadcastPort == iParam.m_commandLineParameters.m_agentPort)
+	{
+		ORWELL_LOG_ERROR("Broadcaster and agent ports have the same value (" << iParam.m_commandLineParameters.m_agentPort << ") which is not allowed.");
+		return false;
+	}
 	if ((*iParam.m_commandLineParameters.m_publisherPort) == 0 or (*iParam.m_commandLineParameters.m_pullerPort == 0))
 	{
 		ORWELL_LOG_ERROR("Invalid port information. Ports are \n Puller=" << iParam.m_commandLineParameters.m_pullerPort << "\n Publisher=" << iParam.m_commandLineParameters.m_publisherPort);
 		return false;
 	}
+	if ((iParam.m_commandLineParameters.m_broadcastPort) and ((*iParam.m_commandLineParameters.m_broadcastPort) == 0))
+	{
+		ORWELL_LOG_ERROR("Broadcast port cannot be 0.");
+		return false;
+	}
+
 
 	//each robot needs 1 port for the video retransmission and 1 port to send commands to the associated server
 	if (iParam.m_videoPorts.size() < 2 * iParam.m_robots.size())
@@ -637,7 +686,10 @@ void Application::initBroadcastServer(Parameters const & iParam)
 			"tcp://*:" + boost::lexical_cast< std::string >(*iParam.m_commandLineParameters.m_publisherPort);
 		std::string aPullerAddress =
 			"tcp://*:" + boost::lexical_cast< std::string >(*iParam.m_commandLineParameters.m_pullerPort);
-		m_broadcastServer = new orwell::BroadcastServer(aPullerAddress, aPublisherAddress);
+		m_broadcastServer = new orwell::BroadcastServer(
+				*iParam.m_commandLineParameters.m_broadcastPort,
+				aPullerAddress,
+				aPublisherAddress);
 	}
 }
 
@@ -741,6 +793,7 @@ bool operator==(
 		and (aSameItems)
 		and (iLeft.m_teams == iRight.m_teams)
 		and (iLeft.m_mapLimits == iRight.m_mapLimits)
+		and (iLeft.m_commandLineParameters.m_broadcastPort == iRight.m_commandLineParameters.m_broadcastPort)
 		);
 }
 
@@ -801,6 +854,7 @@ std::ostream & operator<<(
 		ioOstream << aMapLimit << ", ";
 	}
 	ioOstream << "] ; ";
+	ioOstream << "broadcast port = " << iParameters.m_commandLineParameters.m_broadcastPort << " ; ";
 	return ioOstream;
 }
 
