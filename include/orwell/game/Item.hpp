@@ -58,13 +58,18 @@ public:
 
 	static std::vector< std::shared_ptr< Item > > GetAllItems();
 
+	static void ResetAllItems();
+
 	virtual std::string toLogString() const;
 
 	void startCapture(std::string const & iCapturingTeam);
 	void abortCapture();
 	std::string const & getCapturingTeam() const;
+	std::string const & getOwningTeam() const;
 	CaptureState getCaptureState() const;
 	void capture(Team & ioTeam);
+
+	void reset();
 
 private:
 	enum class Kind

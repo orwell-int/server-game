@@ -42,6 +42,7 @@ Item::Item(
 	: m_kind(Kind::COLOUR)
 	, m_name(iName)
 	, m_colour(iColourCode)
+	, m_captureState(CaptureState::PENDING)
 	, m_timeToCapture(iTimeToCapture)
 {
 	ORWELL_LOG_DEBUG("new Item (" << iName << ") by colour (" << iColourCode << ")");
@@ -168,6 +169,14 @@ std::vector< std::shared_ptr< Item > > Item::GetAllItems()
 	return s_allItems;
 }
 
+void Item::ResetAllItems()
+{
+	for (auto aItem: s_allItems)
+	{
+		aItem->reset();
+	}
+}
+
 std::string Item::toLogString() const
 {
 	std::stringstream aLogString;
@@ -177,8 +186,11 @@ std::string Item::toLogString() const
 
 void Item::startCapture(std::string const & iCapturingTeam)
 {
-	m_capturingTeam = iCapturingTeam;
-	m_captureState = CaptureState::STARTED;
+	if (m_owningTeam != iCapturingTeam)
+	{
+		m_capturingTeam = iCapturingTeam;
+		m_captureState = CaptureState::STARTED;
+	}
 }
 
 void Item::abortCapture()
@@ -189,6 +201,11 @@ void Item::abortCapture()
 std::string const & Item::getCapturingTeam() const
 {
 	return m_capturingTeam;
+}
+
+std::string const & Item::getOwningTeam() const
+{
+	return m_owningTeam;
 }
 
 CaptureState Item::getCaptureState() const
@@ -204,11 +221,13 @@ void Item::capture(Team & ioTeam)
 		m_owningTeam = ioTeam.getName();
 		m_captureState = CaptureState::SUCCEEDED;
 	}
-	else
-	{
-		// not sure that it should go back to PENDING
-		m_captureState = CaptureState::PENDING;
-	}
+}
+
+void Item::reset()
+{
+	m_owningTeam = "";
+	m_capturingTeam = "";
+	m_captureState = CaptureState::PENDING;
 }
 
 } // game
