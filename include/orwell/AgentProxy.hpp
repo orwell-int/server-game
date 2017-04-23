@@ -44,6 +44,12 @@ public :
 			std::string const & iProperty,
 			std::string & oValue) override;
 
+	/// set property <property> of team
+	void setTeam(
+			std::string const & iTeamName,
+			std::string const & iProperty,
+			std::string const & iValue) override;
+
 	/// List all the robots present.
 	///
 	void listRobot(std::string & ioReply) override;

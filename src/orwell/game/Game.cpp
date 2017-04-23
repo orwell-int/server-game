@@ -245,6 +245,14 @@ Team const & Game::getTeam(std::string const & iTeamName) const
 		: Team::GetNeutralTeam();
 }
 
+Team & Game::accessTeam(std::string const & iTeamName)
+{
+	auto aFound = m_teams.find(iTeamName);
+	return (m_teams.end() != aFound)
+		? aFound->second
+		: Team::GetNeutralTeam();
+}
+
 bool Game::addRobot(
 		string const & iName,
 		string const & iTeamName,

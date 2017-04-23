@@ -30,7 +30,8 @@ static void test_1(orwell::Application & ioApplication)
 	std::string aTeamList;
 	std::string aPlayerList;
 	std::string aRobotList;
-	assert(aAgentProxy.step("add team TEAM", aAgentReply));
+	std::string const aTeamName = "TEAM";
+	assert(aAgentProxy.step("add team " + aTeamName, aAgentReply));
 	assert(aAgentProxy.step("add player Player1", aAgentReply));
 	assert(aAgentProxy.step("add robot Robot1 TEAM", aAgentReply));
 	// list team {
@@ -70,6 +71,13 @@ static void test_1(orwell::Application & ioApplication)
 	// set robot {
 	assert(aAgentProxy.step("set robot Robot1 video_url titi", aAgentReply));
 	// } set robot
+	// get / set team score {
+	std::string const aScore = "2";
+	assert(aAgentProxy.step("get team " + aTeamName + " score 0", aAgentReply));
+	assert(aAgentProxy.step("set team " + aTeamName + " score " + aScore, aAgentReply));
+	assert(aAgentProxy.step("get team " + aTeamName + " score " + aScore, aAgentReply));
+	ASSERT_EQ(aScore, aAgentReply);
+	// } get / set team score
 	// unregister robot {
 	assert(aAgentProxy.step("unregister robot Robot1", aAgentReply));
 	// make sure that Robot1 is now unregistered

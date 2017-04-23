@@ -111,6 +111,13 @@ public:
 	///  The team if found and the neutral team otherwise.
 	Team const & getTeam(std::string const & iTeamName) const;
 
+	/// Get a team from its name.
+	/// \param iTeamName
+	///  The name of the team to retrieve.
+	/// \return
+	///  The team if found and the neutral team otherwise.
+	Team & accessTeam(std::string const & iTeamName);
+
 	boost::optional< std::string > const & getWinner() const;
 
 	/// Add a robot.

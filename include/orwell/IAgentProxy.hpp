@@ -39,6 +39,12 @@ public :
 			std::string const & iProperty,
 			std::string & oValue) = 0;
 
+	/// set property <property> of team
+	virtual void setTeam(
+			std::string const & iTeamName,
+			std::string const & iProperty,
+			std::string const & iValue) = 0;
+
 	/// get the list of robots
 	virtual void listRobot(std::string & ioReply) = 0;
 
@@ -82,7 +88,7 @@ public :
 
 	/// stop game
 	virtual void stopGame() = 0;
-	
+
 	/// get property <property> of game
 	virtual void getGame(
 			std::string const & iProperty,
