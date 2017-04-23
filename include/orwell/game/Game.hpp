@@ -63,6 +63,10 @@ public:
 
 	uint64_t getSecondsLeft() const;
 
+	boost::posix_time::time_duration const & getDuration() const;
+
+	void setDuration(boost::posix_time::time_duration const & iSeconds);
+
 	void start(
 			bool const iForceStop,
 			boost::optional< boost::posix_time::ptime > const iForcedStartTime = boost::none);

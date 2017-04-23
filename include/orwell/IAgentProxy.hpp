@@ -88,5 +88,9 @@ public :
 			std::string const & iProperty,
 			std::string & oValue) = 0;
 
+	/// set property <property> of game
+	virtual void setGame(
+			std::string const & iProperty,
+			uint32_t const iValue) = 0;
 };
 }

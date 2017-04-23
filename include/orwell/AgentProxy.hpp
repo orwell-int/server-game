@@ -95,6 +95,11 @@ public :
 			std::string const & iProperty,
 			std::string & oValue) override;
 
+	/// set property <property> of game
+	void setGame(
+			std::string const & iProperty,
+			uint32_t const iValue) override;
+
 protected :
 
 private :
@@ -104,4 +109,3 @@ private :
 	orwell::Application & m_application;
 };
 }
-
