@@ -18,7 +18,36 @@
 using orwell::messages::ServerRobotState;
 using orwell::messages::PlayerState;
 using orwell::messages::Item;
+using orwell::messages::Battery;
+using orwell::messages::Ultrasound;
 using orwell::com::RawMessage;
+
+namespace
+{
+
+void copy_battery(
+		ServerRobotState const & iServerRobotState,
+		PlayerState & ioPlayerState)
+{
+	if (iServerRobotState.has_battery())
+	{
+		Battery * aPbBattery = ioPlayerState.mutable_battery();
+		aPbBattery->CopyFrom(iServerRobotState.battery());
+	}
+}
+
+void copy_ultrasound(
+		ServerRobotState const & iServerRobotState,
+		PlayerState & ioPlayerState)
+{
+	if (iServerRobotState.has_ultrasound())
+	{
+		Ultrasound * aPbUltrasound = ioPlayerState.mutable_ultrasound();
+		aPbUltrasound->CopyFrom(iServerRobotState.ultrasound());
+	}
+}
+
+} // namespace
 
 namespace orwell
 {
@@ -60,12 +89,30 @@ void ProcessRobotState::execute()
 				<< aVisitedItems.size() << " sensors for robot with routing id "
 				<< aDestination << ".");
 	}
+	bool aFirst = true;
 	for (std::shared_ptr< orwell::game::Item > aItem: aVisitedItems)
 	{
 		PlayerState aPlayerState;
+		if (aFirst)
+		{
+			aFirst = false;
+			copy_battery(aRobotStateMsg, aPlayerState);
+			copy_ultrasound(aRobotStateMsg, aPlayerState);
+		}
 		Item * aPbItem = aPlayerState.mutable_item();
 		assert(nullptr != aPbItem);
 		aItem->getEncoder()->encode(*aPbItem);
+		RawMessage aMessage(
+				aDestination,
+				"PlayerState",
+				aPlayerState.SerializeAsString());
+		m_publisher->send(aMessage);
+	}
+	if (aVisitedItems.empty())
+	{
+		PlayerState aPlayerState;
+		copy_battery(aRobotStateMsg, aPlayerState);
+		copy_ultrasound(aRobotStateMsg, aPlayerState);
 		RawMessage aMessage(
 				aDestination,
 				"PlayerState",
