@@ -40,6 +40,7 @@ struct Application_CommandLineParameters
 	boost::optional< int32_t > m_gameDuration;
 	boost::optional<bool> m_dryRun;
 	boost::optional<bool> m_broadcast;
+	boost::optional< uint16_t > m_broadcastPort;
 };
 
 

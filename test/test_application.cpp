@@ -72,6 +72,7 @@ static void test_wrong_port_range_publisher_1()
 	aCommandLineArguments.m_publisherPort = 0;
 	aCommandLineArguments.m_pullerPort = 42;
 	aCommandLineArguments.m_agentPort = 43;
+	aCommandLineArguments.m_broadcastPort = 44;
 
 	test_ReadParameters(Status::FAIL, Common::GetArguments(aCommandLineArguments, false, false));
 }
@@ -84,6 +85,7 @@ static void test_wrong_port_range_publisher_2()
 	aCommandLineArguments.m_publisherPort = -1024;
 	aCommandLineArguments.m_pullerPort = 42;
 	aCommandLineArguments.m_agentPort = 43;
+	aCommandLineArguments.m_broadcastPort = 44;
 
 	// !! careful !  Boost converts -1024 to ... something, and it passes
 	test_ReadParameters(Status::PASS, Common::GetArguments(aCommandLineArguments, false, false));
@@ -97,6 +99,7 @@ static void test_wrong_port_range_publisher_3()
 	aCommandLineArguments.m_publisherPort = 99999;
 	aCommandLineArguments.m_pullerPort = 42;
 	aCommandLineArguments.m_agentPort = 43;
+	aCommandLineArguments.m_broadcastPort = 44;
 
 	// !! careful !  Boost converts 99999 to ... something, and it passes
 	test_ReadParameters(Status::PASS, Common::GetArguments(aCommandLineArguments, false, false));
@@ -110,6 +113,7 @@ static void test_same_ports_agent_publisher()
 	aCommandLineArguments.m_publisherPort = 41;
 	aCommandLineArguments.m_pullerPort = 42;
 	aCommandLineArguments.m_agentPort = 41;
+	aCommandLineArguments.m_broadcastPort = 44;
 
 	test_ReadParameters(Status::FAIL, Common::GetArguments(aCommandLineArguments, false, false));
 }
@@ -122,6 +126,7 @@ static void test_same_ports_puller_publisher()
 	aCommandLineArguments.m_publisherPort = 41;
 	aCommandLineArguments.m_pullerPort = 41;
 	aCommandLineArguments.m_agentPort = 42;
+	aCommandLineArguments.m_broadcastPort = 44;
 
 	test_ReadParameters(Status::FAIL, Common::GetArguments(aCommandLineArguments, false, false));
 }
@@ -134,8 +139,89 @@ static void test_same_ports_puller_agent()
 	aCommandLineArguments.m_publisherPort = 41;
 	aCommandLineArguments.m_pullerPort = 42;
 	aCommandLineArguments.m_agentPort = 42;
+	aCommandLineArguments.m_broadcastPort = 44;
 
 	test_ReadParameters(Status::FAIL, Common::GetArguments(aCommandLineArguments, false, false));
+}
+
+static void test_same_ports_publisher_broadcast()
+{
+	ORWELL_LOG_DEBUG("test_same_ports_publisher_broadcast");
+
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_publisherPort = 41;
+	aCommandLineArguments.m_pullerPort = 42;
+	aCommandLineArguments.m_agentPort = 43;
+	aCommandLineArguments.m_broadcastPort = 41;
+
+	test_ReadParameters(Status::FAIL, Common::GetArguments(aCommandLineArguments, false, false));
+}
+
+static void test_same_ports_puller_broadcast()
+{
+	ORWELL_LOG_DEBUG("test_same_ports_puller_broadcast");
+
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_publisherPort = 41;
+	aCommandLineArguments.m_pullerPort = 42;
+	aCommandLineArguments.m_agentPort = 43;
+	aCommandLineArguments.m_broadcastPort = 42;
+
+	test_ReadParameters(Status::FAIL, Common::GetArguments(aCommandLineArguments, false, false));
+}
+
+static void test_same_ports_agent_broadcast()
+{
+	ORWELL_LOG_DEBUG("test_same_ports_agent_agent");
+
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_publisherPort = 41;
+	aCommandLineArguments.m_pullerPort = 42;
+	aCommandLineArguments.m_agentPort = 43;
+	aCommandLineArguments.m_broadcastPort = 43;
+
+	test_ReadParameters(Status::FAIL, Common::GetArguments(aCommandLineArguments, false, false));
+}
+
+static void test_wrong_port_range_broadcast_1()
+{
+	ORWELL_LOG_DEBUG("test_wrong_port_range_broadcast_1");
+
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_publisherPort = 41;
+	aCommandLineArguments.m_pullerPort = 42;
+	aCommandLineArguments.m_agentPort = 43;
+	aCommandLineArguments.m_broadcastPort = -1024;
+
+	// !! careful !  Boost converts -1024 to ... something, and it passes
+	test_ReadParameters(Status::PASS, Common::GetArguments(aCommandLineArguments, false, false));
+}
+
+static void test_wrong_port_range_broadcast_2()
+{
+	ORWELL_LOG_DEBUG("test_wrong_port_range_broadcast_2");
+
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_publisherPort = 41;
+	aCommandLineArguments.m_pullerPort = 42;
+	aCommandLineArguments.m_agentPort = 43;
+	aCommandLineArguments.m_broadcastPort = 0;
+
+	test_ReadParameters(Status::FAIL, Common::GetArguments(aCommandLineArguments, false, false));
+}
+
+static void test_wrong_port_range_broadcast_3()
+{
+	ORWELL_LOG_DEBUG("test_wrong_port_range_broadcast_3");
+
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_publisherPort = 41;
+	aCommandLineArguments.m_pullerPort = 42;
+	aCommandLineArguments.m_agentPort = 43;
+	aCommandLineArguments.m_broadcastPort = 99999;
+
+	// !! careful !  Boost converts 99999 to ... something, and it passes
+	test_ReadParameters(Status::PASS, Common::GetArguments(aCommandLineArguments, false, false));
 }
 
 static void test_most_arguments()
@@ -149,6 +235,7 @@ video-ports    = 9001
 	aCommandLineArguments.m_publisherPort = 41;
 	aCommandLineArguments.m_pullerPort = 42;
 	aCommandLineArguments.m_agentPort = 43;
+	aCommandLineArguments.m_broadcastPort = 44;
 	aCommandLineArguments.m_rcFilePath = aTempFile.m_fileName;
 	aCommandLineArguments.m_tickInterval = 666;
 	aCommandLineArguments.m_gameDuration = 274;
@@ -178,6 +265,7 @@ video-ports    = 9001
 	aCommandLineArguments.m_publisherPort = 1;
 	aCommandLineArguments.m_pullerPort = 2;
 	aCommandLineArguments.m_agentPort = 3;
+	aCommandLineArguments.m_broadcastPort = 4;
 	aCommandLineArguments.m_rcFilePath = aTempFile.m_fileName;
 	aCommandLineArguments.m_tickInterval = 666;
 	aCommandLineArguments.m_gameDuration = 274;
@@ -208,6 +296,7 @@ static void test_parse_command_line_and_file_1()
 publisher-port = 19000
 puller-port    = 19001
 agent-port     = 19003
+broadcast-port     = 19004
 tic-interval   = 1500
 video-ports    = 9001:9004
 )"));
@@ -216,6 +305,7 @@ video-ports    = 9001:9004
 	aCommandLineArguments.m_publisherPort = 1;
 	aCommandLineArguments.m_pullerPort = 2;
 	aCommandLineArguments.m_agentPort = 3;
+	aCommandLineArguments.m_broadcastPort = 4;
 	aCommandLineArguments.m_rcFilePath = aTempFile.m_fileName;
 	aCommandLineArguments.m_tickInterval = 666;
 	aCommandLineArguments.m_gameDuration = 274;
@@ -244,6 +334,7 @@ static void test_parse_command_line_and_file_2()
 publisher-port = 900
 puller-port    = 901
 agent-port     = 903
+broadcast-port = 904
 tic-interval   = 50
 video-ports    = 9001
 )"));
@@ -255,6 +346,7 @@ video-ports    = 9001
 	aExpectedCommandLineArguments.m_publisherPort = 900;
 	aExpectedCommandLineArguments.m_pullerPort = 901;
 	aExpectedCommandLineArguments.m_agentPort = 903;
+	aExpectedCommandLineArguments.m_broadcastPort = 904;
 	aExpectedCommandLineArguments.m_rcFilePath = aTempFile.m_fileName;
 	aExpectedCommandLineArguments.m_tickInterval = 50;
 	aExpectedCommandLineArguments.m_gameDuration = 300;
@@ -288,6 +380,7 @@ puller-port = 42
 	aCommandLineArguments.m_publisherPort = 1;
 	aCommandLineArguments.m_pullerPort = 2;
 	aCommandLineArguments.m_agentPort = 3;
+	aCommandLineArguments.m_broadcastPort = 4;
 	aCommandLineArguments.m_rcFilePath = aTempFile.m_fileName;
 	aCommandLineArguments.m_tickInterval = 666;
 	aCommandLineArguments.m_gameDuration = 274;
@@ -344,6 +437,7 @@ name = Bourbaki
 	aInputCommandLineArguments.m_publisherPort = 1;
 	aInputCommandLineArguments.m_pullerPort = 2;
 	aInputCommandLineArguments.m_agentPort = 3;
+	aInputCommandLineArguments.m_broadcastPort = 4;
 	aInputCommandLineArguments.m_rcFilePath = aTechConfigFile.m_fileName;
 	aInputCommandLineArguments.m_gameFilePath = aTempFile.m_fileName;
 	aInputCommandLineArguments.m_tickInterval = 666;
@@ -406,6 +500,7 @@ name = Bourbaki
 	aCommandLineArguments.m_publisherPort = 1;
 	aCommandLineArguments.m_pullerPort = 2;
 	aCommandLineArguments.m_agentPort = 3;
+	aCommandLineArguments.m_broadcastPort = 4;
 	aCommandLineArguments.m_rcFilePath = aTechConfigFile.m_fileName;
 	aCommandLineArguments.m_gameFilePath = aTempFile.m_fileName;
 	aCommandLineArguments.m_tickInterval = 666;
@@ -449,6 +544,7 @@ static void test_parse_command_line_and_file_6_badConfigFile()
 	aCommandLineArguments.m_publisherPort = 1;
 	aCommandLineArguments.m_pullerPort = 2;
 	aCommandLineArguments.m_agentPort = 3;
+	aCommandLineArguments.m_broadcastPort = 4;
 	aCommandLineArguments.m_rcFilePath = std::string("thisfiledoesnotexist");
 	aCommandLineArguments.m_tickInterval = 666;
 	aCommandLineArguments.m_gameDuration = 274;
@@ -498,6 +594,7 @@ name = Bourbaki
 	aCommandLineArguments.m_publisherPort = 1;
 	aCommandLineArguments.m_pullerPort = 2;
 	aCommandLineArguments.m_agentPort = 3;
+	aCommandLineArguments.m_broadcastPort = 4;
 	aCommandLineArguments.m_rcFilePath = aTechConfigFile.m_fileName;
 	aCommandLineArguments.m_gameFilePath = aGameConfigFile.m_fileName;
 	aCommandLineArguments.m_tickInterval = 666;
@@ -561,6 +658,7 @@ colour = 2
 	aCommandLineArguments.m_publisherPort = 1;
 	aCommandLineArguments.m_pullerPort = 2;
 	aCommandLineArguments.m_agentPort = 3;
+	aCommandLineArguments.m_broadcastPort = 4;
 	aCommandLineArguments.m_rcFilePath = aTechConfigFile.m_fileName;
 	aCommandLineArguments.m_gameFilePath = aGameConfigFile.m_fileName;
 	aCommandLineArguments.m_tickInterval = 666;
@@ -711,6 +809,7 @@ b = 0
 	aInputCommandLineArguments.m_publisherPort = 1;
 	aInputCommandLineArguments.m_pullerPort = 2;
 	aInputCommandLineArguments.m_agentPort = 3;
+	aInputCommandLineArguments.m_broadcastPort = 4;
 	aInputCommandLineArguments.m_rcFilePath = aTechConfigFile.m_fileName;
 	aInputCommandLineArguments.m_gameFilePath = aTempFile.m_fileName;
 	aInputCommandLineArguments.m_tickInterval = 666;
@@ -754,6 +853,12 @@ int main()
 	test_same_ports_agent_publisher();
 	test_same_ports_puller_publisher();
 	test_same_ports_puller_agent();
+	test_same_ports_publisher_broadcast();
+	test_same_ports_puller_broadcast();
+	test_same_ports_agent_broadcast();
+	test_wrong_port_range_broadcast_1();
+	test_wrong_port_range_broadcast_2();
+	test_wrong_port_range_broadcast_3();
 	test_most_arguments();
 	test_parse_command_line();
 	test_parse_command_line_and_file_1();

@@ -9,6 +9,7 @@ class BroadcastServer
 {
 public:
 	BroadcastServer(
+			uint16_t const iBroadcastPort,
 			std::string const & iPullerUrl,
 			std::string const & iPublisherUrl);
 
@@ -22,6 +23,7 @@ public:
 private:
 	bool _mainLoopRunning;
 	bool _forcedStop;
+	uint16_t const m_broadcastPort;
 	std::string const _pullerUrl;
 	std::string const _publisherUrl;
 };

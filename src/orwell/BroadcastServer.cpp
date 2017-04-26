@@ -19,10 +19,12 @@ namespace orwell
 {
 
 BroadcastServer::BroadcastServer(
+		uint16_t const iBroadcastPort,
 		std::string const & iPullerUrl,
 		std::string const & iPublisherUrl)
 	: _mainLoopRunning(false)
 	, _forcedStop(false)
+	, m_broadcastPort(iBroadcastPort)
 	, _pullerUrl(iPullerUrl)
 	, _publisherUrl(iPublisherUrl)
 {
@@ -58,7 +60,7 @@ void BroadcastServer::runBroadcastReceiver()
 	/* Fill in structure for server's address */
 	aBroadcastServerAddress.sin_family = AF_INET;
 	aBroadcastServerAddress.sin_addr.s_addr = htonl(INADDR_ANY);
-	aBroadcastServerAddress.sin_port = htons(9080);
+	aBroadcastServerAddress.sin_port = htons(m_broadcastPort);
 
 	/* Bind server socket */
 	bind(aBsdSocket, (struct sockaddr *) &aBroadcastServerAddress, sizeof(aBroadcastServerAddress));

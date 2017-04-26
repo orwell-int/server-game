@@ -27,6 +27,7 @@
 #define ARG_DEBUG_LOG "-d"
 #define ARG_NO_BROADCAST "--no-broadcast"
 #define ARG_DRY_RUN "-n"
+#define ARG_BROADCAST_PORT "-B"
 
 
 using namespace log4cxx;
@@ -174,6 +175,10 @@ Arguments Common::GetArguments(
 			and *iCommandLineParams.m_dryRun)
 	{
 		BuildArgument(ARG_DRY_RUN, arguments);
+	}
+	if (iCommandLineParams.m_broadcastPort)
+	{
+		BuildIntArgument(ARG_BROADCAST_PORT, *iCommandLineParams.m_broadcastPort, arguments);
 	}
 	return arguments;
 }
