@@ -217,6 +217,7 @@ void Item::capture(Team & ioTeam)
 {
 	if (ioTeam.getName() != m_owningTeam)
 	{
+		ORWELL_LOG_INFO("Item " << m_name << " captured by team " << ioTeam.getName());
 		innerCapture(ioTeam);
 		m_owningTeam = ioTeam.getName();
 		m_captureState = CaptureState::SUCCEEDED;
