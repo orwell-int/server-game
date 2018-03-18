@@ -27,7 +27,6 @@ void ProcessInput::execute()
 	std::string const & aDestination = getArgument("RoutingID");
 	orwell::messages::Input const & anInputMsg = static_cast<orwell::messages::Input const &>(*m_msg);
 
-	ORWELL_LOG_INFO("ProcessInput::execute : simple relay");
 
 	ORWELL_LOG_DEBUG("===Input Message===");
 	ORWELL_LOG_DEBUG("Move : left=" << anInputMsg.move().left() << ",right=" <<  anInputMsg.move().right() << "-");
@@ -36,6 +35,7 @@ void ProcessInput::execute()
 
 	if (m_game->getIsRunning())
 	{
+		ORWELL_LOG_INFO("ProcessInput::execute : simple relay");
 		RawMessage aReply(aDestination, "Input", anInputMsg.SerializeAsString());
 		if (anInputMsg.fire().weapon1())
 		{
@@ -53,6 +53,7 @@ void ProcessInput::execute()
 	}
 	else
 	{
+		ORWELL_LOG_INFO("ProcessInput::execute : not forwarded");
 		ORWELL_LOG_DEBUG("cannot relay input because game is not running");
 	}
 

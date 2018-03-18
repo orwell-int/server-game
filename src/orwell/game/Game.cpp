@@ -170,6 +170,7 @@ void Game::start(
 			}
 			catch (std::system_error const & aError)
 			{
+				ORWELL_LOG_ERROR("Could not start the video. Abort.");
 				m_isRunning = true;
 				stop();
 				abort();
