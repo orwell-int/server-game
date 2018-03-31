@@ -12,8 +12,10 @@
 using orwell::messages::Input;
 using orwell::com::RawMessage;
 
-namespace orwell {
-namespace callbacks {
+namespace orwell
+{
+namespace callbacks
+{
 
 ProcessInput::ProcessInput(
 		std::shared_ptr< com::Sender > ioPublisher,
@@ -59,5 +61,5 @@ void ProcessInput::execute()
 
 }
 
-}}
-
+}
+}

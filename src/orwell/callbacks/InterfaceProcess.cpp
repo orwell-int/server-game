@@ -2,8 +2,10 @@
 #include <stdexcept>
 #include "orwell/game/Game.hpp"
 
-namespace orwell {
-namespace callbacks {
+namespace orwell
+{
+namespace callbacks
+{
 
 InterfaceProcess::InterfaceProcess(
 		std::shared_ptr< com::Sender > ioPublisher)
@@ -37,23 +39,16 @@ void InterfaceProcess::init(
 {
 	m_msg = ioMsg;
 
-	if (ioGame /*!= nullptr*/)
+	if (nullptr != ioGame)
 	{
 		m_game = ioGame;
 	}
 }
 
-//void InterfaceProcess::insertArgument(const Argument & iArgument)
-//{
-	//m_dictionary.push_back(iArgument);
-//}
-
 void InterfaceProcess::insertArgument(
 		const Key & iKey,
 		const Value & iValue)
 {
-	//Argument anArgument(iKey, iValue);
-	//insertArgument(anArgument);
 	m_dictionary[iKey] = iValue;
 }
 
@@ -72,5 +67,5 @@ InterfaceProcess::Value const & InterfaceProcess::getArgument(const Key & iKey) 
 	return m_dictionary.at(iKey);
 }
 
-}} //namespaces
-
+}
+}

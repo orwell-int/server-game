@@ -18,6 +18,8 @@ class Socket
 {
 
 public :
+	static std::string Repr(std::string const & iInput);
+
 	/// \param iUrl
 	///    Url object used to know where to open the socket.
 	///
