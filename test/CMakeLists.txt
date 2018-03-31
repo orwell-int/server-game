@@ -67,6 +67,7 @@ FUNCTION(add_orwell_test test_name file_name)
 	endforeach(configFile)
 ENDFUNCTION()
 
+add_orwell_test(test_ping_pong "test_ping_pong.cpp")
 add_orwell_test(test_input_to_robot "test_input_to_robot.cpp")
 add_orwell_test(test_hello "test_hello_client.cpp")
 add_orwell_test(test_application "test_application.cpp")
