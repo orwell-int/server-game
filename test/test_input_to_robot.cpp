@@ -35,12 +35,22 @@ static void const ClientSendsInput(
 	log4cxx::NDC ndc("client");
 	zmq::context_t aContext(1);
 
-	std::string aPusherUrl = "tcp://127.0.0.1:" + boost::lexical_cast<std::string>(iServerPullerPort);
-	std::string aSubscriberUrl = "tcp://127.0.0.1:" + boost::lexical_cast<std::string>(iServerPublisherPort);
+	std::string aPusherUrl = "tcp://127.0.0.1:" +
+		boost::lexical_cast<std::string>(iServerPullerPort);
+	std::string aSubscriberUrl = "tcp://127.0.0.1:" +
+		boost::lexical_cast<std::string>(iServerPublisherPort);
 
 	usleep(6 * 1000);
-	Sender aPusher(aPusherUrl, ZMQ_PUSH, orwell::com::ConnectionMode::CONNECT, aContext);
-	Receiver aSubscriber(aSubscriberUrl, ZMQ_SUB, orwell::com::ConnectionMode::CONNECT, aContext);
+	Sender aPusher(
+			aPusherUrl,
+			ZMQ_PUSH,
+			orwell::com::ConnectionMode::CONNECT,
+			aContext);
+	Receiver aSubscriber(
+			aSubscriberUrl,
+			ZMQ_SUB,
+			orwell::com::ConnectionMode::CONNECT,
+			aContext);
 	usleep(6 * 1000);
 
 	Input aInputMessage;
@@ -50,8 +60,10 @@ static void const ClientSendsInput(
 	aInputMessage.mutable_fire()->set_weapon2(false);
 
 	ORWELL_LOG_INFO("message built (size=" << aInputMessage.ByteSize() << ")");
-	ORWELL_LOG_INFO("message built : left" << aInputMessage.move().left() << "-right" << aInputMessage.move().right());
-	ORWELL_LOG_INFO("message built : w1:" << aInputMessage.fire().weapon1() << "-w2:" << aInputMessage.fire().weapon2());
+	ORWELL_LOG_INFO("message built : left" << aInputMessage.move().left() <<
+			"-right" << aInputMessage.move().right());
+	ORWELL_LOG_INFO("message built : w1:" << aInputMessage.fire().weapon1() <<
+			"-w2:" << aInputMessage.fire().weapon2());
 	std::string aType = "Input";
 	RawMessage aMessage(iRobotId, aType, aInputMessage.SerializeAsString());
 	aPusher.send(aMessage);
@@ -74,7 +86,8 @@ static void Application(orwell::Application::Parameters const & aParameters)
 
 int main()
 {
-	orwell::support::GlobalLogger::Create("test_input_to_robot", "test_input_to_robot.log", true);
+	orwell::support::GlobalLogger::Create(
+			"test_input_to_robot", "test_input_to_robot.log", true);
 	log4cxx::NDC ndc("test_input_to_robot");
 	ORWELL_LOG_INFO("Test starts\n");
 	orwell::Application::Parameters aParameters;
@@ -104,7 +117,8 @@ int main()
 
 	aTestAgent.sendCommand("add team TEAM");
 	aTestAgent.sendCommand("add robot toto TEAM");
-	std::string aRobotId = aTestAgent.sendCommand("get robot toto id", boost::none);
+	std::string const aRobotId =
+		aTestAgent.sendCommand("get robot toto id", boost::none);
 	assert("KO" != aRobotId);
 	std::thread aClientSendsInputThread(
 			ClientSendsInput,
@@ -112,7 +126,8 @@ int main()
 			*aParameters.m_commandLineParameters.m_publisherPort,
 			aRobotId);
 	aClientSendsInputThread.join();
-	// because the game is not started yet, the Input message is supposed to be dropped by the server
+	// because the game is not started yet, the Input message is supposed to be
+	// dropped by the server
 	assert(not gInputReceived);
 	// The video is now going through a different channel
 	// There is no solution for video captures with current architecture (nc)

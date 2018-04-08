@@ -16,6 +16,8 @@
 #include "orwell/callbacks/ProcessInput.hpp"
 #include "orwell/callbacks/ProcessRegister.hpp"
 #include "orwell/callbacks/ProcessRobotState.hpp"
+#include "orwell/callbacks/ProcessPing.hpp"
+#include "orwell/callbacks/ProcessPong.hpp"
 #include <map>
 
 using std::string;
@@ -32,8 +34,8 @@ static MessageType BuildProtobuf(
 {
 	MessageType aMessage;
 	bool aSuccess = aMessage.ParsePartialFromString(iMessage._payload);
-	ORWELL_LOG_DEBUG("BuildProtobuf success : " << aSuccess << "-");
-	ORWELL_LOG_DEBUG("Resulting protobuf : size=" << aMessage.ByteSize() << "-");
+	ORWELL_LOG_DEBUG("BuildProtobuf success : " << aSuccess);
+	ORWELL_LOG_DEBUG("Resulting protobuf : size = " << aMessage.ByteSize());
 	return aMessage;
 }
 
@@ -45,6 +47,8 @@ ProcessDecider::ProcessDecider(
 	_map["Input"] = std::unique_ptr<InterfaceProcess>(new ProcessInput(ioPublisher, ioGame));
 	_map["Register"] = std::unique_ptr<InterfaceProcess>(new ProcessRegister(ioPublisher, ioGame));
 	_map["ServerRobotState"] = std::unique_ptr<InterfaceProcess>(new ProcessRobotState(ioPublisher, ioGame));
+	_map["Ping"] = std::unique_ptr<InterfaceProcess>(new ProcessPing(ioPublisher, ioGame));
+	_map["Pong"] = std::unique_ptr<InterfaceProcess>(new ProcessPong(ioPublisher, ioGame));
 }
 
 ProcessDecider::~ProcessDecider()
@@ -69,6 +73,14 @@ void ProcessDecider::process(com::RawMessage const & iMessage)
 	{
 		aMsg = new messages::ServerRobotState(BuildProtobuf<messages::ServerRobotState>(iMessage));
 	}
+	else if (iMessage._type == "Ping")
+	{
+		aMsg = new messages::Ping(BuildProtobuf<messages::Ping>(iMessage));
+	}
+	else if (iMessage._type == "Pong")
+	{
+		aMsg = new messages::Pong(BuildProtobuf<messages::Pong>(iMessage));
+	}
 	else if (iMessage._type == "Register")
 	{
 		aMsg = new messages::Register(BuildProtobuf<messages::Register>(iMessage));
@@ -85,7 +97,7 @@ void ProcessDecider::process(com::RawMessage const & iMessage)
 	}
 	else
 	{
-		ORWELL_LOG_INFO("unkown message type : " << iMessage._type << "-");
+		ORWELL_LOG_INFO("unkown message type : '" << iMessage._type << "'");
 	}
 }
 

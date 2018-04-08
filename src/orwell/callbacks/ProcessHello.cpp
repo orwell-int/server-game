@@ -86,11 +86,19 @@ void ProcessHello::execute()
 				m_publisher->send(aReply);
 				aFailure = false;
 
+				if (aHelloMessage.has_ready())
+				{
+					ORWELL_LOG_INFO("Hello ready ? " << aHelloMessage.ready());
+				}
 				if (aHelloMessage.has_ready() and aHelloMessage.ready())
 				{
 					if (m_game->getAvailableRobot() == nullptr)
 					{
 						m_game->start(true);
+					}
+					else
+					{
+						ORWELL_LOG_INFO("Do not start yet as at least one robot needs a player");
 					}
 				}
 			}
