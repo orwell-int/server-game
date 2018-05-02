@@ -1,55 +1,15 @@
-dist: trusty
 sudo: required
-language: c++
+
+language: cpp
 compiler:
     - clang
     - gcc
+services:
+    - docker
 
 before_install:
-    - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-    - sudo add-apt-repository ppa:yjwong/opencv2 -y
-    - sudo apt-get update -qq
-    - sudo apt-get install -qq g++-4.8
-    - sudo apt-get install -qq libprotobuf-dev protobuf-compiler cmake libboost-all-dev liblog4cxx10-dev valgrind libgtest-dev google-mock
-    - sudo apt-get install -qq libzmq3 libzmq3-dbg libzmq3-dev
-    - sudo apt-get install -qq python-virtualenv
-    - sudo apt-get install -qq libcv2.4 libopencv-calib3d-dev libopencv-contrib-dev libopencv-core-dev libopencv-features2d-dev libopencv-flann-dev libopencv-gpu-dev libopencv-highgui-dev libopencv-imgproc-dev libopencv-legacy-dev libopencv-ml-dev libopencv-objdetect-dev libopencv-video-dev
-    - wget https://raw.github.com/zeromq/cppzmq/ac705f604701e2ca1643fa31bae240f9da8b9b9a/zmq.hpp -O ./include/zmq.hpp
-    - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
-    - sudo apt-get install -qq python2.7 lcov -y
-    - sudo easy_install gcovr
-    - sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-4.8 1
-    # use lcov 1.10 to get rid of out of memory issue
-    - mkdir -p .deps && cd .deps
-    - wget -nc --no-check-certificate http://downloads.sourceforge.net/ltp/lcov-1.10.tar.gz
-    - tar xzf lcov-1.10.tar.gz
-    - cd lcov-1.10 && make && sudo make install
-    - cd ..
-    - cd ..
+    - docker pull ubuntu:18.04
 
 script:
-    - gcov -v | grep "4.8"
-    - lcov --version | grep "1.10"
-    - mkdir -p ./build
-    - cd ./build && cmake .. && make && cd ./test
-    - export ORWELL_DISABLE_TEST_BROADCAST=1
-    - cmake ..
-    - ifconfig
-    - ctest || ctest -V
-    - cd ..
-    - if [ "$CXX" = "g++-4.8" ] ; then cd .. && mkdir -p build_coverage && cd build_coverage ; fi
-    - if [ "$CXX" = "g++-4.8" ] ; then cmake .. -DORWELL_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug ; fi
-    - if [ "$CXX" = "g++-4.8" ] ; then make orwell_coverage ; fi
-
-after_success:
-    - if [ "$CXX" = "g++-4.8" ] ; then gcovr . -r .. -p | sed "/Missing/{s/\(.*\)Missing/\1/p;h;s/^/\n/;:lineloop;N;:charloop;s/\(.*\)\n.\n\(.\).*/\1\2/;t exitcharloop;s/\n.\(.\+\)\n\(.\)/\2\n\1\n/;t charloop;:exitcharloop;s/\n.*//;p;s/.*//;G;b lineloop}" -n ; fi
-    - cd ../build
-    - make ExperimentalMemCheck
-    - sed -n -e '/LEAK SUMMARY:/,+8p' -e '/^Test\|Testing:[ ]\|Test:[ ]/p' Testing/Temporary/LastDynamicAnalysis_*.log
-
-notifications:
-  recipients:
-    - massimo.gengarelli@gmail.com
-  email:
-    on_success: change
-    on_failure: always
+    - git submodule update --init
+    - docker build .
