@@ -42,9 +42,9 @@ RUN make
 RUN ctest || ctest -V
 RUN mkdir -p build_coverage
 WORKDIR /workdir/build_coverage
-RUN if [[ "$CXX" = "g++"* ]] ; then cmake .. -DORWELL_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug ; fi
-RUN if [[ "$CXX" = "g++"* ]] ; then make orwell_coverage ; fi
-RUN if [[ "$CXX" = "g++"* ]] ; then gcovr . -r .. -p | sed "/Missing/{s/\(.*\)Missing/\1/p;h;s/^/\n/;:lineloop;N;:charloop;s/\(.*\)\n.\n\(.\).*/\1\2/;t exitcharloop;s/\n.\(.\+\)\n\(.\)/\2\n\1\n/;t charloop;:exitcharloop;s/\n.*//;p;s/.*//;G;b lineloop}" -n ; fi
+RUN cmake .. -DORWELL_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug
+RUN make orwell_coverage
+RUN gcovr . -r .. -p | sed "/Missing/{s/\(.*\)Missing/\1/p;h;s/^/\n/;:lineloop;N;:charloop;s/\(.*\)\n.\n\(.\).*/\1\2/;t exitcharloop;s/\n.\(.\+\)\n\(.\)/\2\n\1\n/;t charloop;:exitcharloop;s/\n.*//;p;s/.*//;G;b lineloop}" -n
 WORKDIR /workdir/build
 RUN make ExperimentalMemCheck
-RUN sed -n -e '/LEAK SUMMARY:/,+8p' -e '/^Test\|Testing:[ ]\|Test:[ ]/p' Testing/Temporary/LastDynamicAnalysis_*.log
+RUN sed -n -e '/LEAK SUMMARY:/,+8p' -e '/^Test\|Testing:[ ]\|Test:[ ]/p' Testing/Temporary/MemoryChecker.*.log
