@@ -24,7 +24,7 @@ RUN echo "tzdata tzdata/Areas select Europe" > /tmp/preseed.txt; \
 	rm -f /etc/localtime && \
 	apt-get install -y tzdata
 
-RUN apt-get install -y -qq cmake g++
+RUN apt-get install -y -qq cmake
 RUN apt-get install -y -qq git
 RUN apt-get install -y -qq libprotobuf-dev protobuf-compiler
 RUN apt-get install -y -qq libboost-all-dev
@@ -40,11 +40,12 @@ WORKDIR /workdir/build
 RUN cmake ..
 RUN make
 RUN ctest || ctest -V
+RUN make ExperimentalMemCheck
+RUN sed -n -e '/LEAK SUMMARY:/,+8p' -e '/^Test\|Testing:[ ]\|Test:[ ]/p' Testing/Temporary/MemoryChecker.*.log
+RUN if [ "$(type clang)" = "$(type $CXX)" ] ; then exit 0 ; fi
 RUN mkdir -p build_coverage
 WORKDIR /workdir/build_coverage
 RUN cmake .. -DORWELL_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug
 RUN make orwell_coverage
 RUN gcovr . -r .. -p | sed "/Missing/{s/\(.*\)Missing/\1/p;h;s/^/\n/;:lineloop;N;:charloop;s/\(.*\)\n.\n\(.\).*/\1\2/;t exitcharloop;s/\n.\(.\+\)\n\(.\)/\2\n\1\n/;t charloop;:exitcharloop;s/\n.*//;p;s/.*//;G;b lineloop}" -n
 WORKDIR /workdir/build
-RUN make ExperimentalMemCheck
-RUN sed -n -e '/LEAK SUMMARY:/,+8p' -e '/^Test\|Testing:[ ]\|Test:[ ]/p' Testing/Temporary/MemoryChecker.*.log
