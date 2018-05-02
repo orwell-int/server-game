@@ -51,7 +51,7 @@ static void ExpectRegistered(
 	RawMessage aResponse;
 	if (not Common::ExpectMessage("Registered", ioSubscriber, aResponse))
 	{
-		ORWELL_LOG_ERROR("Expected Registered but received " << aResponse._type);
+		ORWELL_LOG_ERROR("Expected Registered but received '" << aResponse._type << "'");
 		g_status = -1;
 	}
 	else
