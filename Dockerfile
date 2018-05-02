@@ -24,17 +24,17 @@ RUN echo "tzdata tzdata/Areas select Europe" > /tmp/preseed.txt; \
 	rm -f /etc/localtime && \
 	apt-get install -y tzdata
 
-RUN apt-get install -y cmake g++
-RUN apt-get install -y git
-RUN apt-get install -y libprotobuf-dev protobuf-compiler
-RUN apt-get install -y libboost-all-dev
-RUN apt-get install -y valgrind
-RUN apt-get install -y libzmq3-dev
-RUN apt-get install -y liblog4cxx10v5 liblog4cxx-dev
-RUN apt-get install -y python2.7
-RUN apt-get install -y lcov
-RUN apt-get install -y libopencv-dev
-RUN apt-get install -y gcovr
+RUN apt-get install -y -qq cmake g++
+RUN apt-get install -y -qq git
+RUN apt-get install -y -qq libprotobuf-dev protobuf-compiler
+RUN apt-get install -y -qq libboost-all-dev
+RUN apt-get install -y -qq valgrind
+RUN apt-get install -y -qq libzmq3-dev
+RUN apt-get install -y -qq liblog4cxx10v5 liblog4cxx-dev
+RUN apt-get install -y -qq python2.7
+RUN apt-get install -y -qq lcov
+RUN apt-get install -y -qq libopencv-dev
+RUN apt-get install -y -qq gcovr
 RUN mkdir -p build
 WORKDIR /workdir/build
 RUN cmake ..
