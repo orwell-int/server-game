@@ -132,7 +132,8 @@ int main()
 			aRuleset,
 			"tcp://*:9003",
 			"tcp://*:9000",
-			"tcp://*:9001");
+			"tcp://*:9001",
+			"tcp://*:9002");
 	ORWELL_LOG_INFO("server created");
 	std::vector< std::string > aRobots = {"Gipsy Danger"};
 	std::string const aTeamName("TEAM");

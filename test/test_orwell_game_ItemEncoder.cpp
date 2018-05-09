@@ -68,7 +68,7 @@ TEST_F(TestOrwellGameItemEncoder, Create)
 	EXPECT_EQ(-1, m_flagRFID.getColour());
 	EXPECT_EQ(m_name, m_flagColour.getName());
 	EXPECT_EQ(m_colourCode, m_flagColour.getColour());
-	EXPECT_EQ(0, m_flagColour.getRfids().size());
+	EXPECT_EQ(size_t{0}, m_flagColour.getRfids().size());
 	EXPECT_EQ("", m_flagRFID.getTeam());
 	EXPECT_EQ("", m_flagColour.getTeam());
 

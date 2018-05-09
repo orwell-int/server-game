@@ -232,6 +232,7 @@ int main()
 	aCommandLineArguments.m_publisherPort = 9000;
 	aCommandLineArguments.m_pullerPort = 9001;
 	aCommandLineArguments.m_agentPort = 9003;
+	aCommandLineArguments.m_replierPort = 9004;
 	aCommandLineArguments.m_tickInterval = 10;
 	aCommandLineArguments.m_gameDuration = 200;
 	aCommandLineArguments.m_dryRun = false;

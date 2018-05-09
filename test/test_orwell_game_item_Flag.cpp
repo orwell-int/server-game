@@ -50,7 +50,7 @@ TEST_F(TestOrwellGameItemFlag, CreateMultiFlag)
 			m_rfids,
 			m_colourCode,
 			m_ruleset);
-	EXPECT_EQ(1, orwell::game::Item::GetAllItems().size())
+	EXPECT_EQ(size_t{1}, orwell::game::Item::GetAllItems().size())
 		<< "Only one flag created with multiple RFID codes.";
 }
 

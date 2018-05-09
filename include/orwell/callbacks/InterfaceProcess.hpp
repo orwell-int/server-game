@@ -1,14 +1,11 @@
 #pragma once
 
-/*
- * Abstract class of which all callbacks inherit
- */
-
 #include <memory>
 #include <map>
 #include <string>
 
 #include "orwell/com/Sender.hpp"
+#include "orwell/com/Channel.hpp"
 
 namespace google
 {
@@ -18,11 +15,18 @@ class  MessageLite;
 }
 }
 
-namespace orwell {
-namespace game {
+namespace orwell
+{
+namespace com
+{
+class RawMessage;
+}
+namespace game
+{
 class Game;
 }
-namespace callbacks {
+namespace callbacks
+{
 
 class InterfaceProcess
 {
@@ -33,22 +37,23 @@ class InterfaceProcess
 
 public:
 	InterfaceProcess(
-			std::shared_ptr< com::Sender > ioPublisher);
+			std::shared_ptr< com::Sender > ioPublisher,
+			std::shared_ptr< com::Socket > ioReplier);
 
 	InterfaceProcess(
+			game::Game & ioGame,
 			std::shared_ptr< com::Sender > ioPublisher,
-			game::Game & ioGame);
+			std::shared_ptr< com::Socket > ioReplier);
 
 	virtual ~InterfaceProcess();
 	virtual void execute() = 0;
 
+	/// Warning: the channel only makes sense for some messages
+	/// (Hello, Register) as the REPLY chanel requires a request
+	/// to answer to. For the other messages, PUBLISH is used.
 	void init(
 			google::protobuf::MessageLite * ioMsg,
-			game::Game * ioGame = nullptr);
-
-	void setGameContext(game::Game & ioGame);
-
-	//void insertArgument(Argument const & iArgument);
+			com::Channel const iChannel);
 
 	void insertArgument(Key const & iKey, Value const & iValue);
 
@@ -59,7 +64,11 @@ public:
 	Value const & getArgument(Key const & iKey) const;
 
 protected:
+	void reply(com::RawMessage const & iRawMessage);
+
+protected:
 	std::shared_ptr< com::Sender > m_publisher;
+	std::shared_ptr< com::Socket > m_replier;
 
 	google::protobuf::MessageLite * m_msg;
 
@@ -67,7 +76,8 @@ protected:
 
 	DictionaryOfArguments m_dictionary;
 
+	com::Channel m_channel;
 };
 
-}} //namespaces
-
+}
+}

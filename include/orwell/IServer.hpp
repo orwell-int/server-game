@@ -27,6 +27,8 @@ public:
 	virtual orwell::game::Game & accessContext() = 0;
 
 	virtual void feedAgentProxy() = 0;
+
+	virtual void feedGreeter() = 0;
 };
 
 }

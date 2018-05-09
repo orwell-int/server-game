@@ -32,31 +32,47 @@ int g_status = 0;
 static void ExpectWelcome(
 		string const & iPlayerName,
 		string const & iExpectedRobotName,
-		Sender & ioPusher,
-		Receiver & ioSubscriber)
+		Socket & ioRequester,
+		uint32_t const iMaxRetry = 0)
 {
-	Hello aHelloMessage;
-	aHelloMessage.set_name( iPlayerName );
-	RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
-	ioPusher.send(aMessage);
-
-	RawMessage aResponse;
-	if ( not Common::ExpectMessage("Welcome", ioSubscriber, aResponse) )
+	int aLocalStatus;
+	uint32_t aRetry = 0;
+	do
 	{
-		ORWELL_LOG_ERROR("Expected Welcome but received " << aResponse._type);
-		g_status = -1;
-	}
-	else
-	{
-		Welcome aWelcome;
-		aWelcome.ParsePartialFromString(aResponse._payload);
+		aLocalStatus = 0;
+		Hello aHelloMessage;
+		aHelloMessage.set_name(iPlayerName);
+		RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
+		ioRequester.send(aMessage);
 
-		if ( aWelcome.robot() != iExpectedRobotName )
+		RawMessage aResponse;
+		ioRequester.receive(aResponse, true);
+		if ("Welcome" != aResponse._type)
 		{
-			ORWELL_LOG_ERROR("Expected robot name '" << iExpectedRobotName
-					<< "' but received '" << aWelcome.robot() << "'");
-			g_status = -2;
+			ORWELL_LOG_ERROR(
+					iPlayerName << " - Expected Welcome but received '"
+					<< aResponse._type << "'");
+			aLocalStatus = -1;
 		}
+		else
+		{
+			Welcome aWelcome;
+			aWelcome.ParsePartialFromString(aResponse._payload);
+
+			if (aWelcome.robot() != iExpectedRobotName)
+			{
+				ORWELL_LOG_ERROR(
+						iPlayerName << " - Expected robot name '"
+						<< iExpectedRobotName << "' but received '"
+						<< aWelcome.robot() << "'");
+				aLocalStatus = -2;
+			}
+		}
+	}
+	while ((aLocalStatus < 0) and (++aRetry < iMaxRetry));
+	if (aLocalStatus < 0)
+	{
+		g_status = aLocalStatus;
 	}
 }
 
@@ -66,19 +82,21 @@ static void client()
 	ORWELL_LOG_INFO("client ...");
 	zmq::context_t aContext(1);
 	usleep(6 * 1000);
-	ORWELL_LOG_INFO("create pusher");
-	Sender aPusher("tcp://127.0.0.1:9000", ZMQ_PUSH, orwell::com::ConnectionMode::CONNECT, aContext);
 	ORWELL_LOG_INFO("create subscriber");
 	Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB, orwell::com::ConnectionMode::CONNECT, aContext);
+	ORWELL_LOG_INFO("create pusher");
+	Sender aPusher("tcp://127.0.0.1:9000", ZMQ_PUSH, orwell::com::ConnectionMode::CONNECT, aContext);
+	ORWELL_LOG_INFO("create requester");
+	Socket aRequester("tcp://127.0.0.1:9002", ZMQ_REQ, orwell::com::ConnectionMode::CONNECT, aContext);
 	usleep(6 * 1000);
 
-	ExpectWelcome("jambon", "Gipsy Danger", aPusher, aSubscriber);
+	ExpectWelcome("jambon", "Gipsy Danger", aRequester, 1);
 
 	//this tests the case where the same player name tries to retrieve a robot 2 times
-	ExpectWelcome("jambon", "Gipsy Danger", aPusher, aSubscriber);
+	ExpectWelcome("jambon", "Gipsy Danger", aRequester);
 
-	ExpectWelcome("fromage", "Goldorak", aPusher, aSubscriber);
-	ExpectWelcome("poulet", "Securitron", aPusher, aSubscriber);
+	ExpectWelcome("fromage", "Goldorak", aRequester);
+	ExpectWelcome("poulet", "Securitron", aRequester);
 
 	// this tests the case where there is no longer any available robot
 	Hello aHelloMessage2;
@@ -88,9 +106,9 @@ static void client()
 	aPusher.send(aMessage2);
 
 	RawMessage aResponse2;
-	if ( not Common::ExpectMessage("Goodbye", aSubscriber, aResponse2) )
+	if (not Common::ExpectMessage("Goodbye", aSubscriber, aResponse2))
 	{
-		ORWELL_LOG_ERROR("Expected Goodbye but received " << aResponse2._type);
+		ORWELL_LOG_ERROR("Expected Goodbye but received '" << aResponse2._type << "'");
 		g_status = -1;
 	}
 	ORWELL_LOG_INFO("quit client");
@@ -116,6 +134,7 @@ int main()
 	using ::testing::_;
 	orwell::support::GlobalLogger::Create("test_hello_client", "test_hello_client.log");
 	log4cxx::NDC ndc("test_hello_client");
+	ORWELL_LOG_INFO("Test starts.");
 	FakeAgentProxy aFakeAgentProxy;
 	orwell::game::Ruleset aRuleset;
 	FakeSystemProxy aFakeSystemProxy;
@@ -129,6 +148,7 @@ int main()
 			"tcp://*:9003",
 			"tcp://*:9000",
 			"tcp://*:9001",
+			"tcp://*:9002",
 			500);
 	ORWELL_LOG_INFO("server created");
 	std::vector< std::string > aRobots = {"Gipsy Danger", "Goldorak", "Securitron"};
@@ -151,4 +171,3 @@ int main()
 	orwell::support::GlobalLogger::Clear();
 	return g_status;
 }
-

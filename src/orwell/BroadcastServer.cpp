@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include "orwell/support/GlobalLogger.hpp"
 
@@ -21,12 +22,14 @@ namespace orwell
 BroadcastServer::BroadcastServer(
 		uint16_t const iBroadcastPort,
 		std::string const & iPullerUrl,
-		std::string const & iPublisherUrl)
+		std::string const & iPublisherUrl,
+		std::string const & iReqRepUrl)
 	: _mainLoopRunning(false)
 	, _forcedStop(false)
 	, m_broadcastPort(iBroadcastPort)
 	, _pullerUrl(iPullerUrl)
 	, _publisherUrl(iPublisherUrl)
+	, _requestUrl(iReqRepUrl)
 {
 }
 
@@ -41,7 +44,6 @@ void BroadcastServer::runBroadcastReceiver()
 	struct sockaddr_in aBroadcastServerAddress;
 	struct sockaddr_in aClientAddress;
 	struct ip_mreq aGroup;
-	char aMessageBuffer[UDP_MESSAGE_LIMIT];
 	unsigned int aClientLength = sizeof(aClientAddress);
 
 	/* This is used to set a RCV Timeout on the socket */
@@ -78,28 +80,49 @@ void BroadcastServer::runBroadcastReceiver()
 	setsockopt(aBsdSocket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 
 	_mainLoopRunning = true;
+	ssize_t aReadSize;
+	uint8_t aVersion;
+	char aMessageBuffer[UDP_MESSAGE_LIMIT];
+	memset(aMessageBuffer, 0, UDP_MESSAGE_LIMIT);
 	while (_mainLoopRunning)
 	{
 		// Wait for message and fill the ClientAddress structure we will use to reply
-		if (recvfrom(aBsdSocket, aMessageBuffer, UDP_MESSAGE_LIMIT, 0, (struct sockaddr *) &aClientAddress, &aClientLength) == -1)
+		aReadSize = recvfrom(
+				aBsdSocket, aMessageBuffer, UDP_MESSAGE_LIMIT, 0,
+				(struct sockaddr *) &aClientAddress, &aClientLength);
+		aVersion = 0;
+		if (aReadSize == -1)
 		{
 			// Receive timeout, let's check if we should keep running..
 			continue;
+		}
+		else if (aReadSize > 0)
+		{
+			aVersion = atoi(aMessageBuffer);
+			memset(aMessageBuffer, 0, aReadSize);
 		}
 		ORWELL_LOG_INFO("Received an UDP broadcast");
 
 		// Reply with PULLER and PUBLISHER url
 		// Since in UDP Discovery we are limited to 32 bytes (like ICMP_ECHO), build a binary message
 		std::ostringstream anOstream;
-		anOstream << (uint8_t) 0xA0;                       // A0 identifies the Puller ( 1 byte )
-		anOstream << (uint8_t) _pullerUrl.size();          // size of puller url       ( 1 byte )
-		anOstream << (const char *) _pullerUrl.c_str();    // Address of puller url    (12 bytes)
-		anOstream << (uint8_t) 0xA1;                       // A1 is the PUBLISHER      ( 1 byte )
-		anOstream << (uint8_t) _publisherUrl.size();       // size of publisher url    ( 1 byte )
-		anOstream << (const char *) _publisherUrl.c_str(); // Address of publisher     (12 bytes)
-		anOstream << (uint8_t) 0x00;                       // End of message           ( 1 byte )
-		// -----------------------------------------------------------------------------------------------
-		// Total                                                                               29 bytes
+		if (aVersion >= 0)
+		{
+			anOstream << (uint8_t) 0xA0;                       // A0 identifies the Puller ( 1 byte )
+			anOstream << (uint8_t) _pullerUrl.size();          // size of puller url       ( 1 byte )
+			anOstream << (const char *) _pullerUrl.c_str();    // Address of puller url    (12 bytes)
+			anOstream << (uint8_t) 0xA1;                       // A1 is the Publisher      ( 1 byte )
+			anOstream << (uint8_t) _publisherUrl.size();       // size of publisher url    ( 1 byte )
+			anOstream << (const char *) _publisherUrl.c_str(); // Address of publisher     (12 bytes)
+		}
+		if (aVersion >= 1)
+		{
+			anOstream << (uint8_t) 0xA2;                       // A2 is the REQ/REP        ( 1 byte )
+			anOstream << (uint8_t) _requestUrl.size();         // size of REQ/REP url      ( 1 byte )
+			anOstream << (const char *) _requestUrl.c_str();   // Address of REQ/REP       (12 bytes)
+			// bigger than 32 bytes ? still working ?
+		}
+		anOstream << (uint8_t) 0x00;                       // End of message               ( 1 byte )
 
 		ssize_t aMessageLength = sendto(
 				aBsdSocket,

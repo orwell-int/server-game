@@ -37,6 +37,7 @@ public:
 			std::string const & iAgentUrl =  "tcp://*:9003",
 			std::string const & iPullUrl = "tcp://*:9000",
 			std::string const & iPublishUrl = "tcp://*:9001",
+			std::string const & iReplierUrl = "tcp://*:9002",
 			long const iTicDuration = 500,
 			uint32_t const iGameDuration = 300);
 
@@ -57,12 +58,15 @@ public:
 
 	void feedAgentProxy() override;
 
+	void feedGreeter() override;
+
 private:
 	zmq::context_t m_zmqContext;
 	orwell::IAgentProxy & m_agentProxy;
 	std::shared_ptr< com::Socket > m_agentSocket;
 	std::shared_ptr< com::Receiver > m_puller;
 	std::shared_ptr< com::Sender > m_publisher;
+	std::shared_ptr< com::Socket > m_replier;
 	orwell::game::Game m_game;
 	orwell::callbacks::ProcessDecider m_decider;
 
@@ -73,6 +77,7 @@ private:
 
 	bool m_mainLoopRunning;
 	bool m_forcedStop;
+	bool m_checkPullerFirst;
 };
 
 }

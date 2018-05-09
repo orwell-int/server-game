@@ -16,9 +16,10 @@ namespace orwell {
 namespace callbacks {
 
 ProcessInput::ProcessInput(
+		game::Game & ioGame,
 		std::shared_ptr< com::Sender > ioPublisher,
-		game::Game & ioGame)
-	: InterfaceProcess(ioPublisher, ioGame)
+		std::shared_ptr< com::Socket > ioReplier)
+	: InterfaceProcess(ioGame, ioPublisher, ioReplier)
 {
 }
 

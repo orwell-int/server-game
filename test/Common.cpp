@@ -19,6 +19,7 @@
 #define ARG_PUBLISHER_PORT "-P"
 #define ARG_PULLER_PORT "-p"
 #define ARG_AGENT_PORT "-A"
+#define ARG_REPLIER_PORT "-R"
 #define ARG_ORWELLRC "-r"
 #define ARG_GAMECONFIG "-g"
 #define ARG_TIC_INTERVAL "-T"
@@ -142,6 +143,10 @@ Arguments Common::GetArguments(
 	{
 		BuildIntArgument(ARG_AGENT_PORT, *iCommandLineParams.m_agentPort, arguments);
 	}
+	if (iCommandLineParams.m_replierPort)
+	{
+		BuildIntArgument(ARG_REPLIER_PORT, *iCommandLineParams.m_replierPort, arguments);
+	}
 	if (iCommandLineParams.m_rcFilePath)
 	{
 		BuildStrArgument(ARG_ORWELLRC, (*iCommandLineParams.m_rcFilePath).c_str(), arguments);
@@ -207,7 +212,7 @@ bool Common::ExpectMessage(
 			{
 				ORWELL_LOG_DEBUG("Discarded message of type " << oReceived._type);
 			}
-			usleep( 10 );
+			usleep(10);
 		}
 		else
 		{
@@ -291,4 +296,3 @@ TempFile::~TempFile()
 		m_fileName.erase();
 	}
 }
-

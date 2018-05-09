@@ -67,14 +67,16 @@ bool Socket::receiveString(
 	return aReceived;
 }
 
-bool Socket::receive(RawMessage & oMessage)
+bool Socket::receive(
+		RawMessage & oMessage,
+		bool const iBlocking)
 {
 	string aType;
 	string aPayload;
 	string aDest;
 
 	std::string aMessageData;
-	bool const aReceived = receiveString(aMessageData);
+	bool const aReceived = receiveString(aMessageData, iBlocking);
 	if (aReceived)
 	{
 		size_t aEndDestFlag = aMessageData.find(" ", 0);
@@ -134,7 +136,7 @@ std::string const & Socket::getUrl() const
 
 void Socket::innerReset()
 {
-	if (0 != m_zmqSocket)
+	if (nullptr != m_zmqSocket)
 	{
 		delete(m_zmqSocket);
 	}
@@ -149,17 +151,16 @@ void Socket::innerReset()
 	}
 	if (ConnectionMode::BIND == m_connectionMode)
 	{
-		m_zmqSocket->bind(m_url.c_str());
 		ORWELL_LOG_INFO("Socket " << m_socketType << " binds on " << m_url.c_str());
+		m_zmqSocket->bind(m_url.c_str());
 	}
 	else
 	{
 		assert(ConnectionMode::CONNECT == m_connectionMode);
-		m_zmqSocket->connect(m_url.c_str());
 		ORWELL_LOG_INFO("Socket " << m_socketType << " connects to '" << m_url.c_str() << "'");
+		m_zmqSocket->connect(m_url.c_str());
 	}
 }
 
 }
 }
-

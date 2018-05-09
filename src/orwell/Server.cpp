@@ -42,6 +42,7 @@ Server::Server(
 		std::string const & iAgentUrl,
 		std::string const & iPullUrl,
 		std::string const & iPublishUrl,
+		std::string const & iReplierUrl,
 		long const iTicDuration,
 		uint32_t const iGameDuration)
 	: m_zmqContext(1)
@@ -64,12 +65,19 @@ Server::Server(
 				orwell::com::ConnectionMode::BIND,
 				m_zmqContext,
 				0))
+	, m_replier(std::make_shared< orwell::com::Socket >(
+				iReplierUrl,
+				ZMQ_REP,
+				orwell::com::ConnectionMode::BIND,
+				m_zmqContext,
+				0))
 	, m_game(iSystemProxy, boost::posix_time::seconds(iGameDuration), iRuleset, *this)
-	, m_decider(m_game, m_publisher)
+	, m_decider(m_game, m_publisher, m_replier)
 	, m_ticDuration(boost::posix_time::milliseconds(iTicDuration))
 	, m_previousTic(boost::posix_time::microsec_clock::local_time())
 	, m_mainLoopRunning(false)
 	, m_forcedStop(false)
+	, m_checkPullerFirst(true)
 {
 }
 
@@ -81,12 +89,37 @@ bool Server::processMessageIfAvailable()
 {
 	bool aProcessedMessage = false;
 	orwell::com::RawMessage aMessage;
-	if (m_puller->receive(aMessage))
+	if (m_checkPullerFirst)
 	{
-		ORWELL_LOG_DEBUG("Message received in processMessageIfAvailable");
-		m_decider.process(aMessage);
-		aProcessedMessage = true;
+		if (m_puller->receive(aMessage))
+		{
+			ORWELL_LOG_DEBUG("Message received in processMessageIfAvailable");
+			m_decider.process(aMessage, com::Channel::PUBLISH);
+			aProcessedMessage = true;
+		}
+		else if (m_replier->receive(aMessage))
+		{
+			ORWELL_LOG_DEBUG("Message received in processMessageIfAvailable");
+			m_decider.process(aMessage, com::Channel::REPLY);
+			aProcessedMessage = true;
+		}
 	}
+	else
+	{
+		if (m_replier->receive(aMessage))
+		{
+			ORWELL_LOG_DEBUG("Message received in processMessageIfAvailable");
+			m_decider.process(aMessage, com::Channel::REPLY);
+			aProcessedMessage = true;
+		}
+		else if (m_puller->receive(aMessage))
+		{
+			ORWELL_LOG_DEBUG("Message received in processMessageIfAvailable");
+			m_decider.process(aMessage, com::Channel::PUBLISH);
+			aProcessedMessage = true;
+		}
+	}
+	m_checkPullerFirst = !m_checkPullerFirst;
 	return aProcessedMessage;
 }
 
@@ -124,7 +157,7 @@ void Server::loopUntilOneMessageIsProcessed()
 			if (m_game.getIsRunning())
 			{
 				m_game.step();
-				ProcessTimer aProcessTimer(m_publisher, m_game);
+				ProcessTimer aProcessTimer(m_game, m_publisher, m_replier);
 				aProcessTimer.execute();
 			}
 			m_previousTic = aCurrentTic;
@@ -164,6 +197,20 @@ void Server::feedAgentProxy()
 	{
 		ORWELL_LOG_DEBUG("command received: '" << aMessage << "'");
 		m_agentProxy.step(aMessage, aReply);
+		ORWELL_LOG_TRACE("Reply to the client ...");
+		m_agentSocket->sendString(aReply);
+	}
+}
+
+void Server::feedGreeter()
+{
+	orwell::com::RawMessage aMessage;
+	ORWELL_LOG_TRACE("Try to read greeting message ...");
+	std::string aReply("KO");
+	if (m_agentSocket->receive(aMessage))
+	{
+		ORWELL_LOG_DEBUG("Message received is of type '" << aMessage._type << "'");
+		m_decider.process(aMessage, com::Channel::REPLY);
 		ORWELL_LOG_TRACE("Reply to the client ...");
 		m_agentSocket->sendString(aReply);
 	}

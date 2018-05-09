@@ -11,7 +11,8 @@ public:
 	BroadcastServer(
 			uint16_t const iBroadcastPort,
 			std::string const & iPullerUrl,
-			std::string const & iPublisherUrl);
+			std::string const & iPublisherUrl,
+			std::string const & iRequestUrl);
 
 	~BroadcastServer();
 
@@ -26,6 +27,7 @@ private:
 	uint16_t const m_broadcastPort;
 	std::string const _pullerUrl;
 	std::string const _publisherUrl;
+	std::string const _requestUrl;
 };
 
 }

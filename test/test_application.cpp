@@ -172,12 +172,26 @@ static void test_same_ports_puller_broadcast()
 
 static void test_same_ports_agent_broadcast()
 {
-	ORWELL_LOG_DEBUG("test_same_ports_agent_agent");
+	ORWELL_LOG_DEBUG("test_same_ports_agent_broadcast");
 
 	orwell::Application::CommandLineParameters aCommandLineArguments;
 	aCommandLineArguments.m_publisherPort = 41;
 	aCommandLineArguments.m_pullerPort = 42;
 	aCommandLineArguments.m_agentPort = 43;
+	aCommandLineArguments.m_broadcastPort = 43;
+
+	test_ReadParameters(Status::FAIL, Common::GetArguments(aCommandLineArguments, false, false));
+}
+
+static void test_same_ports_replier_broadcast()
+{
+	ORWELL_LOG_DEBUG("test_same_ports_replier_broadcast");
+
+	orwell::Application::CommandLineParameters aCommandLineArguments;
+	aCommandLineArguments.m_publisherPort = 41;
+	aCommandLineArguments.m_pullerPort = 42;
+	aCommandLineArguments.m_replierPort = 43;
+	aCommandLineArguments.m_agentPort = 44;
 	aCommandLineArguments.m_broadcastPort = 43;
 
 	test_ReadParameters(Status::FAIL, Common::GetArguments(aCommandLineArguments, false, false));
@@ -265,7 +279,8 @@ video-ports    = 9001
 	aCommandLineArguments.m_publisherPort = 1;
 	aCommandLineArguments.m_pullerPort = 2;
 	aCommandLineArguments.m_agentPort = 3;
-	aCommandLineArguments.m_broadcastPort = 4;
+	aCommandLineArguments.m_replierPort = 4;
+	aCommandLineArguments.m_broadcastPort = 5;
 	aCommandLineArguments.m_rcFilePath = aTempFile.m_fileName;
 	aCommandLineArguments.m_tickInterval = 666;
 	aCommandLineArguments.m_gameDuration = 274;
@@ -295,6 +310,7 @@ static void test_parse_command_line_and_file_1()
 [server]
 publisher-port = 19000
 puller-port    = 19001
+replier-port = 19002
 agent-port     = 19003
 broadcast-port     = 19004
 tic-interval   = 1500
@@ -305,7 +321,8 @@ video-ports    = 9001:9004
 	aCommandLineArguments.m_publisherPort = 1;
 	aCommandLineArguments.m_pullerPort = 2;
 	aCommandLineArguments.m_agentPort = 3;
-	aCommandLineArguments.m_broadcastPort = 4;
+	aCommandLineArguments.m_replierPort = 4;
+	aCommandLineArguments.m_broadcastPort = 5;
 	aCommandLineArguments.m_rcFilePath = aTempFile.m_fileName;
 	aCommandLineArguments.m_tickInterval = 666;
 	aCommandLineArguments.m_gameDuration = 274;
@@ -333,6 +350,7 @@ static void test_parse_command_line_and_file_2()
 [server]
 publisher-port = 900
 puller-port    = 901
+replier-port = 902
 agent-port     = 903
 broadcast-port = 904
 tic-interval   = 50
@@ -345,6 +363,7 @@ video-ports    = 9001
 	orwell::Application::CommandLineParameters aExpectedCommandLineArguments;
 	aExpectedCommandLineArguments.m_publisherPort = 900;
 	aExpectedCommandLineArguments.m_pullerPort = 901;
+	aExpectedCommandLineArguments.m_replierPort = 902;
 	aExpectedCommandLineArguments.m_agentPort = 903;
 	aExpectedCommandLineArguments.m_broadcastPort = 904;
 	aExpectedCommandLineArguments.m_rcFilePath = aTempFile.m_fileName;
@@ -437,7 +456,8 @@ name = Bourbaki
 	aInputCommandLineArguments.m_publisherPort = 1;
 	aInputCommandLineArguments.m_pullerPort = 2;
 	aInputCommandLineArguments.m_agentPort = 3;
-	aInputCommandLineArguments.m_broadcastPort = 4;
+	aInputCommandLineArguments.m_replierPort = 4;
+	aInputCommandLineArguments.m_broadcastPort = 5;
 	aInputCommandLineArguments.m_rcFilePath = aTechConfigFile.m_fileName;
 	aInputCommandLineArguments.m_gameFilePath = aTempFile.m_fileName;
 	aInputCommandLineArguments.m_tickInterval = 666;
@@ -500,7 +520,8 @@ name = Bourbaki
 	aCommandLineArguments.m_publisherPort = 1;
 	aCommandLineArguments.m_pullerPort = 2;
 	aCommandLineArguments.m_agentPort = 3;
-	aCommandLineArguments.m_broadcastPort = 4;
+	aCommandLineArguments.m_replierPort = 4;
+	aCommandLineArguments.m_broadcastPort = 5;
 	aCommandLineArguments.m_rcFilePath = aTechConfigFile.m_fileName;
 	aCommandLineArguments.m_gameFilePath = aTempFile.m_fileName;
 	aCommandLineArguments.m_tickInterval = 666;
@@ -544,7 +565,8 @@ static void test_parse_command_line_and_file_6_badConfigFile()
 	aCommandLineArguments.m_publisherPort = 1;
 	aCommandLineArguments.m_pullerPort = 2;
 	aCommandLineArguments.m_agentPort = 3;
-	aCommandLineArguments.m_broadcastPort = 4;
+	aCommandLineArguments.m_replierPort = 4;
+	aCommandLineArguments.m_broadcastPort = 5;
 	aCommandLineArguments.m_rcFilePath = std::string("thisfiledoesnotexist");
 	aCommandLineArguments.m_tickInterval = 666;
 	aCommandLineArguments.m_gameDuration = 274;
@@ -594,7 +616,8 @@ name = Bourbaki
 	aCommandLineArguments.m_publisherPort = 1;
 	aCommandLineArguments.m_pullerPort = 2;
 	aCommandLineArguments.m_agentPort = 3;
-	aCommandLineArguments.m_broadcastPort = 4;
+	aCommandLineArguments.m_replierPort = 4;
+	aCommandLineArguments.m_broadcastPort = 5;
 	aCommandLineArguments.m_rcFilePath = aTechConfigFile.m_fileName;
 	aCommandLineArguments.m_gameFilePath = aGameConfigFile.m_fileName;
 	aCommandLineArguments.m_tickInterval = 666;
@@ -658,7 +681,8 @@ colour = 2
 	aCommandLineArguments.m_publisherPort = 1;
 	aCommandLineArguments.m_pullerPort = 2;
 	aCommandLineArguments.m_agentPort = 3;
-	aCommandLineArguments.m_broadcastPort = 4;
+	aCommandLineArguments.m_replierPort = 4;
+	aCommandLineArguments.m_broadcastPort = 5;
 	aCommandLineArguments.m_rcFilePath = aTechConfigFile.m_fileName;
 	aCommandLineArguments.m_gameFilePath = aGameConfigFile.m_fileName;
 	aCommandLineArguments.m_tickInterval = 666;
@@ -809,7 +833,8 @@ b = 0
 	aInputCommandLineArguments.m_publisherPort = 1;
 	aInputCommandLineArguments.m_pullerPort = 2;
 	aInputCommandLineArguments.m_agentPort = 3;
-	aInputCommandLineArguments.m_broadcastPort = 4;
+	aInputCommandLineArguments.m_replierPort = 4;
+	aInputCommandLineArguments.m_broadcastPort = 5;
 	aInputCommandLineArguments.m_rcFilePath = aTechConfigFile.m_fileName;
 	aInputCommandLineArguments.m_gameFilePath = aTempFile.m_fileName;
 	aInputCommandLineArguments.m_tickInterval = 666;
@@ -856,6 +881,7 @@ int main()
 	test_same_ports_publisher_broadcast();
 	test_same_ports_puller_broadcast();
 	test_same_ports_agent_broadcast();
+	test_same_ports_replier_broadcast();
 	test_wrong_port_range_broadcast_1();
 	test_wrong_port_range_broadcast_2();
 	test_wrong_port_range_broadcast_3();

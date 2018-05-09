@@ -2,13 +2,16 @@
 
 
 #include "orwell/callbacks/InterfaceProcess.hpp"
+#include "orwell/com/Channel.hpp"
 
 #include <map>
 #include <memory>
 
-namespace orwell {
+namespace orwell
+{
 
-namespace game {
+namespace game
+{
 class Game;
 } // namespace game
 
@@ -18,7 +21,8 @@ class RawMessage;
 class Sender;
 } // namespace com
 
-namespace callbacks {
+namespace callbacks
+{
 
 class ProcessDecider
 {
@@ -27,15 +31,14 @@ class ProcessDecider
 public:
 	ProcessDecider(
 			game::Game & ioGame,
-			std::shared_ptr< com::Sender > ioPublisher);
+			std::shared_ptr< com::Sender > ioPublisher,
+			std::shared_ptr< com::Socket > ioReplier);
 
 	~ProcessDecider();
 
-//	static void Process(
-//			com::RawMessage const & iMessage,
-//			game::Game & ioCtx);
-
-	void process(com::RawMessage const & iMessage);
+	void process(
+			com::RawMessage const & iMessage,
+			com::Channel const iChannel);
 
 private:
 	std::map<std::string, std::unique_ptr<InterfaceProcess>> _map;
@@ -43,4 +46,3 @@ private:
 
 } // namespace callbacks
 } // namespace orwell
-

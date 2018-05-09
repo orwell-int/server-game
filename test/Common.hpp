@@ -214,6 +214,8 @@ public:
 	MOCK_METHOD0(accessContext, orwell::game::Game & ());
 
 	MOCK_METHOD0(feedAgentProxy, void());
+
+	MOCK_METHOD0(feedGreeter, void());
 };
 
 class FakeContactHandler : public orwell::game::IContactHandler

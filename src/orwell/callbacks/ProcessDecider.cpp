@@ -41,21 +41,24 @@ static MessageType BuildProtobuf(
 
 ProcessDecider::ProcessDecider(
 		game::Game & ioGame,
-		std::shared_ptr< com::Sender > ioPublisher)
+		std::shared_ptr< com::Sender > ioPublisher,
+		std::shared_ptr< com::Socket > ioReplier)
 {
-	_map["Hello"] = std::unique_ptr<InterfaceProcess>(new ProcessHello(ioPublisher, ioGame));
-	_map["Input"] = std::unique_ptr<InterfaceProcess>(new ProcessInput(ioPublisher, ioGame));
-	_map["Register"] = std::unique_ptr<InterfaceProcess>(new ProcessRegister(ioPublisher, ioGame));
-	_map["ServerRobotState"] = std::unique_ptr<InterfaceProcess>(new ProcessRobotState(ioPublisher, ioGame));
-	_map["Ping"] = std::unique_ptr<InterfaceProcess>(new ProcessPing(ioPublisher, ioGame));
-	_map["Pong"] = std::unique_ptr<InterfaceProcess>(new ProcessPong(ioPublisher, ioGame));
+	_map["Hello"] = std::unique_ptr<InterfaceProcess>(new ProcessHello(ioGame, ioPublisher, ioReplier));
+	_map["Input"] = std::unique_ptr<InterfaceProcess>(new ProcessInput(ioGame, ioPublisher, ioReplier));
+	_map["Register"] = std::unique_ptr<InterfaceProcess>(new ProcessRegister(ioGame, ioPublisher, ioReplier));
+	_map["ServerRobotState"] = std::unique_ptr<InterfaceProcess>(new ProcessRobotState(ioGame, ioPublisher, ioReplier));
+	_map["Ping"] = std::unique_ptr<InterfaceProcess>(new ProcessPing(ioGame, ioPublisher, ioReplier));
+	_map["Pong"] = std::unique_ptr<InterfaceProcess>(new ProcessPong(ioGame, ioPublisher, ioReplier));
 }
 
 ProcessDecider::~ProcessDecider()
 {
 }
 
-void ProcessDecider::process(com::RawMessage const & iMessage)
+void ProcessDecider::process(
+		com::RawMessage const & iMessage,
+		com::Channel const iChannel)
 {
 	std::unique_ptr<InterfaceProcess> & aProcess = _map[iMessage._type];
 	::google::protobuf::MessageLite * aMsg = nullptr;
@@ -90,7 +93,7 @@ void ProcessDecider::process(com::RawMessage const & iMessage)
 	{
 		aProcess->insertArgument("RoutingID", iMessage._routingId);
 		aProcess->insertArgument("Type", iMessage._type);
-		aProcess->init(aMsg);
+		aProcess->init(aMsg, iChannel);
 		aProcess->execute();
 
 		delete aMsg;

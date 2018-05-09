@@ -31,6 +31,7 @@ protected:
 		, m_agentUrl("tcp://localhost:9003")
 		, m_pullUrl("tcp://localhost:9001")
 		, m_publishUrl("tcp://localhost:9000")
+		, m_replierUrl("tcp://localhost:9002")
 		, m_game(
 				m_fakeSystemProxy,
 				boost::posix_time::time_duration(0, 0, m_gameDuration),
@@ -72,6 +73,7 @@ protected:
 	std::string const m_agentUrl;
 	std::string const m_pullUrl;
 	std::string const m_publishUrl;
+	std::string const m_replierUrl;
 	FakeServer m_server;
 	orwell::game::Game m_game;
 	boost::posix_time::ptime m_now;
@@ -134,12 +136,12 @@ TEST_F(TestOrwellGameGame, RestartGame)
 	m_game.setTime(m_now + m_twoSeconds);
 	ORWELL_LOG_INFO("m_game.getTime() = " << m_game.getTime());
 	EXPECT_GE(
-		static_cast< long >(m_gameDuration) - m_twoSeconds.total_seconds(),
+		static_cast< uint64_t >(m_gameDuration) - m_twoSeconds.total_seconds(),
 		m_game.getSecondsLeft())
 		<< "Roughly " << m_twoSeconds << " later.";
 	m_game.step();
 	EXPECT_GE(
-		static_cast< long >(m_gameDuration) - m_twoSeconds.total_seconds(),
+		static_cast< uint64_t >(m_gameDuration) - m_twoSeconds.total_seconds(),
 		m_game.getSecondsLeft())
 		<< "Roughly " << m_twoSeconds << " later.";
 	m_game.start(true, m_now);

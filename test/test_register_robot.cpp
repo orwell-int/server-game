@@ -3,6 +3,7 @@
 #include <zmq.hpp>
 #include <string>
 
+#include "controller.pb.h"
 #include "server-game.pb.h"
 #include "robot.pb.h"
 
@@ -104,7 +105,21 @@ static void proxy()
 			ZMQ_SUB,
 			orwell::com::ConnectionMode::CONNECT,
 			aContext);
+	ORWELL_LOG_INFO("create requester");
+	Socket aRequester(
+			"tcp://127.0.0.1:9002",
+			ZMQ_REQ,
+			orwell::com::ConnectionMode::CONNECT,
+			aContext);
 	usleep(6 * 1000);
+
+	// this is only for synchronisation purpose
+	Hello aHelloMessage;
+	aHelloMessage.set_name("jambon");
+	RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
+	aRequester.send(aMessage);
+	RawMessage aReply;
+	aRequester.receive(aReply, true);
 
 	ExpectRegistered("jambon", "robot1", "TEAM", aPusher, aSubscriber);
 
@@ -124,7 +139,7 @@ static void const server(std::shared_ptr< orwell::Server > ioServer)
 {
 	log4cxx::NDC ndc("server");
 	ORWELL_LOG_INFO("server ...");
-	for (int i = 0 ; i < 5 ; ++i)
+	for (int i = 0 ; i < 6 ; ++i)
 	{
 		ORWELL_LOG_INFO("server loop " << i);
 		ioServer->loopUntilOneMessageIsProcessed();
@@ -150,6 +165,7 @@ int main()
 			"tcp://*:9003",
 			"tcp://*:9000",
 			"tcp://*:9001",
+			"tcp://*:9002",
 			500);
 	ORWELL_LOG_INFO("server created");
 	std::vector< std::string > aRobots = {"Gipsy Danger", "Goldorak", "Securitron"};
