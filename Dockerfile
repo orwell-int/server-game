@@ -39,9 +39,9 @@ RUN mkdir -p build
 WORKDIR /workdir/build
 RUN cmake ..
 RUN make
-RUN ctest || ctest -V
+RUN ctest --output-on-failure
 RUN if [ "$(type clang)" = "$(type $CXX)" ] ; then exit 0 ; fi
-RUN make ExperimentalMemCheck
+RUN ctest -D ExperimentalMemCheck --output-on-failure
 RUN sed -n -e '/LEAK SUMMARY:/,+8p' -e '/^Test\|Testing:[ ]\|Test:[ ]/p' Testing/Temporary/MemoryChecker.*.log
 RUN mkdir -p build_coverage
 WORKDIR /workdir/build_coverage

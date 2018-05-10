@@ -28,6 +28,7 @@ bool gInputReceived;
 static void const ClientSendsInput(
 	int32_t iServerPullerPort,
 	int32_t iServerPublisherPort,
+	int32_t iServerReplierPort,
 	std::string const & iRobotId)
 {
 	using namespace orwell::com;
@@ -40,7 +41,6 @@ static void const ClientSendsInput(
 	std::string aSubscriberUrl = "tcp://127.0.0.1:" +
 		boost::lexical_cast<std::string>(iServerPublisherPort);
 
-	usleep(6 * 1000);
 	Sender aPusher(
 			aPusherUrl,
 			ZMQ_PUSH,
@@ -51,7 +51,8 @@ static void const ClientSendsInput(
 			ZMQ_SUB,
 			orwell::com::ConnectionMode::CONNECT,
 			aContext);
-	usleep(6 * 1000);
+
+	Common::Synchronize(iServerReplierPort, aContext);
 
 	Input aInputMessage;
 	aInputMessage.mutable_move()->set_left(1);
@@ -120,10 +121,12 @@ int main()
 	std::string const aRobotId =
 		aTestAgent.sendCommand("get robot toto id", boost::none);
 	assert("KO" != aRobotId);
+	ORWELL_LOG_INFO("-- Input message that should not be forwarded --");
 	std::thread aClientSendsInputThread(
 			ClientSendsInput,
 			*aParameters.m_commandLineParameters.m_pullerPort,
 			*aParameters.m_commandLineParameters.m_publisherPort,
+			*aParameters.m_commandLineParameters.m_replierPort,
 			aRobotId);
 	aClientSendsInputThread.join();
 	// because the game is not started yet, the Input message is supposed to be
@@ -135,9 +138,11 @@ int main()
 	// For now the tests are deactivated
 	aTestAgent.sendCommand("set robot toto video_url nc:fake");
 	aTestAgent.sendCommand("start game");
+	ORWELL_LOG_INFO("++ Input message that should be forwarded ++");
 	ClientSendsInput(
 			*aParameters.m_commandLineParameters.m_pullerPort,
 			*aParameters.m_commandLineParameters.m_publisherPort,
+			*aParameters.m_commandLineParameters.m_replierPort,
 			aRobotId);
 
 	while (not gInputReceived)
@@ -147,9 +152,11 @@ int main()
 	assert(gInputReceived);
 	aTestAgent.sendCommand("stop game");
 	//aFakeClientConnector.sendCommand("stop", std::string("stopping"));
+	ORWELL_LOG_INFO("-- Input message that should not be forwarded --");
 	ClientSendsInput(
 			*aParameters.m_commandLineParameters.m_pullerPort,
 			*aParameters.m_commandLineParameters.m_publisherPort,
+			*aParameters.m_commandLineParameters.m_replierPort,
 			aRobotId);
 	assert(not gInputReceived);
 	aTestAgent.sendCommand("stop application");

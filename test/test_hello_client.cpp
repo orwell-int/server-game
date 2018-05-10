@@ -83,11 +83,21 @@ static void client()
 	zmq::context_t aContext(1);
 	usleep(6 * 1000);
 	ORWELL_LOG_INFO("create subscriber");
-	Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB, orwell::com::ConnectionMode::CONNECT, aContext);
+	Receiver aSubscriber(
+			"tcp://127.0.0.1:9001",
+			ZMQ_SUB,
+			orwell::com::ConnectionMode::CONNECT,
+			aContext);
 	ORWELL_LOG_INFO("create pusher");
-	Sender aPusher("tcp://127.0.0.1:9000", ZMQ_PUSH, orwell::com::ConnectionMode::CONNECT, aContext);
+	Sender aPusher("tcp://127.0.0.1:9000",
+			ZMQ_PUSH,
+			orwell::com::ConnectionMode::CONNECT,
+			aContext);
 	ORWELL_LOG_INFO("create requester");
-	Socket aRequester("tcp://127.0.0.1:9002", ZMQ_REQ, orwell::com::ConnectionMode::CONNECT, aContext);
+	Socket aRequester("tcp://127.0.0.1:9002",
+			ZMQ_REQ,
+			orwell::com::ConnectionMode::CONNECT,
+			aContext);
 	usleep(6 * 1000);
 
 	ExpectWelcome("jambon", "Gipsy Danger", aRequester, 1);

@@ -8,6 +8,7 @@
 #include "orwell/callbacks/ProcessDecider.hpp"
 
 #include "orwell/game/Game.hpp"
+#include "orwell/com/Channel.hpp"
 
 #include <zmq.hpp>
 
@@ -37,7 +38,7 @@ public:
 			std::string const & iAgentUrl =  "tcp://*:9003",
 			std::string const & iPullUrl = "tcp://*:9000",
 			std::string const & iPublishUrl = "tcp://*:9001",
-			std::string const & iReplierUrl = "tcp://*:9002",
+			std::string const & iReplyUrl = "tcp://*:9002",
 			long const iTicDuration = 500,
 			uint32_t const iGameDuration = 300);
 
@@ -56,11 +57,13 @@ public:
 
 	orwell::game::Game & accessContext() override;
 
-	void feedAgentProxy() override;
-
-	void feedGreeter() override;
+	void feedAgentProxy(bool const iBlocking) override;
 
 private:
+	bool receive_and_process(
+			orwell::com::Channel const iChannel,
+			orwell::com::RawMessage & ioMessage);
+
 	zmq::context_t m_zmqContext;
 	orwell::IAgentProxy & m_agentProxy;
 	std::shared_ptr< com::Socket > m_agentSocket;
@@ -77,7 +80,7 @@ private:
 
 	bool m_mainLoopRunning;
 	bool m_forcedStop;
-	bool m_checkPullerFirst;
+	std::vector< orwell::com::Channel > m_channels;
 };
 
 }

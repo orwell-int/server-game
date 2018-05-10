@@ -9,6 +9,7 @@
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/game/Game.hpp"
 #include "orwell/Application.hpp"
+#include "controller.pb.h"
 #include "MissingFromTheStandard.hpp"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -224,11 +225,33 @@ bool Common::ExpectMessage(
 	{
 		if (aDuration >= aTrueTimeout)
 		{
-			ORWELL_LOG_DEBUG("Expected message not received ; timeout ("
-					<< aTrueTimeout << ") exceeded: " << aDuration);
+			ORWELL_LOG_ERROR("Expected message not received (" << iType
+					<< ") ; timeout (" << aTrueTimeout
+					<< ") exceeded: " << aDuration);
 		}
 	}
 	return aReceivedExpectedMessage;
+}
+
+void Common::Synchronize(
+		int32_t iServerReplierPort,
+		zmq::context_t & ioContext)
+{
+	std::string aRequesterUrl = "tcp://127.0.0.1:" +
+		boost::lexical_cast<std::string>(iServerReplierPort);
+	ORWELL_LOG_INFO("create requester");
+	orwell::com::Socket aRequester(
+			aRequesterUrl,
+			ZMQ_REQ,
+			orwell::com::ConnectionMode::CONNECT,
+			ioContext);
+
+	orwell::messages::Hello aHello;
+	aHello.set_name("jambon");
+	orwell::com::RawMessage aHelloMessage("randomid", "Hello", aHello.SerializeAsString());
+	aRequester.send(aHelloMessage);
+	orwell::com::RawMessage aHelloReply;
+	aRequester.receive(aHelloReply, true);
 }
 
 TestAgent::TestAgent(uint16_t const & iPort) :

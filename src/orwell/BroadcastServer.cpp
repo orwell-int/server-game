@@ -23,13 +23,13 @@ BroadcastServer::BroadcastServer(
 		uint16_t const iBroadcastPort,
 		std::string const & iPullerUrl,
 		std::string const & iPublisherUrl,
-		std::string const & iReqRepUrl)
+		std::string const & iReplierUrl)
 	: _mainLoopRunning(false)
 	, _forcedStop(false)
 	, m_broadcastPort(iBroadcastPort)
 	, _pullerUrl(iPullerUrl)
 	, _publisherUrl(iPublisherUrl)
-	, _requestUrl(iReqRepUrl)
+	, _replierUrl(iReplierUrl)
 {
 }
 
@@ -105,29 +105,29 @@ void BroadcastServer::runBroadcastReceiver()
 
 		// Reply with PULLER and PUBLISHER url
 		// Since in UDP Discovery we are limited to 32 bytes (like ICMP_ECHO), build a binary message
-		std::ostringstream anOstream;
+		std::ostringstream aOstream;
 		if (aVersion >= 0)
 		{
-			anOstream << (uint8_t) 0xA0;                       // A0 identifies the Puller ( 1 byte )
-			anOstream << (uint8_t) _pullerUrl.size();          // size of puller url       ( 1 byte )
-			anOstream << (const char *) _pullerUrl.c_str();    // Address of puller url    (12 bytes)
-			anOstream << (uint8_t) 0xA1;                       // A1 is the Publisher      ( 1 byte )
-			anOstream << (uint8_t) _publisherUrl.size();       // size of publisher url    ( 1 byte )
-			anOstream << (const char *) _publisherUrl.c_str(); // Address of publisher     (12 bytes)
+			aOstream << (uint8_t) 0xA0;                       // A0 identifies the Puller ( 1 byte )
+			aOstream << (uint8_t) _pullerUrl.size();          // size of puller url       ( 1 byte )
+			aOstream << (const char *) _pullerUrl.c_str();    // Address of puller url    (12 bytes)
+			aOstream << (uint8_t) 0xA1;                       // A1 is the Publisher      ( 1 byte )
+			aOstream << (uint8_t) _publisherUrl.size();       // size of publisher url    ( 1 byte )
+			aOstream << (const char *) _publisherUrl.c_str(); // Address of publisher     (12 bytes)
 		}
 		if (aVersion >= 1)
 		{
-			anOstream << (uint8_t) 0xA2;                       // A2 is the REQ/REP        ( 1 byte )
-			anOstream << (uint8_t) _requestUrl.size();         // size of REQ/REP url      ( 1 byte )
-			anOstream << (const char *) _requestUrl.c_str();   // Address of REQ/REP       (12 bytes)
+			aOstream << (uint8_t) 0xA2;                       // A2 is the REQ/REP        ( 1 byte )
+			aOstream << (uint8_t) _replierUrl.size();         // size of REQ/REP url      ( 1 byte )
+			aOstream << (const char *) _replierUrl.c_str();   // Address of REQ/REP       (12 bytes)
 			// the rumour said 32 bytes was the limit but this still works even if bigger
 		}
-		anOstream << (uint8_t) 0x00;                       // End of message               ( 1 byte )
+		aOstream << (uint8_t) 0x00;                       // End of message               ( 1 byte )
 
 		ssize_t aMessageLength = sendto(
 				aBsdSocket,
-				anOstream.str().c_str(),
-				anOstream.str().size(),
+				aOstream.str().c_str(),
+				aOstream.str().size(),
 				0,
 				(struct sockaddr *) &aClientAddress,
 				sizeof(aClientAddress));

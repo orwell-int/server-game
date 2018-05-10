@@ -94,6 +94,11 @@ public:
 			orwell::com::Receiver & iSubscriber,
 			orwell::com::RawMessage & oReceived,
 			unsigned int const iTimeout = 500);
+
+	static void Synchronize(
+			int32_t iServerReplierPort,
+			zmq::context_t & ioContext);
+
 };
 
 class FakeAgentProxy : public orwell::IAgentProxy
@@ -213,7 +218,7 @@ public:
 
 	MOCK_METHOD0(accessContext, orwell::game::Game & ());
 
-	MOCK_METHOD0(feedAgentProxy, void());
+	MOCK_METHOD1(feedAgentProxy, void(bool const iBlocking));
 
 	MOCK_METHOD0(feedGreeter, void());
 };

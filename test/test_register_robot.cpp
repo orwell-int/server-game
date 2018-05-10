@@ -92,7 +92,6 @@ static void proxy()
 	log4cxx::NDC ndc("proxy");
 	ORWELL_LOG_INFO("proxy ...");
 	zmq::context_t aContext(1);
-	usleep(6 * 1000);
 	ORWELL_LOG_INFO("create pusher");
 	Sender aPusher(
 			"tcp://127.0.0.1:9000",
@@ -111,7 +110,6 @@ static void proxy()
 			ZMQ_REQ,
 			orwell::com::ConnectionMode::CONNECT,
 			aContext);
-	usleep(6 * 1000);
 
 	// this is only for synchronisation purpose
 	Hello aHelloMessage;
