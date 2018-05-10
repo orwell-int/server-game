@@ -81,7 +81,7 @@ void BroadcastServer::runBroadcastReceiver()
 
 	_mainLoopRunning = true;
 	ssize_t aReadSize;
-	uint8_t aVersion;
+	int aVersion;
 	char aMessageBuffer[UDP_MESSAGE_LIMIT];
 	memset(aMessageBuffer, 0, UDP_MESSAGE_LIMIT);
 	while (_mainLoopRunning)
@@ -101,7 +101,7 @@ void BroadcastServer::runBroadcastReceiver()
 			aVersion = atoi(aMessageBuffer);
 			memset(aMessageBuffer, 0, aReadSize);
 		}
-		ORWELL_LOG_INFO("Received an UDP broadcast");
+		ORWELL_LOG_INFO("Received an UDP broadcast version (" << aVersion << ")");
 
 		// Reply with PULLER and PUBLISHER url
 		// Since in UDP Discovery we are limited to 32 bytes (like ICMP_ECHO), build a binary message
@@ -120,7 +120,7 @@ void BroadcastServer::runBroadcastReceiver()
 			anOstream << (uint8_t) 0xA2;                       // A2 is the REQ/REP        ( 1 byte )
 			anOstream << (uint8_t) _requestUrl.size();         // size of REQ/REP url      ( 1 byte )
 			anOstream << (const char *) _requestUrl.c_str();   // Address of REQ/REP       (12 bytes)
-			// bigger than 32 bytes ? still working ?
+			// the rumour said 32 bytes was the limit but this still works even if bigger
 		}
 		anOstream << (uint8_t) 0x00;                       // End of message               ( 1 byte )
 

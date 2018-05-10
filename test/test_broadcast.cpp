@@ -99,24 +99,16 @@ bool get_ip4(IP4 & oIp4)
 	return true;
 }
 
-uint32_t simulateClient()
+uint32_t simulateClient(char const * iMessage)
 {
 	log4cxx::NDC ndc("client");
-	int aSocket;
-	ssize_t aMessageLength;
-	struct sockaddr_in aDestination;
-	struct ip_mreq aGroup;
-	unsigned int aDestinationLength;
-	char aReply[256];
 
 	//char *aMessageToSend = (char*) "1AFTW";
-	char *aMessageToSend = (char*) "";
-	aMessageLength = strlen(aMessageToSend);
-
-	int broadcast = 1;
+	ssize_t const aMessageLength = strlen(iMessage);
 
 	// Build the socket
-	if ( (aSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP) ) < 0)
+	int aSocket;
+	if ((aSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
 	{
 		perror("socket()");
 		return 255;
@@ -135,7 +127,7 @@ uint32_t simulateClient()
 		ORWELL_LOG_INFO("IP: " << address);
 	}
 
-	// Build the destination object
+	struct sockaddr_in aDestination;
 	memset(&aDestination, 0, sizeof(aDestination));
 	aDestination.sin_family = AF_INET;
 	aDestination.sin_addr.s_addr = inet_addr(
@@ -146,12 +138,14 @@ uint32_t simulateClient()
 	setsockopt(aSocket, IPPROTO_IP, IP_MULTICAST_IF, &aDestination, sizeof(aDestination));
 
 	// Allow the socket to send broadcast messages
+	int const broadcast = 1;
 	if ((setsockopt(aSocket, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(int))) == -1)
 	{
 		ORWELL_LOG_ERROR("Not allowed to send broadcast");
 		return 255;
 	}
 
+	struct ip_mreq aGroup;
 	bzero(&aGroup, sizeof(aGroup));
 	aGroup.imr_multiaddr.s_addr = inet_addr(MULTICAST_GROUP);
 	aGroup.imr_interface.s_addr = htonl(INADDR_ANY);
@@ -161,38 +155,71 @@ uint32_t simulateClient()
 		return 255;
 	}
 
-	if (sendto(aSocket, aMessageToSend, aMessageLength, 0, (struct sockaddr *) &aDestination, sizeof(aDestination)) != aMessageLength)
+	if (aMessageLength != sendto(
+				aSocket,
+				iMessage,
+				aMessageLength,
+				0,
+				(struct sockaddr *) &aDestination,
+				sizeof(aDestination)))
 	{
 		ORWELL_LOG_ERROR("Did not send the right number of bytes..");
 		return 255;
 	}
 
-	aDestinationLength = sizeof(aDestination);
-	if (recvfrom(aSocket, aReply, sizeof(aReply), 0, (struct sockaddr *) &aDestination, &aDestinationLength) == -1)
+	unsigned int aDestinationLength = sizeof(aDestination);
+	char aReply[256];
+	if (-1 == recvfrom(
+				aSocket,
+				aReply,
+				sizeof(aReply),
+				0,
+				(struct sockaddr *) &aDestination,
+				&aDestinationLength))
 	{
 		ORWELL_LOG_ERROR("Did not receive a message...");
 		return 255;
 	}
 
-	uint8_t aFirstSeparator, aSecondSeparator, aFirstSize, aSecondSize;
-	std::string aFirstUrl, aSecondUrl;
-
-	aFirstSeparator = (uint8_t) aReply[0];
-	aFirstSize = (uint8_t) aReply[1];
-	aFirstUrl = std::string(&aReply[2], aFirstSize);
-	aSecondSeparator = (uint8_t) aReply[2 + aFirstSize];
-	aSecondSize = (uint8_t) aReply[2 + aFirstSize + 1];
-	aSecondUrl = std::string(&aReply[2 + aFirstSize + 2], aSecondSize);
-
+	uint8_t const aFirstSeparator = (uint8_t) aReply[0];
+	uint8_t const aFirstSize = (uint8_t) aReply[1];
+	std::string const aFirstUrl = std::string(&aReply[2], aFirstSize);
+	uint8_t const aSecondSeparator = (uint8_t) aReply[2 + aFirstSize];
+	uint8_t const aSecondSize = (uint8_t) aReply[2 + aFirstSize + 1];
+	std::string const aSecondUrl = std::string(&aReply[2 + aFirstSize + 2], aSecondSize);
 	char aBufferForLogger[128];
-	sprintf(aBufferForLogger, "0x%X %d (%s) 0x%X %d (%s)\n",
-			aFirstSeparator, aFirstSize, aFirstUrl.c_str(), aSecondSeparator, aSecondSize, aSecondUrl.c_str());
+	int aReturn = 0;
+	int const aVersion = atoi(iMessage);
+	if (0 == aVersion)
+	{
+		sprintf(aBufferForLogger, "0x%X %d (%s) 0x%X %d (%s)\n",
+				aFirstSeparator, aFirstSize, aFirstUrl.c_str(),
+				aSecondSeparator, aSecondSize, aSecondUrl.c_str());
+		if ((0xA0 != aFirstSeparator) or (0xA1 != aSecondSeparator))
+		{
+			aReturn += 1;
+		}
+	}
+	else
+	{
+		uint8_t const aThirdSeparator = (uint8_t) aReply[2 + aSecondSize];
+		uint8_t const aThirdSize = (uint8_t) aReply[2 + aSecondSize + 1];
+		std::string const aThirdUrl = std::string(&aReply[2 + aSecondSize + 2], aThirdSize);
 
+		sprintf(aBufferForLogger, "0x%X %d (%s) 0x%X %d (%s) 0x%X %d (%s)\n",
+				aFirstSeparator, aFirstSize, aFirstUrl.c_str(),
+				aSecondSeparator, aSecondSize, aSecondUrl.c_str(),
+				aThirdSeparator, aThirdSize, aThirdUrl.c_str());
+		if ((0xA2 != aThirdSeparator))
+		{
+			aReturn += 1;
+		}
+	}
 	ORWELL_LOG_INFO(aBufferForLogger);
 
 	close(aSocket);
 
-	return (aFirstSeparator == 0xA0 and aSecondSeparator == 0xA1) ? 0 : 1;
+	return aReturn;
 }
 
 void simulateServer()
@@ -224,7 +251,10 @@ int main(int argc, const char * argv [])
 		case 0:
 			// child
 			usleep(2543);
-			aRc = simulateClient();
+			// version 0
+			aRc = simulateClient("") + simulateClient("0");
+			// version 1
+			aRc += simulateClient("1");
 			ORWELL_LOG_INFO("Return from child");
 			break;
 		default:
