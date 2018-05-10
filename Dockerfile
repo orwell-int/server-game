@@ -40,9 +40,9 @@ WORKDIR /workdir/build
 RUN cmake ..
 RUN make
 RUN ctest || ctest -V
+RUN if [ "$(type clang)" = "$(type $CXX)" ] ; then exit 0 ; fi
 RUN make ExperimentalMemCheck
 RUN sed -n -e '/LEAK SUMMARY:/,+8p' -e '/^Test\|Testing:[ ]\|Test:[ ]/p' Testing/Temporary/MemoryChecker.*.log
-RUN if [ "$(type clang)" = "$(type $CXX)" ] ; then exit 0 ; fi
 RUN mkdir -p build_coverage
 WORKDIR /workdir/build_coverage
 RUN cmake .. -DORWELL_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug
