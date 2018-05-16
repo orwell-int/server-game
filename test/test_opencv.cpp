@@ -32,7 +32,7 @@ int main()
 			200, 30, 0, 0   // param1, param2, minRadius, maxRadius
 			);
 	ORWELL_LOG_INFO("Circles detected: " << aCircles.size());
-	EXPECT_EQ(1, aCircles.size())
+	EXPECT_EQ(size_t{1}, aCircles.size())
 		<< "Only one circlue should be found";
 	for (auto && aCircle : aCircles)
 	{

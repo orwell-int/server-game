@@ -7,6 +7,7 @@
 #include "server-game.pb.h"
 
 #include "orwell/support/GlobalLogger.hpp"
+#include "orwell/com/Url.hpp"
 #include "orwell/com/Sender.hpp"
 #include "orwell/com/Receiver.hpp"
 #include "orwell/Server.hpp"
@@ -76,29 +77,33 @@ static void ExpectWelcome(
 	}
 }
 
-static void client()
+static void client(
+	uint16_t const iAgentPort,
+	uint16_t const iPullerPort,
+	uint16_t const iPublisherPort,
+	uint16_t const iReplierPort)
 {
 	log4cxx::NDC ndc("client");
 	ORWELL_LOG_INFO("client ...");
 	zmq::context_t aContext(1);
-	usleep(6 * 1000);
 	ORWELL_LOG_INFO("create subscriber");
 	Receiver aSubscriber(
-			"tcp://127.0.0.1:9001",
+			orwell::com::Url("tcp", "localhost", iPublisherPort).toString(),
 			ZMQ_SUB,
 			orwell::com::ConnectionMode::CONNECT,
 			aContext);
 	ORWELL_LOG_INFO("create pusher");
-	Sender aPusher("tcp://127.0.0.1:9000",
+	Sender aPusher(
+			orwell::com::Url("tcp", "localhost", iPullerPort).toString(),
 			ZMQ_PUSH,
 			orwell::com::ConnectionMode::CONNECT,
 			aContext);
 	ORWELL_LOG_INFO("create requester");
-	Socket aRequester("tcp://127.0.0.1:9002",
+	Socket aRequester(
+			orwell::com::Url("tcp", "localhost", iReplierPort).toString(),
 			ZMQ_REQ,
 			orwell::com::ConnectionMode::CONNECT,
 			aContext);
-	usleep(6 * 1000);
 
 	ExpectWelcome("jambon", "Gipsy Danger", aRequester, 1);
 
@@ -148,6 +153,10 @@ int main()
 	FakeAgentProxy aFakeAgentProxy;
 	orwell::game::Ruleset aRuleset;
 	FakeSystemProxy aFakeSystemProxy;
+	uint16_t const aAgentPort{9003};
+	uint16_t const aPullerPort{9000};
+	uint16_t const aPublisherPort{9001};
+	uint16_t const aReplierPort{9002};
 	EXPECT_CALL(aFakeSystemProxy, mkstemp(_)).Times(0);
 	EXPECT_CALL(aFakeSystemProxy, system(_)).Times(0);
 	std::shared_ptr< orwell::Server > aServer =
@@ -155,10 +164,10 @@ int main()
 			aFakeSystemProxy,
 			aFakeAgentProxy,
 			aRuleset,
-			"tcp://*:9003",
-			"tcp://*:9000",
-			"tcp://*:9001",
-			"tcp://*:9002",
+			orwell::com::Url("tcp", "*", aAgentPort).toString(),
+			orwell::com::Url("tcp", "*", aPullerPort).toString(),
+			orwell::com::Url("tcp", "*", aPublisherPort).toString(),
+			orwell::com::Url("tcp", "*", aReplierPort).toString(),
 			500);
 	ORWELL_LOG_INFO("server created");
 	std::vector< std::string > aRobots = {"Gipsy Danger", "Goldorak", "Securitron"};
@@ -167,15 +176,20 @@ int main()
 	aServer->accessContext().addRobot(aRobots[0], aTeamName, 8001, 8004, "robot1");
 	aServer->accessContext().addRobot(aRobots[1], aTeamName, 8002, 8005, "robot2");
 	aServer->accessContext().addRobot(aRobots[2], aTeamName, 8003, 8006, "robot3");
+	std::string const aFakeUrl{"http://dummyurl.fr/8008"};
 	aServer->accessContext().accessRobot(aRobots[0])->setHasRealRobot(true);
-	aServer->accessContext().accessRobot(aRobots[0])->setVideoUrl("http://dummyurl.fr/8008");
+	aServer->accessContext().accessRobot(aRobots[0])->setVideoUrl(aFakeUrl);
 	aServer->accessContext().accessRobot(aRobots[1])->setHasRealRobot(true);
-	aServer->accessContext().accessRobot(aRobots[1])->setVideoUrl("http://dummyurl.fr/8008");
+	aServer->accessContext().accessRobot(aRobots[1])->setVideoUrl(aFakeUrl);
 	aServer->accessContext().accessRobot(aRobots[2])->setHasRealRobot(true);
-	aServer->accessContext().accessRobot(aRobots[2])->setVideoUrl("http://dummyurl.fr/8008");
+	aServer->accessContext().accessRobot(aRobots[2])->setVideoUrl(aFakeUrl);
 	ORWELL_LOG_INFO("number of robots added: 3");
 	std::thread aServerThread(server, aServer);
-	std::thread aClientThread(client);
+	std::thread aClientThread(client,
+			aAgentPort,
+			aPullerPort,
+			aPublisherPort,
+			aReplierPort);
 	aClientThread.join();
 	aServerThread.join();
 	orwell::support::GlobalLogger::Clear();

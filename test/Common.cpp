@@ -34,6 +34,22 @@
 
 using namespace log4cxx;
 
+Application_CommandLineParameters::Application_CommandLineParameters(
+			orwell::Application_CommandLineParameters const & iParameters)
+	: m_pullerPort(iParameters.m_pullerPort)
+	, m_publisherPort(iParameters.m_publisherPort)
+	, m_agentPort(iParameters.m_agentPort)
+	, m_replierPort(iParameters.m_replierPort)
+	, m_rcFilePath(iParameters.m_rcFilePath)
+	, m_gameFilePath(iParameters.m_gameFilePath)
+	, m_tickInterval(iParameters.m_tickInterval)
+	, m_gameDuration(iParameters.m_gameDuration)
+	, m_dryRun(iParameters.m_dryRun)
+	, m_broadcast(iParameters.m_broadcast)
+	, m_broadcastPort(iParameters.m_broadcastPort)
+{
+}
+
 Arguments::Arguments()
 	: m_argv(nullptr)
 	, m_argc(0)
@@ -106,6 +122,7 @@ static void BuildIntArgument(
 {
 	BuildArgument(iName, ioArguments);
 	std::string aString = std::to_string(iValue);
+	ORWELL_LOG_DEBUG("jambon int is " << iValue << " -> to_string = '" << aString << "'");
 	BuildArgument(aString.c_str(), ioArguments);
 }
 
@@ -120,7 +137,7 @@ static void BuildStrArgument(
 }
 
 Arguments Common::GetArguments(
-		orwell::Application::CommandLineParameters const & iCommandLineParams,
+		Application_CommandLineParameters const & iCommandLineParams,
 		bool const iDebug,
 		bool const iHelp,
 		bool const iShowVersion
@@ -172,13 +189,11 @@ Arguments Common::GetArguments(
 	{
 		BuildArgument(ARG_DEBUG_LOG, arguments);
 	}
-	if (iCommandLineParams.m_broadcast
-			and not *iCommandLineParams.m_broadcast)
+	if (iCommandLineParams.m_broadcast and not *iCommandLineParams.m_broadcast)
 	{
 		BuildArgument(ARG_NO_BROADCAST, arguments);
 	}
-	if (iCommandLineParams.m_dryRun
-			and *iCommandLineParams.m_dryRun)
+	if (iCommandLineParams.m_dryRun and *iCommandLineParams.m_dryRun)
 	{
 		BuildArgument(ARG_DRY_RUN, arguments);
 	}
@@ -234,7 +249,7 @@ bool Common::ExpectMessage(
 }
 
 void Common::Synchronize(
-		int32_t iServerReplierPort,
+		int32_t const iServerReplierPort,
 		zmq::context_t & ioContext)
 {
 	std::string aRequesterUrl = "tcp://127.0.0.1:" +
@@ -257,7 +272,7 @@ void Common::Synchronize(
 TestAgent::TestAgent(uint16_t const & iPort) :
 		m_zmqContext(1),
 		m_agentSocket(
-				orwell::com::Url("tcp", "localhost", iPort).toString().c_str(),
+				orwell::com::Url("tcp", "localhost", iPort).toString(),
 				ZMQ_REQ,
 				orwell::com::ConnectionMode::CONNECT,
 				m_zmqContext,

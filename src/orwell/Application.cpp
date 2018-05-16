@@ -134,7 +134,7 @@ bool Application::ParseParametersFromCommandLine(
 				("publisher-port,P", value<uint16_t>(),    "Publisher port")
 				("puller-port,p",    value<uint16_t>(),    "Puller port")
 				("agent-port,A",     value<uint16_t>(),    "Agent Port")
-				("replier-port,R", value<uint16_t>(),    "Replier Port")
+				("replier-port,R",   value<uint16_t>(),    "Replier Port")
 				("orwellrc,r",       value<std::string>(), "Load technical configuration from rc file")
 				("gamefile,g",       value<std::string>(), "Load game configuration from game file")
 				("tick-interval,T",  value<uint32_t>(),    "Interval in ticks between GameState messages")
@@ -478,6 +478,17 @@ bool Application::CheckParametersConsistency(Parameters const & iParam)
 				"Ports for " << aFirstIndenticalPort->second << " and " 
 				<< aSecondIndenticalPort->second << " have the same value ("
 				<< aFirstIndenticalPort->first << ") which is not allowed.");
+		return false;
+	}
+	auto aNullRange = aPortToMap.equal_range(0);
+	if (aNullRange.first != aNullRange.second)
+	{
+		for (auto aPortIter = aNullRange.first
+				; aPortIter != aNullRange.second
+				; ++aPortIter)
+		{
+			ORWELL_LOG_ERROR("The port for " << aPortIter->second << " cannot be 0.");
+		}
 		return false;
 	}
 	if ((*iParam.m_commandLineParameters.m_publisherPort) == 0 or (*iParam.m_commandLineParameters.m_pullerPort == 0))

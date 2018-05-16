@@ -134,8 +134,6 @@ static void const server(
 		ORWELL_LOG_INFO("server loop " << i);
 		ioServer->loopUntilOneMessageIsProcessed();
 	}
-	//ORWELL_LOG_INFO("dirty sleep to let threads time to start (?).");
-	//usleep(2000);
 	ORWELL_LOG_INFO("quit server");
 }
 
@@ -183,4 +181,3 @@ int main()
 	orwell::support::GlobalLogger::Clear();
 	return g_status;
 }
-

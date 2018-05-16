@@ -81,4 +81,3 @@ void Clock::checkReachedDuration()
 
 } // game
 } // orwell
-

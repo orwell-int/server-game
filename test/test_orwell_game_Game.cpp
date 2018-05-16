@@ -188,7 +188,10 @@ TEST_F(TestOrwellGameGame, RestartGameAfterWin)
 
 int main(int argc, char ** argv)
 {
-	orwell::support::GlobalLogger::Create("test_orwell_game_Game", "test_orwell_game_Game.log", true);
+	orwell::support::GlobalLogger::Create(
+			"test_orwell_game_Game",
+			"test_orwell_game_Game.log",
+			true);
 	log4cxx::NDC ndc("test_orwell_game_Game");
 	ORWELL_LOG_INFO("Test starts\n");
 	::testing::InitGoogleTest(&argc, argv);

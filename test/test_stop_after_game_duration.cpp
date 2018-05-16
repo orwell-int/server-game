@@ -9,6 +9,7 @@
 #include "orwell/game/Game.hpp"
 #include "orwell/game/Landmark.hpp"
 #include "orwell/game/RGBColour.hpp"
+#include "orwell/com/Url.hpp"
 #include "orwell/com/Receiver.hpp"
 #include "orwell/com/RawMessage.hpp"
 #include "server-game.pb.h"
@@ -95,17 +96,29 @@ static void ExpectGameTime(
 	iDurationPredicate.check(aGameTime);
 }
 
-static void Application()
+static void Application(
+		uint16_t const iPublisherPort,
+		uint16_t const iAgentPort)
 {
-	system("../server_main -A 9003 --publisher-port 9001 --puller-port 9002 --tic 10 --game-duration 2 --gamefile orwell-game_test.ini");
+	system(std::string(
+				"../server_main -A "
+				+ std::to_string(9003) + " --publisher-port "
+				+ std::to_string(iPublisherPort)
+				+ " --puller-port 9002 --tic 10 --game-duration 2 --gamefile orwell-game_test.ini").c_str());
 }
 
-static void Stopper()
+static void Stopper(
+		uint16_t const iPublisherPort,
+		uint16_t const iAgentPort)
 {
-	TestAgent aTestAgent(9003);
+	TestAgent aTestAgent(iAgentPort);
 	ORWELL_LOG_INFO("create subscriber");
 	zmq::context_t aContext(1);
-	orwell::com::Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB, orwell::com::ConnectionMode::CONNECT, aContext);
+	orwell::com::Receiver aSubscriber(
+			orwell::com::Url("tcp", "localhost", iPublisherPort).toString(),
+			ZMQ_SUB,
+			orwell::com::ConnectionMode::CONNECT,
+			aContext);
 	aTestAgent.sendCommand("ping", std::string("pong"));
 	aTestAgent.sendCommand("add team TEAM");
 	aTestAgent.sendCommand("add robot toto TEAM");
@@ -136,11 +149,12 @@ int main()
 	log4cxx::NDC ndc("test_main_plus");
 	ORWELL_LOG_INFO("Test starts\n");
 
-	std::thread aApplicationThread(Application);
-	std::thread aAgentThread(Stopper);
+	uint16_t const aPublisherPort{9001};
+	uint16_t const aAgentPort{9003};
+	std::thread aApplicationThread(Application, aPublisherPort, aAgentPort);
+	std::thread aAgentThread(Stopper, aPublisherPort, aAgentPort);
 	aApplicationThread.join();
 	aAgentThread.join();
 	orwell::support::GlobalLogger::Clear();
 	return g_status;
 }
-

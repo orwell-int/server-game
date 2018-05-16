@@ -103,7 +103,6 @@ uint32_t simulateClient(char const * iMessage)
 {
 	log4cxx::NDC ndc("client");
 
-	//char *aMessageToSend = (char*) "1AFTW";
 	ssize_t const aMessageLength = strlen(iMessage);
 
 	// Build the socket

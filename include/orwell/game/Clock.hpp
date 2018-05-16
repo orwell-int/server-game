@@ -45,5 +45,3 @@ private :
 
 } // game
 } // orwell
-
-

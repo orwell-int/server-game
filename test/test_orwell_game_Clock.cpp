@@ -12,123 +12,57 @@
 
 #include "Common.hpp"
 
-
-class Failer
-{
-public :
-	Failer();
-
-	void addFailure();
-
-	uint64_t getFailures() const;
-private :
-	uint64_t m_failures;
-};
-
-Failer::Failer()
-	: m_failures(0)
-{
-}
-
-void Failer::addFailure()
-{
-	++m_failures;
-}
-
-uint64_t Failer::getFailures() const
-{
-	return m_failures;
-}
-
-#define ORWELL_FAIL(Expected, Received, Message, Failer) \
-{\
-	if (Expected != Received)\
-	{\
-		ORWELL_LOG_ERROR("expected: " << Expected);\
-		ORWELL_LOG_ERROR("received: " << Received);\
-		ORWELL_LOG_ERROR(Message);\
-		Failer.addFailure();\
-	}\
-}\
-
-#define ORWELL_FAIL_TRUE(Condition, Message, Failer) \
-{\
-	if (!Condition)\
-	{\
-		ORWELL_LOG_ERROR(Message);\
-		Failer.addFailure();\
-	}\
-}\
-
-void test_Clock_not_running(Failer & ioFailer)
+TEST(Application, test_Clock_not_running)
 {
 	log4cxx::NDC aLocalNDC("test_Clock_not_running");
 	auto aClock = orwell::game::Clock(boost::posix_time::seconds(10));
-	ORWELL_FAIL_TRUE(
-			not aClock.getIsRunning(),
-			"The clock is not running before being started",
-			ioFailer);
+	EXPECT_FALSE(aClock.getIsRunning())
+		<< "The clock is not running before being started";
 }
 
-void test_Clock_initial_getSecondsLeft(Failer & ioFailer)
+TEST(Application, test_Clock_initial_getSecondsLeft)
 {
 	log4cxx::NDC aLocalNDC("test_Clock_initial_getSecondsLeft");
 	auto aClock = orwell::game::Clock(boost::posix_time::seconds(10));
-	ORWELL_FAIL(
-			10,
-			aClock.getSecondsLeft(),
-			"The clock is not running before being started",
-			ioFailer);
+	EXPECT_EQ(uint64_t{10}, aClock.getSecondsLeft())
+		<< "The clock is not running before being started";
 }
 
-void test_Clock_start(Failer & ioFailer)
+TEST(Application, test_Clock_start)
 {
 	log4cxx::NDC aLocalNDC("test_Clock_start");
 	auto aClock = orwell::game::Clock(boost::posix_time::seconds(10));
 	aClock.start();
-	ORWELL_FAIL_TRUE(
-			aClock.getIsRunning(),
-			"The clock is running after being started",
-			ioFailer);
+	EXPECT_TRUE(aClock.getIsRunning())
+		<< "The clock is running after being started";
 	usleep(1e6);
-	ORWELL_FAIL(
-			10,
-			aClock.getSecondsLeft(),
-			"Time is not decremented by itself.",
-			ioFailer);
+	EXPECT_EQ(uint64_t{10}, aClock.getSecondsLeft())
+		<< "Time is not decremented by itself.";
 }
 
-void test_Clock_tickDelta(Failer & ioFailer)
+TEST(Application, test_Clock_tickDelta)
 {
 	log4cxx::NDC aLocalNDC("test_Clock_tickDelta");
 	uint64_t aSeconds = 10;
 	auto aClock = orwell::game::Clock(boost::posix_time::seconds(aSeconds));
 	aClock.start();
-	ORWELL_FAIL_TRUE(
-			aClock.getIsRunning(),
-			"The clock is running after being started",
-			ioFailer);
+	EXPECT_TRUE(aClock.getIsRunning())
+		<< "The clock is running after being started";
 	aClock.tickDelta(boost::posix_time::seconds(1));
 	--aSeconds;
-	ORWELL_FAIL(
-			aSeconds,
-			aClock.getSecondsLeft(),
-			"Time is decremented.",
-			ioFailer);
+	EXPECT_EQ(aSeconds, aClock.getSecondsLeft())
+		<< "Time is decremented.";
 	for (auto i = 0 ; i < 5 ; ++i)
 	{
 		aClock.tickDelta(boost::posix_time::seconds(1));
 		--aSeconds;
 	}
-	ORWELL_FAIL(
-			aSeconds,
-			aClock.getSecondsLeft(),
-			"Time is decremented.",
-			ioFailer);
+	EXPECT_EQ(aSeconds, aClock.getSecondsLeft())
+		<< "Time is decremented.";
 }
 
 
-void test_Clock_final_tickDelta(Failer & ioFailer)
+TEST(Application, test_Clock_final_tickDelta)
 {
 	log4cxx::NDC aLocalNDC("test_Clock_final_tickDelta");
 	uint64_t const kOneSecond = 1;
@@ -136,45 +70,34 @@ void test_Clock_final_tickDelta(Failer & ioFailer)
 	uint64_t aSeconds = kStartSeconds;
 	auto aClock = orwell::game::Clock(boost::posix_time::seconds(aSeconds));
 	aClock.start();
-	ORWELL_FAIL_TRUE(
-			aClock.getIsRunning(),
-			"The clock is running after being started",
-			ioFailer);
+	EXPECT_TRUE(aClock.getIsRunning())
+		<< "The clock is running after being started";
 	for (uint64_t i = 0 ; i < kStartSeconds ; ++i)
 	{
 		aClock.tickDelta(boost::posix_time::seconds(kOneSecond));
 		--aSeconds;
 	}
-	ORWELL_FAIL(
-			kStartSeconds,
-			aClock.getSecondsLeft(),
-			"Time is decremented.",
-			ioFailer);
-	ORWELL_FAIL_TRUE(
-			not aClock.getIsRunning(),
-			"The clock is not running when reaching the duration.",
-			ioFailer);
+	EXPECT_EQ(kStartSeconds, aClock.getSecondsLeft())
+		<< "Time is decremented.";
+	EXPECT_FALSE(aClock.getIsRunning())
+		<< "The clock is not running when reaching the duration.";
 }
 
-void test_Clock_harmless_start(Failer & ioFailer)
+TEST(Application, test_Clock_harmless_start)
 {
 	log4cxx::NDC aLocalNDC("test_Clock_harmless_start");
 	auto aClock = orwell::game::Clock(boost::posix_time::seconds(10));
 	aClock.start();
 	aClock.start();
-	ORWELL_FAIL_TRUE(
-			aClock.getIsRunning(),
-			"The clock is running even with start called multiple times",
-			ioFailer);
+	EXPECT_TRUE(aClock.getIsRunning())
+		<< "The clock is running even with start called multiple times";
 	aClock.tickDelta(boost::posix_time::seconds(1));
 	aClock.start();
-	ORWELL_FAIL_TRUE(
-			aClock.getIsRunning(),
-			"The clock is running even with start called multiple times",
-			ioFailer);
+	EXPECT_TRUE(aClock.getIsRunning())
+		<< "The clock is running even with start called multiple times";
 }
 
-void test_Clock_start_stop(Failer & ioFailer)
+TEST(Application, test_Clock_start_stop)
 {
 	log4cxx::NDC aLocalNDC("test_Clock_start_stop");
 	uint64_t const kSeconds = 10;
@@ -182,30 +105,23 @@ void test_Clock_start_stop(Failer & ioFailer)
 	aClock.start();
 	aClock.tickDelta(boost::posix_time::seconds(1));
 	aClock.stop();
-	ORWELL_FAIL_TRUE(
-			not aClock.getIsRunning(),
-			"The clock is not running after being stopped",
-			ioFailer);
-	ORWELL_FAIL(
-			kSeconds,
-			aClock.getSecondsLeft(),
-			"Time is back to its initial value after stop.",
-			ioFailer);
+	EXPECT_FALSE(aClock.getIsRunning())
+		<< "The clock is not running after being stopped";
+	EXPECT_EQ(kSeconds, aClock.getSecondsLeft())
+		<< "Time is back to its initial value after stop.";
 }
 
-void test_Clock_harmless_stop(Failer & ioFailer)
+TEST(Application, test_Clock_harmless_stop)
 {
 	log4cxx::NDC aLocalNDC("test_Clock_harmless_stop");
 	uint64_t const kSeconds = 10;
 	auto aClock = orwell::game::Clock(boost::posix_time::seconds(kSeconds));
 	aClock.stop();
-	ORWELL_FAIL_TRUE(
-			not aClock.getIsRunning(),
-			"The clock is not running after being wrongly stopped",
-			ioFailer);
+	EXPECT_FALSE(aClock.getIsRunning())
+		<< "The clock is not running after being wrongly stopped";
 }
 
-void test_Clock_loop_start_stop(Failer & ioFailer)
+TEST(Application, test_Clock_loop_start_stop)
 {
 	log4cxx::NDC aLocalNDC("test_Clock_loop_start_stop");
 	uint64_t const kSeconds = 10;
@@ -216,18 +132,13 @@ void test_Clock_loop_start_stop(Failer & ioFailer)
 		aClock.tickDelta(boost::posix_time::seconds(1));
 		aClock.stop();
 	}
-	ORWELL_FAIL_TRUE(
-			not aClock.getIsRunning(),
-			"The clock is not running after being stopped",
-			ioFailer);
-	ORWELL_FAIL(
-			kSeconds,
-			aClock.getSecondsLeft(),
-			"Time is back to its initial value after stop.",
-			ioFailer);
+	EXPECT_FALSE(aClock.getIsRunning())
+		<< "The clock is not running after being stopped";
+	EXPECT_EQ(kSeconds, aClock.getSecondsLeft())
+		<< "Time is back to its initial value after stop.";
 }
 
-void test_Clock_harmless_tickDelta(Failer & ioFailer)
+TEST(Application, test_Clock_harmless_tickDelta)
 {
 	log4cxx::NDC aLocalNDC("test_Clock_harmless_tickDelta");
 	uint64_t const kSeconds = 10;
@@ -236,54 +147,42 @@ void test_Clock_harmless_tickDelta(Failer & ioFailer)
 	aClock.tickDelta(boost::posix_time::seconds(1));
 	aClock.tickDelta(boost::posix_time::seconds(1));
 	aClock.start();
-	ORWELL_FAIL(
-			kSeconds,
-			aClock.getSecondsLeft(),
-			"Time remains at initial value (harmless tickDelta).",
-			ioFailer);
+	EXPECT_EQ(kSeconds, aClock.getSecondsLeft())
+		<< "Time remains at initial value (harmless tickDelta).";
 }
 
-void test_Clock_tick_2(Failer & ioFailer)
+TEST(Application, test_Clock_tick_2)
 {
 	log4cxx::NDC aLocalNDC("test_Clock_tick_2");
 	uint64_t const kSeconds = 1;
 	auto aClock = orwell::game::Clock(boost::posix_time::seconds(kSeconds));
 	aClock.start();
-	for (uint64_t i = 0 ; i < 10 ; ++i)
+	for (uint64_t i = 0 ; i < 5 ; ++i)
 	{
-		ORWELL_FAIL_TRUE(
-				aClock.getIsRunning(),
-				"The clock is running",
-				ioFailer);
+		EXPECT_TRUE(aClock.getIsRunning())
+			<< "The clock is running";
 		usleep(kSeconds * 1e5);
 		aClock.tick();
 	}
-	ORWELL_FAIL_TRUE(
-			not aClock.getIsRunning(),
-			"The clock reached the desired duration",
-			ioFailer);
+	// last iterations might exceed the duration
+	for (uint64_t i = 0 ; i < 5 ; ++i)
+	{
+		usleep(kSeconds * 1e5);
+		aClock.tick();
+	}
+	aClock.tick();
+	EXPECT_FALSE(aClock.getIsRunning())
+		<< "The clock reached the desired duration";
 }
 
-int main()
+int main(int argc, char ** argv)
 {
 	orwell::support::GlobalLogger::Create("test_orwell_game_Clock", "test_orwell_game_Clock.log", true);
 	log4cxx::NDC ndc("test_orwell_game_Clock");
 	ORWELL_LOG_INFO("Test starts\n");
 
-	Failer aFailer;
-
-	test_Clock_not_running(aFailer);
-	test_Clock_initial_getSecondsLeft(aFailer);
-	test_Clock_start(aFailer);
-	test_Clock_tickDelta(aFailer);
-	test_Clock_final_tickDelta(aFailer);
-	test_Clock_harmless_start(aFailer);
-	test_Clock_start_stop(aFailer);
-	test_Clock_harmless_stop(aFailer);
-	test_Clock_loop_start_stop(aFailer);
-	test_Clock_harmless_tickDelta(aFailer);
-	test_Clock_tick_2(aFailer);
-
+	::testing::InitGoogleTest(&argc, argv);
+	int const aResult = RUN_ALL_TESTS();
 	orwell::support::GlobalLogger::Clear();
-	return aFailer.getFailures();
+	return aResult;
 }

@@ -113,7 +113,7 @@ int main(int argc, char ** argv)
 	log4cxx::NDC ndc("test_orwell_game_Robot");
 	ORWELL_LOG_INFO("Test starts\n");
 	::testing::InitGoogleTest(&argc, argv);
-	int aResult = RUN_ALL_TESTS();
+	int const aResult = RUN_ALL_TESTS();
 	orwell::support::GlobalLogger::Clear();
 	return aResult;
 }

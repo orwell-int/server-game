@@ -14,6 +14,7 @@
 #include "orwell/Application.hpp"
 #include "orwell/game/Game.hpp"
 #include "orwell/support/GlobalLogger.hpp"
+#include "orwell/com/Url.hpp"
 #include "orwell/com/Sender.hpp"
 #include "orwell/com/Receiver.hpp"
 #include "orwell/com/RawMessage.hpp"
@@ -36,18 +37,13 @@ static void const ClientSendsInput(
 	log4cxx::NDC ndc("client");
 	zmq::context_t aContext(1);
 
-	std::string aPusherUrl = "tcp://127.0.0.1:" +
-		boost::lexical_cast<std::string>(iServerPullerPort);
-	std::string aSubscriberUrl = "tcp://127.0.0.1:" +
-		boost::lexical_cast<std::string>(iServerPublisherPort);
-
 	Sender aPusher(
-			aPusherUrl,
+			orwell::com::Url("tcp", "localhost", iServerPullerPort).toString(),
 			ZMQ_PUSH,
 			orwell::com::ConnectionMode::CONNECT,
 			aContext);
 	Receiver aSubscriber(
-			aSubscriberUrl,
+			orwell::com::Url("tcp", "localhost", iServerPublisherPort).toString(),
 			ZMQ_SUB,
 			orwell::com::ConnectionMode::CONNECT,
 			aContext);

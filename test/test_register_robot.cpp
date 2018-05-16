@@ -179,4 +179,3 @@ int main()
 	orwell::support::GlobalLogger::Clear();
 	return g_status;
 }
-
