@@ -26,6 +26,16 @@ using namespace log4cxx;
 using std::make_shared;
 using std::string;
 
+static uint16_t const DEFAULT_PUBLISHER_PORT = 9000;
+static uint16_t const DEFAULT_PULLER_PORT = 9001;
+static uint16_t const DEFAULT_AGENT_PORT = 9003;
+static uint16_t const DEFAULT_REPLIER_PORT = 9004;
+static uint16_t const DEFAULT_TICK_INTERVAL = 500;
+static uint16_t const DEFAULT_GAME_DURATION = 300;
+static bool const DEFAULT_BROADCAST = true;
+static bool const DEFAULT_DRY_RUN = false;
+static uint16_t const DEFAULT_BROADCAST_PORT = 9080;
+
 namespace orwell
 {
 
@@ -58,7 +68,8 @@ bool Application::ReadParameters(
 	if (not oParam.m_commandLineParameters.m_rcFilePath)
 	{
 		oParam.m_commandLineParameters.m_rcFilePath = "orwell-config.ini";
-		ORWELL_LOG_DEBUG("by default, config file = " << oParam.m_commandLineParameters.m_rcFilePath);
+		ORWELL_LOG_DEBUG("by default, config file = "
+				<< oParam.m_commandLineParameters.m_rcFilePath);
 	}
 
 	if (oParam.m_commandLineParameters.m_rcFilePath )
@@ -68,7 +79,8 @@ bool Application::ReadParameters(
 			return false;
 		}
 	}
-	if (oParam.m_commandLineParameters.m_gameFilePath and (not (*oParam.m_commandLineParameters.m_gameFilePath).empty()))
+	if (oParam.m_commandLineParameters.m_gameFilePath
+			and (not (*oParam.m_commandLineParameters.m_gameFilePath).empty()))
 	{
 		ParseGameConfigFromFile(oParam);
 	}
@@ -76,46 +88,53 @@ bool Application::ReadParameters(
 	// Default values
 	if (not oParam.m_commandLineParameters.m_publisherPort)
 	{
-		oParam.m_commandLineParameters.m_publisherPort = 9000;
-		ORWELL_LOG_DEBUG("by default, publisher-port = " << oParam.m_commandLineParameters.m_publisherPort);
+		oParam.m_commandLineParameters.m_publisherPort = DEFAULT_PUBLISHER_PORT;
+		ORWELL_LOG_DEBUG("by default, publisher-port = "
+				<< oParam.m_commandLineParameters.m_publisherPort);
 	}
 	if (not oParam.m_commandLineParameters.m_pullerPort)
 	{
-		oParam.m_commandLineParameters.m_pullerPort = 9001;
-		ORWELL_LOG_DEBUG("by default, puller-port = " << oParam.m_commandLineParameters.m_pullerPort);
+		oParam.m_commandLineParameters.m_pullerPort = DEFAULT_PULLER_PORT;
+		ORWELL_LOG_DEBUG("by default, puller-port = "
+				<< oParam.m_commandLineParameters.m_pullerPort);
 	}
 	if (not oParam.m_commandLineParameters.m_agentPort)
 	{
-		oParam.m_commandLineParameters.m_agentPort = 9003;
-		ORWELL_LOG_DEBUG("by default, agent-port = " << oParam.m_commandLineParameters.m_agentPort);
+		oParam.m_commandLineParameters.m_agentPort = DEFAULT_AGENT_PORT;
+		ORWELL_LOG_DEBUG("by default, agent-port = "
+				<< oParam.m_commandLineParameters.m_agentPort);
 	}
 	if (not oParam.m_commandLineParameters.m_replierPort)
 	{
-		oParam.m_commandLineParameters.m_replierPort = 9004;
-		ORWELL_LOG_DEBUG("by default, replier-port = " << oParam.m_commandLineParameters.m_replierPort);
+		oParam.m_commandLineParameters.m_replierPort = DEFAULT_REPLIER_PORT;
+		ORWELL_LOG_DEBUG("by default, replier-port = "
+				<< oParam.m_commandLineParameters.m_replierPort);
 	}
 	if (not oParam.m_commandLineParameters.m_tickInterval)
 	{
-		oParam.m_commandLineParameters.m_tickInterval = 500;
-		ORWELL_LOG_DEBUG("by default, tick interval = " << oParam.m_commandLineParameters.m_tickInterval);
+		oParam.m_commandLineParameters.m_tickInterval = DEFAULT_TICK_INTERVAL;
+		ORWELL_LOG_DEBUG("by default, tick interval = "
+				<< oParam.m_commandLineParameters.m_tickInterval);
 	}
 	if (not oParam.m_commandLineParameters.m_gameDuration)
 	{
-		oParam.m_commandLineParameters.m_gameDuration = 300;
-		ORWELL_LOG_DEBUG("by default, game duration = " << oParam.m_commandLineParameters.m_gameDuration);
+		oParam.m_commandLineParameters.m_gameDuration = DEFAULT_GAME_DURATION;
+		ORWELL_LOG_DEBUG("by default, game duration = "
+				<< oParam.m_commandLineParameters.m_gameDuration);
 	}
 	if (not oParam.m_commandLineParameters.m_broadcast)
 	{
-		oParam.m_commandLineParameters.m_broadcast = true;
+		oParam.m_commandLineParameters.m_broadcast = DEFAULT_BROADCAST;
 	}
 	if (not oParam.m_commandLineParameters.m_dryRun)
 	{
-		oParam.m_commandLineParameters.m_dryRun = false;
+		oParam.m_commandLineParameters.m_dryRun = DEFAULT_DRY_RUN;
 	}
 	if (not oParam.m_commandLineParameters.m_broadcastPort)
 	{
-		oParam.m_commandLineParameters.m_broadcastPort = 9080;
-		ORWELL_LOG_DEBUG("by default, broadcast-port = " << oParam.m_commandLineParameters.m_broadcastPort);
+		oParam.m_commandLineParameters.m_broadcastPort = DEFAULT_BROADCAST_PORT;
+		ORWELL_LOG_DEBUG("by default, broadcast-port = "
+				<< oParam.m_commandLineParameters.m_broadcastPort);
 	}
 
 	return CheckParametersConsistency(oParam);
@@ -491,18 +510,8 @@ bool Application::CheckParametersConsistency(Parameters const & iParam)
 		}
 		return false;
 	}
-	if ((*iParam.m_commandLineParameters.m_publisherPort) == 0 or (*iParam.m_commandLineParameters.m_pullerPort == 0))
-	{
-		ORWELL_LOG_ERROR("Invalid port information. Ports are \n Puller=" << iParam.m_commandLineParameters.m_pullerPort << "\n Publisher=" << iParam.m_commandLineParameters.m_publisherPort);
-		return false;
-	}
-	if ((iParam.m_commandLineParameters.m_broadcastPort) and ((*iParam.m_commandLineParameters.m_broadcastPort) == 0))
-	{
-		ORWELL_LOG_ERROR("Broadcast port cannot be 0.");
-		return false;
-	}
 
-
+	// @TODO: remove code related to video forwarding ?
 	//each robot needs 1 port for the video retransmission and 1 port to send commands to the associated server
 	if (iParam.m_videoPorts.size() < 2 * iParam.m_robots.size())
 	{
