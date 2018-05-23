@@ -16,7 +16,7 @@ RUN pwd
 # Install
 RUN apt-get -qq update
 
-## preesed tzdata, update package index, upgrade packages and install needed software
+## preseed and install tzdata
 RUN echo "tzdata tzdata/Areas select Europe" > /tmp/preseed.txt; \
 	echo "tzdata tzdata/Zones/Europe select Berlin" >> /tmp/preseed.txt; \
 	debconf-set-selections /tmp/preseed.txt && \
