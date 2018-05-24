@@ -69,7 +69,7 @@ ENDFUNCTION()
 
 add_orwell_test(test_ping_pong "test_ping_pong.cpp")
 add_orwell_test(test_input_to_robot "test_input_to_robot.cpp")
-add_orwell_test(test_hello "test_hello_client.cpp")
+add_orwell_test(test_hello_client "test_hello_client.cpp")
 add_orwell_test(test_application "test_application.cpp")
 # this is not nice, but used to disable the test when running with Travis CI.
 if (DEFINED ENV{ORWELL_DISABLE_TEST_BROADCAST})

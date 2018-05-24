@@ -12,8 +12,9 @@ class ProcessPing : public InterfaceProcess
 {
 public:
 	ProcessPing(
+			game::Game & ioGame,
 			std::shared_ptr< com::Sender > ioPublisher,
-			game::Game & ioGame);
+			std::shared_ptr< com::Socket > ioReplier);
 
 	void execute();
 

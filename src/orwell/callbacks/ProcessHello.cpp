@@ -28,9 +28,10 @@ namespace callbacks
 {
 
 ProcessHello::ProcessHello(
+		game::Game & ioGame,
 		std::shared_ptr< com::Sender > ioPublisher,
-		game::Game & ioGame)
-	: InterfaceProcess(ioPublisher, ioGame)
+		std::shared_ptr< com::Socket > ioReplier)
+	: InterfaceProcess(ioGame, ioPublisher, ioReplier)
 {
 }
 
@@ -83,7 +84,7 @@ void ProcessHello::execute()
 				}
 
 				RawMessage aReply(aClientID, "Welcome", aWelcome.SerializeAsString());
-				m_publisher->send(aReply);
+				reply(aReply);
 				aFailure = false;
 
 				if (aHelloMessage.has_ready())
@@ -120,7 +121,7 @@ void ProcessHello::execute()
 
 		Goodbye aGoodbye;
 		RawMessage aReply(aClientID, "Goodbye", aGoodbye.SerializeAsString());
-		m_publisher->send(aReply);
+		reply(aReply);
 	}
 }
 

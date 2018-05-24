@@ -3,6 +3,7 @@
 #include <zmq.hpp>
 #include <string>
 
+#include "controller.pb.h"
 #include "server-game.pb.h"
 #include "robot.pb.h"
 
@@ -51,7 +52,7 @@ static void ExpectRegistered(
 	RawMessage aResponse;
 	if (not Common::ExpectMessage("Registered", ioSubscriber, aResponse))
 	{
-		ORWELL_LOG_ERROR("Expected Registered but received " << aResponse._type);
+		ORWELL_LOG_ERROR("Expected Registered but received '" << aResponse._type << "'");
 		g_status = -1;
 	}
 	else
@@ -91,7 +92,6 @@ static void proxy()
 	log4cxx::NDC ndc("proxy");
 	ORWELL_LOG_INFO("proxy ...");
 	zmq::context_t aContext(1);
-	usleep(6 * 1000);
 	ORWELL_LOG_INFO("create pusher");
 	Sender aPusher(
 			"tcp://127.0.0.1:9000",
@@ -104,7 +104,20 @@ static void proxy()
 			ZMQ_SUB,
 			orwell::com::ConnectionMode::CONNECT,
 			aContext);
-	usleep(6 * 1000);
+	ORWELL_LOG_INFO("create requester");
+	Socket aRequester(
+			"tcp://127.0.0.1:9002",
+			ZMQ_REQ,
+			orwell::com::ConnectionMode::CONNECT,
+			aContext);
+
+	// this is only for synchronisation purpose
+	Hello aHelloMessage;
+	aHelloMessage.set_name("jambon");
+	RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
+	aRequester.send(aMessage);
+	RawMessage aReply;
+	aRequester.receive(aReply, true);
 
 	ExpectRegistered("jambon", "robot1", "TEAM", aPusher, aSubscriber);
 
@@ -124,7 +137,7 @@ static void const server(std::shared_ptr< orwell::Server > ioServer)
 {
 	log4cxx::NDC ndc("server");
 	ORWELL_LOG_INFO("server ...");
-	for (int i = 0 ; i < 5 ; ++i)
+	for (int i = 0 ; i < 6 ; ++i)
 	{
 		ORWELL_LOG_INFO("server loop " << i);
 		ioServer->loopUntilOneMessageIsProcessed();
@@ -150,6 +163,7 @@ int main()
 			"tcp://*:9003",
 			"tcp://*:9000",
 			"tcp://*:9001",
+			"tcp://*:9002",
 			500);
 	ORWELL_LOG_INFO("server created");
 	std::vector< std::string > aRobots = {"Gipsy Danger", "Goldorak", "Securitron"};
@@ -165,4 +179,3 @@ int main()
 	orwell::support::GlobalLogger::Clear();
 	return g_status;
 }
-

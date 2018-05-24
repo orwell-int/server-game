@@ -9,6 +9,7 @@
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/game/Game.hpp"
 #include "orwell/Application.hpp"
+#include "controller.pb.h"
 #include "MissingFromTheStandard.hpp"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -19,6 +20,7 @@
 #define ARG_PUBLISHER_PORT "-P"
 #define ARG_PULLER_PORT "-p"
 #define ARG_AGENT_PORT "-A"
+#define ARG_REPLIER_PORT "-R"
 #define ARG_ORWELLRC "-r"
 #define ARG_GAMECONFIG "-g"
 #define ARG_TIC_INTERVAL "-T"
@@ -31,6 +33,22 @@
 
 
 using namespace log4cxx;
+
+Application_CommandLineParameters::Application_CommandLineParameters(
+			orwell::Application_CommandLineParameters const & iParameters)
+	: m_pullerPort(iParameters.m_pullerPort)
+	, m_publisherPort(iParameters.m_publisherPort)
+	, m_agentPort(iParameters.m_agentPort)
+	, m_replierPort(iParameters.m_replierPort)
+	, m_rcFilePath(iParameters.m_rcFilePath)
+	, m_gameFilePath(iParameters.m_gameFilePath)
+	, m_tickInterval(iParameters.m_tickInterval)
+	, m_gameDuration(iParameters.m_gameDuration)
+	, m_dryRun(iParameters.m_dryRun)
+	, m_broadcast(iParameters.m_broadcast)
+	, m_broadcastPort(iParameters.m_broadcastPort)
+{
+}
 
 Arguments::Arguments()
 	: m_argv(nullptr)
@@ -104,6 +122,7 @@ static void BuildIntArgument(
 {
 	BuildArgument(iName, ioArguments);
 	std::string aString = std::to_string(iValue);
+	ORWELL_LOG_DEBUG("jambon int is " << iValue << " -> to_string = '" << aString << "'");
 	BuildArgument(aString.c_str(), ioArguments);
 }
 
@@ -118,7 +137,7 @@ static void BuildStrArgument(
 }
 
 Arguments Common::GetArguments(
-		orwell::Application::CommandLineParameters const & iCommandLineParams,
+		Application_CommandLineParameters const & iCommandLineParams,
 		bool const iDebug,
 		bool const iHelp,
 		bool const iShowVersion
@@ -141,6 +160,10 @@ Arguments Common::GetArguments(
 	if (iCommandLineParams.m_agentPort)
 	{
 		BuildIntArgument(ARG_AGENT_PORT, *iCommandLineParams.m_agentPort, arguments);
+	}
+	if (iCommandLineParams.m_replierPort)
+	{
+		BuildIntArgument(ARG_REPLIER_PORT, *iCommandLineParams.m_replierPort, arguments);
 	}
 	if (iCommandLineParams.m_rcFilePath)
 	{
@@ -166,13 +189,11 @@ Arguments Common::GetArguments(
 	{
 		BuildArgument(ARG_DEBUG_LOG, arguments);
 	}
-	if (iCommandLineParams.m_broadcast
-			and not *iCommandLineParams.m_broadcast)
+	if (iCommandLineParams.m_broadcast and not *iCommandLineParams.m_broadcast)
 	{
 		BuildArgument(ARG_NO_BROADCAST, arguments);
 	}
-	if (iCommandLineParams.m_dryRun
-			and *iCommandLineParams.m_dryRun)
+	if (iCommandLineParams.m_dryRun and *iCommandLineParams.m_dryRun)
 	{
 		BuildArgument(ARG_DRY_RUN, arguments);
 	}
@@ -207,7 +228,7 @@ bool Common::ExpectMessage(
 			{
 				ORWELL_LOG_DEBUG("Discarded message of type " << oReceived._type);
 			}
-			usleep( 10 );
+			usleep(10);
 		}
 		else
 		{
@@ -219,17 +240,39 @@ bool Common::ExpectMessage(
 	{
 		if (aDuration >= aTrueTimeout)
 		{
-			ORWELL_LOG_DEBUG("Expected message not received ; timeout ("
-					<< aTrueTimeout << ") exceeded: " << aDuration);
+			ORWELL_LOG_ERROR("Expected message not received (" << iType
+					<< ") ; timeout (" << aTrueTimeout
+					<< ") exceeded: " << aDuration);
 		}
 	}
 	return aReceivedExpectedMessage;
 }
 
+void Common::Synchronize(
+		int32_t const iServerReplierPort,
+		zmq::context_t & ioContext)
+{
+	std::string aRequesterUrl = "tcp://127.0.0.1:" +
+		boost::lexical_cast<std::string>(iServerReplierPort);
+	ORWELL_LOG_INFO("create requester");
+	orwell::com::Socket aRequester(
+			aRequesterUrl,
+			ZMQ_REQ,
+			orwell::com::ConnectionMode::CONNECT,
+			ioContext);
+
+	orwell::messages::Hello aHello;
+	aHello.set_name("jambon");
+	orwell::com::RawMessage aHelloMessage("randomid", "Hello", aHello.SerializeAsString());
+	aRequester.send(aHelloMessage);
+	orwell::com::RawMessage aHelloReply;
+	aRequester.receive(aHelloReply, true);
+}
+
 TestAgent::TestAgent(uint16_t const & iPort) :
 		m_zmqContext(1),
 		m_agentSocket(
-				orwell::com::Url("tcp", "localhost", iPort).toString().c_str(),
+				orwell::com::Url("tcp", "localhost", iPort).toString(),
 				ZMQ_REQ,
 				orwell::com::ConnectionMode::CONNECT,
 				m_zmqContext,
@@ -291,4 +334,3 @@ TempFile::~TempFile()
 		m_fileName.erase();
 	}
 }
-

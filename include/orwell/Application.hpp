@@ -32,6 +32,7 @@ struct Application_CommandLineParameters
 	boost::optional<uint16_t> m_pullerPort;
 	boost::optional<uint16_t> m_publisherPort;
 	boost::optional<uint16_t> m_agentPort;
+	boost::optional<uint16_t> m_replierPort;
 	/// path to technical configuration file
 	boost::optional<std::string> m_rcFilePath;
 	/// path to game configuration file

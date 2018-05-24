@@ -13,7 +13,7 @@ include(CTest)
 # It is used by YCM (https://github.com/Valloric/YouCompleteMe).
 # You just need to create a symbolic link to the build directory's compile_commands.json file
 # to the root of the project to have completion.
-set(CMAKE_EXPORT_COMPILE_COMMANDS, "ON")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set_property(GLOBAL PROPERTY P_ALL_TARGETS "")
 set_property(GLOBAL PROPERTY P_ALL_TEST_TARGETS "")
@@ -149,6 +149,7 @@ OPTION(ORWELL_COVERAGE "Enables code coverage measurements with gcov/lcov." OFF)
 
 IF(ORWELL_COVERAGE)
 	MESSAGE("Code coverage considered")
+	SET(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
 	IF(NOT IS_SUBPROJECT)
 		MESSAGE("Code coverage activated")
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")

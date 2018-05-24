@@ -58,7 +58,9 @@ public :
 			std::string & oMessage,
 			bool const iBlocking=false);
 
-	bool receive(RawMessage & oMessage);
+	bool receive(
+		RawMessage & oMessage,
+		bool const iBlocking=false);
 
 	void sendString(std::string const & iMessage) const;
 

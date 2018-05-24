@@ -24,7 +24,7 @@
 #include "Common.hpp"
 
 
-static void test_ReadParameters(
+static void helper_test_ReadParameters(
 		Status const iTestStatus,
 		Arguments iArguments,
 		boost::optional< orwell::Application::Parameters > iExpectedParameters
@@ -34,7 +34,9 @@ static void test_ReadParameters(
 	orwell::Application::Parameters aParameters;
 	bool result = orwell::Application::ReadParameters(
 			iArguments.m_argc, iArguments.m_argv, aParameters);
-	assert((Status::PASS == iTestStatus) == result);
+	ORWELL_LOG_DEBUG("result = " << result);
+	ORWELL_LOG_DEBUG("(Status::PASS == iTestStatus) = " << (Status::PASS == iTestStatus));
+	ASSERT_EQ((Status::PASS == iTestStatus), result);
 	if (iExpectedParameters)
 	{
 		orwell::Application::Parameters & aExpectedParameters = *iExpectedParameters;
@@ -57,174 +59,73 @@ static void test_ReadParameters(
 	}
 }
 
-static void test_nothing()
+TEST(Application, test_nothing)
 {
 	ORWELL_LOG_DEBUG("test_nothing");
 	// we get default arguments
-	test_ReadParameters(Status::PASS, Common::GetArguments(orwell::Application::CommandLineParameters()));
+	helper_test_ReadParameters(
+			Status::PASS,
+			Common::GetArguments(orwell::Application::CommandLineParameters()));
 }
 
-static void test_wrong_port_range_publisher_1()
+static void helper_invalid_ports(
+		std::vector< int32_t > iPorts,
+		Status const iStatus=Status::FAIL)
 {
-	ORWELL_LOG_DEBUG("test_wrong_port_range_publisher_1");
+	for (uint16_t i = 0 ; i < iPorts.size() ; ++i)
+	{
+		Application_CommandLineParameters aCommandLineArguments;
+		aCommandLineArguments.m_publisherPort = iPorts[0];
+		aCommandLineArguments.m_pullerPort = iPorts[1];
+		aCommandLineArguments.m_agentPort = iPorts[2];
+		aCommandLineArguments.m_broadcastPort = iPorts[3];
 
-	orwell::Application::CommandLineParameters aCommandLineArguments;
-	aCommandLineArguments.m_publisherPort = 0;
-	aCommandLineArguments.m_pullerPort = 42;
-	aCommandLineArguments.m_agentPort = 43;
-	aCommandLineArguments.m_broadcastPort = 44;
-
-	test_ReadParameters(Status::FAIL, Common::GetArguments(aCommandLineArguments, false, false));
+		helper_test_ReadParameters(
+				iStatus,
+				Common::GetArguments(aCommandLineArguments, false, false));
+		std::rotate(iPorts.begin(), iPorts.begin() + 1, iPorts.end());
+	}
 }
 
-static void test_wrong_port_range_publisher_2()
+TEST(Application, test_null_ports)
 {
-	ORWELL_LOG_DEBUG("test_wrong_port_range_publisher_2");
-
-	orwell::Application::CommandLineParameters aCommandLineArguments;
-	aCommandLineArguments.m_publisherPort = -1024;
-	aCommandLineArguments.m_pullerPort = 42;
-	aCommandLineArguments.m_agentPort = 43;
-	aCommandLineArguments.m_broadcastPort = 44;
-
-	// !! careful !  Boost converts -1024 to ... something, and it passes
-	test_ReadParameters(Status::PASS, Common::GetArguments(aCommandLineArguments, false, false));
+	ORWELL_LOG_DEBUG("test_null_ports");
+	helper_invalid_ports({0, 1, 2, 3});
 }
 
-static void test_wrong_port_range_publisher_3()
+TEST(Application, test_negative_ports)
 {
-	ORWELL_LOG_DEBUG("test_wrong_port_range_publisher_3");
-
-	orwell::Application::CommandLineParameters aCommandLineArguments;
-	aCommandLineArguments.m_publisherPort = 99999;
-	aCommandLineArguments.m_pullerPort = 42;
-	aCommandLineArguments.m_agentPort = 43;
-	aCommandLineArguments.m_broadcastPort = 44;
-
-	// !! careful !  Boost converts 99999 to ... something, and it passes
-	test_ReadParameters(Status::PASS, Common::GetArguments(aCommandLineArguments, false, false));
+	ORWELL_LOG_DEBUG("test_negative_ports");
+	// boost converts to positive
+	helper_invalid_ports({-1024, 1, 2, 3}, Status::PASS);
 }
 
-static void test_same_ports_agent_publisher()
+TEST(Application, test_oversized_ports)
 {
-	ORWELL_LOG_DEBUG("test_same_ports_agent_publisher");
-
-	orwell::Application::CommandLineParameters aCommandLineArguments;
-	aCommandLineArguments.m_publisherPort = 41;
-	aCommandLineArguments.m_pullerPort = 42;
-	aCommandLineArguments.m_agentPort = 41;
-	aCommandLineArguments.m_broadcastPort = 44;
-
-	test_ReadParameters(Status::FAIL, Common::GetArguments(aCommandLineArguments, false, false));
+	ORWELL_LOG_DEBUG("test_oversized_ports");
+	helper_invalid_ports({99999, 1, 2, 3});
 }
 
-static void test_same_ports_puller_publisher()
+TEST(Application, test_duplicate_ports)
 {
-	ORWELL_LOG_DEBUG("test_same_ports_puller_publisher");
+	ORWELL_LOG_DEBUG("test_duplicate_ports");
+	std::vector< int32_t > aPorts{1, 1, 2, 3};
+	std::sort(aPorts.begin(), aPorts.end());
+	do
+	{
+		orwell::Application::CommandLineParameters aCommandLineArguments;
+		aCommandLineArguments.m_publisherPort = aPorts[0];
+		aCommandLineArguments.m_pullerPort = aPorts[1];
+		aCommandLineArguments.m_agentPort = aPorts[2];
+		aCommandLineArguments.m_broadcastPort = aPorts[3];
 
-	orwell::Application::CommandLineParameters aCommandLineArguments;
-	aCommandLineArguments.m_publisherPort = 41;
-	aCommandLineArguments.m_pullerPort = 41;
-	aCommandLineArguments.m_agentPort = 42;
-	aCommandLineArguments.m_broadcastPort = 44;
-
-	test_ReadParameters(Status::FAIL, Common::GetArguments(aCommandLineArguments, false, false));
+		helper_test_ReadParameters(
+				Status::FAIL,
+				Common::GetArguments(aCommandLineArguments, false, false));
+	} while (std::next_permutation(aPorts.begin(), aPorts.end()));
 }
 
-static void test_same_ports_puller_agent()
-{
-	ORWELL_LOG_DEBUG("test_same_ports_puller_agent");
-
-	orwell::Application::CommandLineParameters aCommandLineArguments;
-	aCommandLineArguments.m_publisherPort = 41;
-	aCommandLineArguments.m_pullerPort = 42;
-	aCommandLineArguments.m_agentPort = 42;
-	aCommandLineArguments.m_broadcastPort = 44;
-
-	test_ReadParameters(Status::FAIL, Common::GetArguments(aCommandLineArguments, false, false));
-}
-
-static void test_same_ports_publisher_broadcast()
-{
-	ORWELL_LOG_DEBUG("test_same_ports_publisher_broadcast");
-
-	orwell::Application::CommandLineParameters aCommandLineArguments;
-	aCommandLineArguments.m_publisherPort = 41;
-	aCommandLineArguments.m_pullerPort = 42;
-	aCommandLineArguments.m_agentPort = 43;
-	aCommandLineArguments.m_broadcastPort = 41;
-
-	test_ReadParameters(Status::FAIL, Common::GetArguments(aCommandLineArguments, false, false));
-}
-
-static void test_same_ports_puller_broadcast()
-{
-	ORWELL_LOG_DEBUG("test_same_ports_puller_broadcast");
-
-	orwell::Application::CommandLineParameters aCommandLineArguments;
-	aCommandLineArguments.m_publisherPort = 41;
-	aCommandLineArguments.m_pullerPort = 42;
-	aCommandLineArguments.m_agentPort = 43;
-	aCommandLineArguments.m_broadcastPort = 42;
-
-	test_ReadParameters(Status::FAIL, Common::GetArguments(aCommandLineArguments, false, false));
-}
-
-static void test_same_ports_agent_broadcast()
-{
-	ORWELL_LOG_DEBUG("test_same_ports_agent_agent");
-
-	orwell::Application::CommandLineParameters aCommandLineArguments;
-	aCommandLineArguments.m_publisherPort = 41;
-	aCommandLineArguments.m_pullerPort = 42;
-	aCommandLineArguments.m_agentPort = 43;
-	aCommandLineArguments.m_broadcastPort = 43;
-
-	test_ReadParameters(Status::FAIL, Common::GetArguments(aCommandLineArguments, false, false));
-}
-
-static void test_wrong_port_range_broadcast_1()
-{
-	ORWELL_LOG_DEBUG("test_wrong_port_range_broadcast_1");
-
-	orwell::Application::CommandLineParameters aCommandLineArguments;
-	aCommandLineArguments.m_publisherPort = 41;
-	aCommandLineArguments.m_pullerPort = 42;
-	aCommandLineArguments.m_agentPort = 43;
-	aCommandLineArguments.m_broadcastPort = -1024;
-
-	// !! careful !  Boost converts -1024 to ... something, and it passes
-	test_ReadParameters(Status::PASS, Common::GetArguments(aCommandLineArguments, false, false));
-}
-
-static void test_wrong_port_range_broadcast_2()
-{
-	ORWELL_LOG_DEBUG("test_wrong_port_range_broadcast_2");
-
-	orwell::Application::CommandLineParameters aCommandLineArguments;
-	aCommandLineArguments.m_publisherPort = 41;
-	aCommandLineArguments.m_pullerPort = 42;
-	aCommandLineArguments.m_agentPort = 43;
-	aCommandLineArguments.m_broadcastPort = 0;
-
-	test_ReadParameters(Status::FAIL, Common::GetArguments(aCommandLineArguments, false, false));
-}
-
-static void test_wrong_port_range_broadcast_3()
-{
-	ORWELL_LOG_DEBUG("test_wrong_port_range_broadcast_3");
-
-	orwell::Application::CommandLineParameters aCommandLineArguments;
-	aCommandLineArguments.m_publisherPort = 41;
-	aCommandLineArguments.m_pullerPort = 42;
-	aCommandLineArguments.m_agentPort = 43;
-	aCommandLineArguments.m_broadcastPort = 99999;
-
-	// !! careful !  Boost converts 99999 to ... something, and it passes
-	test_ReadParameters(Status::PASS, Common::GetArguments(aCommandLineArguments, false, false));
-}
-
-static void test_most_arguments()
+TEST(Application, test_most_arguments)
 {
 	TempFile aTempFile(std::string(R"(
 [server]
@@ -243,7 +144,7 @@ video-ports    = 9001
 	aCommandLineArguments.m_broadcast = true;
 
 	ORWELL_LOG_DEBUG("test_most_arguments");
-	test_ReadParameters(
+	helper_test_ReadParameters(
 			Status::PASS,
 			Common::GetArguments(
 				aCommandLineArguments,
@@ -252,7 +153,7 @@ video-ports    = 9001
 	);
 }
 
-static void test_parse_command_line()
+TEST(Application, test_parse_command_line)
 {
 	ORWELL_LOG_DEBUG("test_parse_command_line");
 
@@ -265,7 +166,8 @@ video-ports    = 9001
 	aCommandLineArguments.m_publisherPort = 1;
 	aCommandLineArguments.m_pullerPort = 2;
 	aCommandLineArguments.m_agentPort = 3;
-	aCommandLineArguments.m_broadcastPort = 4;
+	aCommandLineArguments.m_replierPort = 4;
+	aCommandLineArguments.m_broadcastPort = 5;
 	aCommandLineArguments.m_rcFilePath = aTempFile.m_fileName;
 	aCommandLineArguments.m_tickInterval = 666;
 	aCommandLineArguments.m_gameDuration = 274;
@@ -276,7 +178,7 @@ video-ports    = 9001
 	aExpectedParameters.m_commandLineParameters = aCommandLineArguments;
 	aExpectedParameters.m_videoPorts = {9001};
 
-	test_ReadParameters(
+	helper_test_ReadParameters(
 			Status::PASS,
 			Common::GetArguments(
 				aCommandLineArguments,
@@ -288,13 +190,14 @@ video-ports    = 9001
 #include <stdio.h>
 
 // command line has priority over the file
-static void test_parse_command_line_and_file_1()
+TEST(Application, test_parse_command_line_and_file_1)
 {
 	ORWELL_LOG_DEBUG("test_parse_command_line_and_file_1");
 	TempFile aTempFile(std::string(R"(
 [server]
 publisher-port = 19000
 puller-port    = 19001
+replier-port = 19002
 agent-port     = 19003
 broadcast-port     = 19004
 tic-interval   = 1500
@@ -305,7 +208,8 @@ video-ports    = 9001:9004
 	aCommandLineArguments.m_publisherPort = 1;
 	aCommandLineArguments.m_pullerPort = 2;
 	aCommandLineArguments.m_agentPort = 3;
-	aCommandLineArguments.m_broadcastPort = 4;
+	aCommandLineArguments.m_replierPort = 4;
+	aCommandLineArguments.m_broadcastPort = 5;
 	aCommandLineArguments.m_rcFilePath = aTempFile.m_fileName;
 	aCommandLineArguments.m_tickInterval = 666;
 	aCommandLineArguments.m_gameDuration = 274;
@@ -316,7 +220,7 @@ video-ports    = 9001:9004
 	aExpectedParameters.m_commandLineParameters = aCommandLineArguments;
 	aExpectedParameters.m_videoPorts = {9004, 9003, 9002, 9001};
 
-	test_ReadParameters(
+	helper_test_ReadParameters(
 			Status::PASS,
 			Common::GetArguments(
 				aCommandLineArguments,
@@ -326,13 +230,14 @@ video-ports    = 9001:9004
 }
 
 // read some values from the file only
-static void test_parse_command_line_and_file_2()
+TEST(Application, test_parse_command_line_and_file_2)
 {
 	ORWELL_LOG_DEBUG("test_parse_command_line_and_file_2");
 	TempFile aTempFile(std::string(R"(
 [server]
 publisher-port = 900
 puller-port    = 901
+replier-port = 902
 agent-port     = 903
 broadcast-port = 904
 tic-interval   = 50
@@ -345,6 +250,7 @@ video-ports    = 9001
 	orwell::Application::CommandLineParameters aExpectedCommandLineArguments;
 	aExpectedCommandLineArguments.m_publisherPort = 900;
 	aExpectedCommandLineArguments.m_pullerPort = 901;
+	aExpectedCommandLineArguments.m_replierPort = 902;
 	aExpectedCommandLineArguments.m_agentPort = 903;
 	aExpectedCommandLineArguments.m_broadcastPort = 904;
 	aExpectedCommandLineArguments.m_rcFilePath = aTempFile.m_fileName;
@@ -357,7 +263,7 @@ video-ports    = 9001
 	aExpectedParameters.m_commandLineParameters = aExpectedCommandLineArguments;
 	aExpectedParameters.m_videoPorts = {9001};
 
-	test_ReadParameters(
+	helper_test_ReadParameters(
 			Status::PASS,
 			Common::GetArguments(
 				aInputCommandLineArguments,
@@ -367,7 +273,7 @@ video-ports    = 9001
 }
 
 // make sure a file containing unrelated configuration does nothing wrong.
-static void test_parse_command_line_and_file_3()
+TEST(Application, test_parse_command_line_and_file_3)
 {
 	ORWELL_LOG_DEBUG("test_parse_command_line_and_file_3");
 	TempFile aTempFile(std::string(R"(
@@ -391,7 +297,7 @@ puller-port = 42
 	aExpectedParameters.m_commandLineParameters = aCommandLineArguments;
 	aExpectedParameters.m_videoPorts = {9001};
 
-	test_ReadParameters(
+	helper_test_ReadParameters(
 			Status::PASS,
 			Common::GetArguments(
 				aCommandLineArguments,
@@ -401,7 +307,7 @@ puller-port = 42
 }
 
 // check the content of the game and the different robots.
-static void test_parse_command_line_and_file_4()
+TEST(Application, test_parse_command_line_and_file_4)
 {
 	ORWELL_LOG_DEBUG("test_parse_command_line_and_file_4");
 	TempFile aTechConfigFile(std::string(R"(
@@ -437,7 +343,8 @@ name = Bourbaki
 	aInputCommandLineArguments.m_publisherPort = 1;
 	aInputCommandLineArguments.m_pullerPort = 2;
 	aInputCommandLineArguments.m_agentPort = 3;
-	aInputCommandLineArguments.m_broadcastPort = 4;
+	aInputCommandLineArguments.m_replierPort = 4;
+	aInputCommandLineArguments.m_broadcastPort = 5;
 	aInputCommandLineArguments.m_rcFilePath = aTechConfigFile.m_fileName;
 	aInputCommandLineArguments.m_gameFilePath = aTempFile.m_fileName;
 	aInputCommandLineArguments.m_tickInterval = 666;
@@ -456,7 +363,7 @@ name = Bourbaki
 	aExpectedParameters.m_teams = {"Mathematicians", "Philosophers"};
 	aExpectedParameters.m_videoPorts = {9004, 9003, 9002, 9001};
 
-	test_ReadParameters(
+	helper_test_ReadParameters(
 			Status::PASS,
 			Common::GetArguments(
 				aInputCommandLineArguments,
@@ -466,7 +373,7 @@ name = Bourbaki
 }
 
 // make sure we detect errors
-static void test_parse_command_line_and_file_5()
+TEST(Application, test_parse_command_line_and_file_5)
 {
 	ORWELL_LOG_DEBUG("test_parse_command_line_and_file_5");
 	TempFile aTechConfigFile(std::string(R"(
@@ -500,7 +407,8 @@ name = Bourbaki
 	aCommandLineArguments.m_publisherPort = 1;
 	aCommandLineArguments.m_pullerPort = 2;
 	aCommandLineArguments.m_agentPort = 3;
-	aCommandLineArguments.m_broadcastPort = 4;
+	aCommandLineArguments.m_replierPort = 4;
+	aCommandLineArguments.m_broadcastPort = 5;
 	aCommandLineArguments.m_rcFilePath = aTechConfigFile.m_fileName;
 	aCommandLineArguments.m_gameFilePath = aTempFile.m_fileName;
 	aCommandLineArguments.m_tickInterval = 666;
@@ -520,7 +428,7 @@ name = Bourbaki
 	bool aThrown = false;
 	try
 	{
-		test_ReadParameters(
+		helper_test_ReadParameters(
 				Status::PASS,
 				Common::GetArguments(
 					aCommandLineArguments,
@@ -536,7 +444,7 @@ name = Bourbaki
 	assert(aThrown);
 }
 
-static void test_parse_command_line_and_file_6_badConfigFile()
+TEST(Application, test_parse_command_line_and_file_6_badConfigFile)
 {
 	ORWELL_LOG_DEBUG("test_parse_command_line_and_file_6_badConfigFile");
 
@@ -544,14 +452,15 @@ static void test_parse_command_line_and_file_6_badConfigFile()
 	aCommandLineArguments.m_publisherPort = 1;
 	aCommandLineArguments.m_pullerPort = 2;
 	aCommandLineArguments.m_agentPort = 3;
-	aCommandLineArguments.m_broadcastPort = 4;
+	aCommandLineArguments.m_replierPort = 4;
+	aCommandLineArguments.m_broadcastPort = 5;
 	aCommandLineArguments.m_rcFilePath = std::string("thisfiledoesnotexist");
 	aCommandLineArguments.m_tickInterval = 666;
 	aCommandLineArguments.m_gameDuration = 274;
 	aCommandLineArguments.m_dryRun = true;
 	aCommandLineArguments.m_broadcast = false;
 
-	test_ReadParameters(
+	helper_test_ReadParameters(
 			Status::FAIL,
 			Common::GetArguments(
 					aCommandLineArguments,
@@ -559,7 +468,7 @@ static void test_parse_command_line_and_file_6_badConfigFile()
 			));
 }
 
-static void test_parse_command_line_and_file_7_moreRobotsThanVideoPorts()
+TEST(Application, test_parse_command_line_and_file_7_moreRobotsThanVideoPorts)
 {
 	ORWELL_LOG_DEBUG("test_parse_command_line_and_file_7_moreRobotsThanVideoPorts");
 	TempFile aTechConfigFile(std::string(R"(
@@ -594,7 +503,8 @@ name = Bourbaki
 	aCommandLineArguments.m_publisherPort = 1;
 	aCommandLineArguments.m_pullerPort = 2;
 	aCommandLineArguments.m_agentPort = 3;
-	aCommandLineArguments.m_broadcastPort = 4;
+	aCommandLineArguments.m_replierPort = 4;
+	aCommandLineArguments.m_broadcastPort = 5;
 	aCommandLineArguments.m_rcFilePath = aTechConfigFile.m_fileName;
 	aCommandLineArguments.m_gameFilePath = aGameConfigFile.m_fileName;
 	aCommandLineArguments.m_tickInterval = 666;
@@ -602,7 +512,7 @@ name = Bourbaki
 	aCommandLineArguments.m_dryRun = true;
 	aCommandLineArguments.m_broadcast = false;
 
-	test_ReadParameters(
+	helper_test_ReadParameters(
 			Status::FAIL,
 			Common::GetArguments(
 				aCommandLineArguments,
@@ -610,7 +520,7 @@ name = Bourbaki
 			));
 }
 
-static void test_parse_game_file_with_flag()
+TEST(Application, test_parse_game_file_with_flag)
 {
 	ORWELL_LOG_DEBUG("test_parse_game_file_with_flag");
 	TempFile aTechConfigFile(std::string(R"(
@@ -658,7 +568,8 @@ colour = 2
 	aCommandLineArguments.m_publisherPort = 1;
 	aCommandLineArguments.m_pullerPort = 2;
 	aCommandLineArguments.m_agentPort = 3;
-	aCommandLineArguments.m_broadcastPort = 4;
+	aCommandLineArguments.m_replierPort = 4;
+	aCommandLineArguments.m_broadcastPort = 5;
 	aCommandLineArguments.m_rcFilePath = aTechConfigFile.m_fileName;
 	aCommandLineArguments.m_gameFilePath = aGameConfigFile.m_fileName;
 	aCommandLineArguments.m_tickInterval = 666;
@@ -679,7 +590,7 @@ colour = 2
 	aExpectedParameters.m_teams = {"Mathematicians", "Philosophers"};
 	aExpectedParameters.m_videoPorts = {9004, 9003, 9002, 9001};
 
-	test_ReadParameters(
+	helper_test_ReadParameters(
 			Status::PASS,
 			Common::GetArguments(
 				aCommandLineArguments,
@@ -724,7 +635,7 @@ colour = 2
 	};
 	aExpectedParameters.m_commandLineParameters = aCommandLineArguments;
 
-	test_ReadParameters(
+	helper_test_ReadParameters(
 			Status::FAIL,
 			Common::GetArguments(
 				aCommandLineArguments,
@@ -733,7 +644,7 @@ colour = 2
 			aExpectedParameters);
 }
 
-static void test_parse_game_file_with_map()
+TEST(Application, test_parse_game_file_with_map)
 {
 	ORWELL_LOG_DEBUG("test_parse_game_file_with_map_7");
 	TempFile aTechConfigFile(std::string(R"(
@@ -809,7 +720,8 @@ b = 0
 	aInputCommandLineArguments.m_publisherPort = 1;
 	aInputCommandLineArguments.m_pullerPort = 2;
 	aInputCommandLineArguments.m_agentPort = 3;
-	aInputCommandLineArguments.m_broadcastPort = 4;
+	aInputCommandLineArguments.m_replierPort = 4;
+	aInputCommandLineArguments.m_broadcastPort = 5;
 	aInputCommandLineArguments.m_rcFilePath = aTechConfigFile.m_fileName;
 	aInputCommandLineArguments.m_gameFilePath = aTempFile.m_fileName;
 	aInputCommandLineArguments.m_tickInterval = 666;
@@ -833,7 +745,7 @@ b = 0
 		orwell::game::Landmark(orwell::game::Coordinates(aBlueX, aBlueY), orwell::game::RGBColour(0, 0, 255)),
 		orwell::game::Landmark(orwell::game::Coordinates(aYellowX, aYellowY), orwell::game::RGBColour(255, 255, 0)),
 	};
-	test_ReadParameters(
+	helper_test_ReadParameters(
 			Status::PASS,
 			Common::GetArguments(
 				aInputCommandLineArguments,
@@ -841,37 +753,15 @@ b = 0
 			),
 			aExpectedParameters);
 }
-int main()
+
+int main(int argc, char ** argv)
 {
 	orwell::support::GlobalLogger::Create("test_application", "test_application.log", true);
 	log4cxx::NDC ndc("test_application");
 
-	test_nothing();
-	test_wrong_port_range_publisher_1();
-	test_wrong_port_range_publisher_2();
-	test_wrong_port_range_publisher_3();
-	test_same_ports_agent_publisher();
-	test_same_ports_puller_publisher();
-	test_same_ports_puller_agent();
-	test_same_ports_publisher_broadcast();
-	test_same_ports_puller_broadcast();
-	test_same_ports_agent_broadcast();
-	test_wrong_port_range_broadcast_1();
-	test_wrong_port_range_broadcast_2();
-	test_wrong_port_range_broadcast_3();
-	test_most_arguments();
-	test_parse_command_line();
-	test_parse_command_line_and_file_1();
-	test_parse_command_line_and_file_2();
-	test_parse_command_line_and_file_3();
-	test_parse_command_line_and_file_4();
-	test_parse_command_line_and_file_5();
-	test_parse_command_line_and_file_6_badConfigFile();
-	test_parse_command_line_and_file_7_moreRobotsThanVideoPorts();
-	test_parse_game_file_with_flag();
-	test_parse_game_file_with_map();
-
+	::testing::InitGoogleTest(&argc, argv);
+	int const aResult = RUN_ALL_TESTS();
 	orwell::support::GlobalLogger::Clear();
-	return 0;
+	return aResult;
 }
 

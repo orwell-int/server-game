@@ -1,6 +1,7 @@
 #include "orwell/Server.hpp"
 
 #include <string>
+#include <algorithm>
 #include <cstring>
 #include <netinet/udp.h>
 #include <sys/socket.h>
@@ -42,6 +43,7 @@ Server::Server(
 		std::string const & iAgentUrl,
 		std::string const & iPullUrl,
 		std::string const & iPublishUrl,
+		std::string const & iReplyUrl,
 		long const iTicDuration,
 		uint32_t const iGameDuration)
 	: m_zmqContext(1)
@@ -64,12 +66,19 @@ Server::Server(
 				orwell::com::ConnectionMode::BIND,
 				m_zmqContext,
 				0))
+	, m_replier(std::make_shared< orwell::com::Socket >(
+				iReplyUrl,
+				ZMQ_REP,
+				orwell::com::ConnectionMode::BIND,
+				m_zmqContext,
+				0))
 	, m_game(iSystemProxy, boost::posix_time::seconds(iGameDuration), iRuleset, *this)
-	, m_decider(m_game, m_publisher)
+	, m_decider(m_game, m_publisher, m_replier)
 	, m_ticDuration(boost::posix_time::milliseconds(iTicDuration))
 	, m_previousTic(boost::posix_time::microsec_clock::local_time())
 	, m_mainLoopRunning(false)
 	, m_forcedStop(false)
+	, m_channels{com::Channel::PUBLISH, com::Channel::REPLY}
 {
 }
 
@@ -79,14 +88,16 @@ Server::~Server()
 
 bool Server::processMessageIfAvailable()
 {
-	bool aProcessedMessage = false;
 	orwell::com::RawMessage aMessage;
-	if (m_puller->receive(aMessage))
-	{
-		ORWELL_LOG_DEBUG("Message received in processMessageIfAvailable");
-		m_decider.process(aMessage);
-		aProcessedMessage = true;
-	}
+	bool const aProcessedMessage = std::any_of(
+			m_channels.begin(),
+			m_channels.end(),
+			[&](orwell::com::Channel const iChannel)
+			{
+				return receive_and_process(iChannel, aMessage);
+			}
+	);
+	std::next_permutation(m_channels.begin(), m_channels.end());
 	return aProcessedMessage;
 }
 
@@ -96,7 +107,7 @@ void Server::loopUntilOneMessageIsProcessed()
 	boost::posix_time::time_duration aDuration;
 	boost::posix_time::ptime aCurrentTic;
 
-	feedAgentProxy();
+	feedAgentProxy(false);
 	while (not aMessageHasBeenProcessed)
 	{
 		aCurrentTic = boost::posix_time::microsec_clock::local_time();
@@ -120,11 +131,11 @@ void Server::loopUntilOneMessageIsProcessed()
 		}
 		else
 		{
-			feedAgentProxy();
+			feedAgentProxy(false);
 			if (m_game.getIsRunning())
 			{
 				m_game.step();
-				ProcessTimer aProcessTimer(m_publisher, m_game);
+				ProcessTimer aProcessTimer(m_game, m_publisher, m_replier);
 				aProcessTimer.execute();
 			}
 			m_previousTic = aCurrentTic;
@@ -155,12 +166,12 @@ orwell::game::Game & Server::accessContext()
 	return m_game;
 }
 
-void Server::feedAgentProxy()
+void Server::feedAgentProxy(bool const iBlocking)
 {
 	std::string aMessage;
 	ORWELL_LOG_TRACE("Try to read agent command ...");
 	std::string aReply("KO");
-	if (m_agentSocket->receiveString(aMessage))
+	if (m_agentSocket->receiveString(aMessage, iBlocking))
 	{
 		ORWELL_LOG_DEBUG("command received: '" << aMessage << "'");
 		m_agentProxy.step(aMessage, aReply);
@@ -168,4 +179,35 @@ void Server::feedAgentProxy()
 		m_agentSocket->sendString(aReply);
 	}
 }
+
+bool Server::receive_and_process(
+		orwell::com::Channel const iChannel,
+		orwell::com::RawMessage & ioMessage)
+{
+	switch (iChannel)
+	{
+		case orwell::com::Channel::PUBLISH:
+		{
+			if (m_puller->receive(ioMessage))
+			{
+				ORWELL_LOG_DEBUG("Message received for PUBLISH");
+				m_decider.process(ioMessage, com::Channel::PUBLISH);
+				return true;
+			}
+			break;
+		}
+		case orwell::com::Channel::REPLY:
+		{
+			if (m_replier->receive(ioMessage))
+			{
+				ORWELL_LOG_DEBUG("Message received REPLY");
+				m_decider.process(ioMessage, com::Channel::REPLY);
+				return true;
+			}
+			break;
+		}
+	}
+	return false;
+}
+
 }
