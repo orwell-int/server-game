@@ -4,13 +4,16 @@
 
 #include "orwell/com/ConnectionMode.hpp"
 
-namespace zmq {
+namespace zmq
+{
 class context_t;
 class socket_t;
 }
 
-namespace orwell {
-namespace com {
+namespace orwell
+{
+namespace com
+{
 
 class RawMessage;
 
@@ -82,4 +85,3 @@ private :
 
 }
 }
-

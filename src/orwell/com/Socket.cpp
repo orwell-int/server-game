@@ -31,7 +31,8 @@ std::string Socket::Repr(std::string const & iInput)
 		}
 		else
 		{
-			ret << "\\x" << std::hex << std::setfill('0') << std::setw(2) << static_cast< int >(ch);
+			ret << "\\x" << std::hex << std::setfill('0') << std::setw(2)
+				<< static_cast< int >(ch);
 		}
 	}
 	return ret.str();
