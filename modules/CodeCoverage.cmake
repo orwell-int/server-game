@@ -90,6 +90,7 @@ ENDIF() # NOT CMAKE_BUILD_TYPE STREQUAL "Debug"
 # Param _testrunner          The name of the target which runs the tests.
 #                            MUST return ZERO always, even on errors. 
 #                            If not, no coverage report will be created!
+# Param _testrunner_args     Arguments for the test runner
 # Param _outputname          lcov output is generated as _outputname.info
 #                            HTML report is generated in _outputname/index.html
 # Param _testdir             Directory where the testrunner can be run.
@@ -99,7 +100,7 @@ ENDIF() # NOT CMAKE_BUILD_TYPE STREQUAL "Debug"
 # Param _dependencies        List of targets to add a dependency on.
 # Optional fourth parameter is passed as arguments to _testrunner
 #   Pass them in list form, e.g.: "-j;2" for -j 2
-FUNCTION(SETUP_TARGET_FOR_COVERAGE _targetname _testrunner _outputname _testdir _coverage_root_dir _coverage_includes _coverage_excludes _dependencies)
+FUNCTION(SETUP_TARGET_FOR_COVERAGE _targetname _testrunner _testrunner_args _outputname _testdir _coverage_root_dir _coverage_includes _coverage_excludes _dependencies)
 
 	IF(NOT LCOV_PATH)
 		MESSAGE(FATAL_ERROR "lcov not found! Aborting...")
@@ -116,7 +117,7 @@ FUNCTION(SETUP_TARGET_FOR_COVERAGE _targetname _testrunner _outputname _testdir 
 		${LCOV_PATH} --directory ${_coverage_root_dir} --zerocounters
 		
 		# Run tests
-		COMMAND ${_testrunner} ${ARGV3}
+		COMMAND ${_testrunner} ${_testrunner_args} ${ARGV3}
 		
 		# Capturing lcov counters and generating report
 		COMMAND ${LCOV_PATH} --directory ${_coverage_root_dir} --capture --output-file ${_outputname}.info
