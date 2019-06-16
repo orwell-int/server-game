@@ -166,6 +166,7 @@ IF(ORWELL_COVERAGE)
 		setup_target_for_coverage(
 			${PROJECT_NAME}_coverage
 			ctest
+			"--output-on-failure"
 			${CMAKE_BINARY_DIR}/test/coverage
 			test
 			${CMAKE_BINARY_DIR}

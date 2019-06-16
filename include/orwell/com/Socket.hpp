@@ -4,13 +4,16 @@
 
 #include "orwell/com/ConnectionMode.hpp"
 
-namespace zmq {
+namespace zmq
+{
 class context_t;
 class socket_t;
 }
 
-namespace orwell {
-namespace com {
+namespace orwell
+{
+namespace com
+{
 
 class RawMessage;
 
@@ -18,6 +21,8 @@ class Socket
 {
 
 public :
+	static std::string Repr(std::string const & iInput);
+
 	/// \param iUrl
 	///    Url object used to know where to open the socket.
 	///
@@ -80,4 +85,3 @@ private :
 
 }
 }
-

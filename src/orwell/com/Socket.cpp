@@ -3,10 +3,12 @@
 //std
 #include <iostream>
 #include <unistd.h>
+#include <ctype.h>
 
 #include <zmq.hpp>
 
 #include <sstream>
+#include <iomanip>
 
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/com/RawMessage.hpp"
@@ -17,6 +19,24 @@ namespace orwell
 {
 namespace com
 {
+
+std::string Socket::Repr(std::string const & iInput)
+{
+	std::ostringstream ret;
+	for (auto const ch: iInput)
+	{
+		if (isprint(ch))
+		{
+			ret << ch;
+		}
+		else
+		{
+			ret << "\\x" << std::hex << std::setfill('0') << std::setw(2)
+				<< static_cast< int >(ch);
+		}
+	}
+	return ret.str();
+}
 
 Socket::Socket(
 		std::string const & iUrl,
@@ -63,6 +83,7 @@ bool Socket::receiveString(
 	{
 		ORWELL_LOG_TRACE("message received");
 		oMessage = string(static_cast<char*>(aZmqMessage.data()), aZmqMessage.size());
+		ORWELL_LOG_DEBUG("message received: '" << Repr(oMessage) << "'");
 	}
 	return aReceived;
 }
@@ -87,7 +108,8 @@ bool Socket::receive(
 			size_t aEndTypeFlag = aMessageData.find(" ", aEndDestFlag + 1);
 			if (aEndTypeFlag != string::npos)
 			{
-				aType = aMessageData.substr(aEndDestFlag + 1, aEndTypeFlag - aEndDestFlag - 1);
+				aType = aMessageData.substr(
+						aEndDestFlag + 1, aEndTypeFlag - aEndDestFlag - 1);
 				aPayload = aMessageData.substr(aEndTypeFlag + 1);
 			}
 		}
@@ -95,7 +117,7 @@ bool Socket::receive(
 		oMessage._type = aType;
 		oMessage._routingId = aDest;
 		oMessage._payload = aPayload;
-		ORWELL_LOG_DEBUG("Received message : type=" << aType << "- dest=" << aDest << "-");
+		ORWELL_LOG_DEBUG("Received message : type='" << aType << "' dest='" << aDest << "'");
 	}
 	return aReceived;
 }
@@ -126,7 +148,8 @@ void Socket::send(RawMessage const & iMessage) const
 	aMessage += iMessage._payload;
 
 	sendString(aMessage);
-	ORWELL_LOG_DEBUG("Sent message of type " << iMessage._type << " to " << iMessage._routingId << " with size " << aMessage.size());
+	ORWELL_LOG_DEBUG("Sent message of type " << iMessage._type << " to "
+			<< iMessage._routingId << " with size " << aMessage.size());
 }
 
 std::string const & Socket::getUrl() const
