@@ -20,9 +20,11 @@
 bool gOK;
 uint32_t const gGameDuration = 10;
 
-static void test_1(orwell::Application & ioApplication)
+static void test_1(
+		orwell::Application & ioApplication,
+		uint16_t const iAgentPort)
 {
-	TestAgent aTestAgent(9003);
+	TestAgent aTestAgent(iAgentPort);
 	gOK = false;
 	ORWELL_LOG_DEBUG("test_1");
 	orwell::AgentProxy aAgentProxy(ioApplication);
@@ -133,7 +135,8 @@ static void test_1(orwell::Application & ioApplication)
 
 int main()
 {
-	orwell::support::GlobalLogger::Create("test_agent_proxy", "test_agent_proxy.log", true);
+	orwell::support::GlobalLogger::Create(
+			"test_agent_proxy", "test_agent_proxy.log", true);
 	log4cxx::NDC ndc("test_agent_proxy");
 	ORWELL_LOG_INFO("Test starts\n");
 	{
@@ -157,8 +160,7 @@ int main()
 				aArguments.m_argv,
 				aParameters);
 		aApplication.run(aParameters);
-		//usleep(40 * 1000); // sleep for 0.040 s
-		test_1(aApplication);
+		test_1(aApplication, *aCommandLineArguments.m_agentPort);
 		assert(gOK);
 	}
 	orwell::support::GlobalLogger::Clear();

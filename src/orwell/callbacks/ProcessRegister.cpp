@@ -28,9 +28,10 @@ namespace callbacks
 {
 
 ProcessRegister::ProcessRegister(
+		game::Game & ioGame,
 		std::shared_ptr< com::Sender > ioPublisher,
-		game::Game & ioGame)
-	: InterfaceProcess(ioPublisher, ioGame)
+		std::shared_ptr< com::Socket > ioReplier)
+	: InterfaceProcess(ioGame, ioPublisher, ioReplier)
 {
 }
 
@@ -56,7 +57,7 @@ void ProcessRegister::execute()
 	}
 	aRegistered.set_robot_id(aRobotId);
 	RawMessage aReply(aClientID, "Registered", aRegistered.SerializeAsString());
-	m_publisher->send(aReply);
+	reply(aReply);
 	if (aRobot)
 	{
 		ORWELL_LOG_INFO("ProcessRegister::execute success");
@@ -69,4 +70,3 @@ void ProcessRegister::execute()
 
 }
 }
-

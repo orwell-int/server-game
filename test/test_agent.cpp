@@ -31,6 +31,7 @@ int main()
 
 	orwell::Application::CommandLineParameters aCommandLineArguments;
 	aCommandLineArguments.m_agentPort = 9004;
+	aCommandLineArguments.m_replierPort = 9003;
 	aCommandLineArguments.m_tickInterval = 1;
 	aCommandLineArguments.m_gameDuration = 100;
 	aCommandLineArguments.m_dryRun = false;
@@ -51,4 +52,3 @@ int main()
 	orwell::support::GlobalLogger::Clear();
 	return 0;
 }
-

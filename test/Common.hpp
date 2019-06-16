@@ -66,6 +66,28 @@ enum class Status
 	PASS,
 };
 
+struct Application_CommandLineParameters
+{
+	boost::optional<int32_t> m_pullerPort;
+	boost::optional<int32_t> m_publisherPort;
+	boost::optional<int32_t> m_agentPort;
+	boost::optional<int32_t> m_replierPort;
+	/// path to technical configuration file
+	boost::optional<std::string> m_rcFilePath;
+	/// path to game configuration file
+	boost::optional<std::string> m_gameFilePath;
+	boost::optional<int64_t> m_tickInterval;
+	boost::optional< int32_t > m_gameDuration;
+	boost::optional<bool> m_dryRun;
+	boost::optional<bool> m_broadcast;
+	boost::optional< int32_t > m_broadcastPort;
+
+	Application_CommandLineParameters() = default;
+
+	Application_CommandLineParameters(
+			orwell::Application_CommandLineParameters const & iParameters);
+};
+
 struct Arguments
 {
 	char ** m_argv;
@@ -84,7 +106,7 @@ class Common
 {
 public:
 	static Arguments GetArguments(
-			orwell::Application_CommandLineParameters const & iCommandLineParams,
+			Application_CommandLineParameters const & iCommandLineParams,
 			bool const iDebugLog = false,
 			bool const iHelp = false,
 			bool const iShowVersion = false
@@ -94,6 +116,11 @@ public:
 			orwell::com::Receiver & iSubscriber,
 			orwell::com::RawMessage & oReceived,
 			unsigned int const iTimeout = 500);
+
+	static void Synchronize(
+			int32_t const iServerReplierPort,
+			zmq::context_t & ioContext);
+
 };
 
 class FakeAgentProxy : public orwell::IAgentProxy
@@ -213,7 +240,9 @@ public:
 
 	MOCK_METHOD0(accessContext, orwell::game::Game & ());
 
-	MOCK_METHOD0(feedAgentProxy, void());
+	MOCK_METHOD1(feedAgentProxy, void(bool const iBlocking));
+
+	MOCK_METHOD0(feedGreeter, void());
 };
 
 class FakeContactHandler : public orwell::game::IContactHandler

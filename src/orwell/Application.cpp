@@ -17,12 +17,24 @@
 #include <stdio.h>
 #include <signal.h>
 #include <sstream>
+#include <map>
+#include <utility>
 
 using namespace boost::program_options;
 using namespace boost::property_tree;
 using namespace log4cxx;
 using std::make_shared;
 using std::string;
+
+static uint16_t const DEFAULT_PUBLISHER_PORT = 9000;
+static uint16_t const DEFAULT_PULLER_PORT = 9001;
+static uint16_t const DEFAULT_AGENT_PORT = 9003;
+static uint16_t const DEFAULT_REPLIER_PORT = 9004;
+static uint16_t const DEFAULT_TICK_INTERVAL = 500;
+static uint16_t const DEFAULT_GAME_DURATION = 300;
+static bool const DEFAULT_BROADCAST = true;
+static bool const DEFAULT_DRY_RUN = false;
+static uint16_t const DEFAULT_BROADCAST_PORT = 9080;
 
 namespace orwell
 {
@@ -56,7 +68,8 @@ bool Application::ReadParameters(
 	if (not oParam.m_commandLineParameters.m_rcFilePath)
 	{
 		oParam.m_commandLineParameters.m_rcFilePath = "orwell-config.ini";
-		ORWELL_LOG_DEBUG("by default, config file = " << oParam.m_commandLineParameters.m_rcFilePath);
+		ORWELL_LOG_DEBUG("by default, config file = "
+				<< oParam.m_commandLineParameters.m_rcFilePath);
 	}
 
 	if (oParam.m_commandLineParameters.m_rcFilePath )
@@ -66,7 +79,8 @@ bool Application::ReadParameters(
 			return false;
 		}
 	}
-	if (oParam.m_commandLineParameters.m_gameFilePath and (not (*oParam.m_commandLineParameters.m_gameFilePath).empty()))
+	if (oParam.m_commandLineParameters.m_gameFilePath
+			and (not (*oParam.m_commandLineParameters.m_gameFilePath).empty()))
 	{
 		ParseGameConfigFromFile(oParam);
 	}
@@ -74,41 +88,53 @@ bool Application::ReadParameters(
 	// Default values
 	if (not oParam.m_commandLineParameters.m_publisherPort)
 	{
-		oParam.m_commandLineParameters.m_publisherPort = 9000;
-		ORWELL_LOG_DEBUG("by default, publisher-port = " << oParam.m_commandLineParameters.m_publisherPort);
+		oParam.m_commandLineParameters.m_publisherPort = DEFAULT_PUBLISHER_PORT;
+		ORWELL_LOG_DEBUG("by default, publisher-port = "
+				<< oParam.m_commandLineParameters.m_publisherPort);
 	}
 	if (not oParam.m_commandLineParameters.m_pullerPort)
 	{
-		oParam.m_commandLineParameters.m_pullerPort = 9001;
-		ORWELL_LOG_DEBUG("by default, puller-port = " << oParam.m_commandLineParameters.m_pullerPort);
+		oParam.m_commandLineParameters.m_pullerPort = DEFAULT_PULLER_PORT;
+		ORWELL_LOG_DEBUG("by default, puller-port = "
+				<< oParam.m_commandLineParameters.m_pullerPort);
 	}
 	if (not oParam.m_commandLineParameters.m_agentPort)
 	{
-		oParam.m_commandLineParameters.m_agentPort = 9003;
-		ORWELL_LOG_DEBUG("by default, agent-port = " << oParam.m_commandLineParameters.m_agentPort);
+		oParam.m_commandLineParameters.m_agentPort = DEFAULT_AGENT_PORT;
+		ORWELL_LOG_DEBUG("by default, agent-port = "
+				<< oParam.m_commandLineParameters.m_agentPort);
+	}
+	if (not oParam.m_commandLineParameters.m_replierPort)
+	{
+		oParam.m_commandLineParameters.m_replierPort = DEFAULT_REPLIER_PORT;
+		ORWELL_LOG_DEBUG("by default, replier-port = "
+				<< oParam.m_commandLineParameters.m_replierPort);
 	}
 	if (not oParam.m_commandLineParameters.m_tickInterval)
 	{
-		oParam.m_commandLineParameters.m_tickInterval = 500;
-		ORWELL_LOG_DEBUG("by default, tick interval = " << oParam.m_commandLineParameters.m_tickInterval);
+		oParam.m_commandLineParameters.m_tickInterval = DEFAULT_TICK_INTERVAL;
+		ORWELL_LOG_DEBUG("by default, tick interval = "
+				<< oParam.m_commandLineParameters.m_tickInterval);
 	}
 	if (not oParam.m_commandLineParameters.m_gameDuration)
 	{
-		oParam.m_commandLineParameters.m_gameDuration = 300;
-		ORWELL_LOG_DEBUG("by default, game duration = " << oParam.m_commandLineParameters.m_gameDuration);
+		oParam.m_commandLineParameters.m_gameDuration = DEFAULT_GAME_DURATION;
+		ORWELL_LOG_DEBUG("by default, game duration = "
+				<< oParam.m_commandLineParameters.m_gameDuration);
 	}
 	if (not oParam.m_commandLineParameters.m_broadcast)
 	{
-		oParam.m_commandLineParameters.m_broadcast = true;
+		oParam.m_commandLineParameters.m_broadcast = DEFAULT_BROADCAST;
 	}
 	if (not oParam.m_commandLineParameters.m_dryRun)
 	{
-		oParam.m_commandLineParameters.m_dryRun = false;
+		oParam.m_commandLineParameters.m_dryRun = DEFAULT_DRY_RUN;
 	}
 	if (not oParam.m_commandLineParameters.m_broadcastPort)
 	{
-		oParam.m_commandLineParameters.m_broadcastPort = 9080;
-		ORWELL_LOG_DEBUG("by default, broadcast-port = " << oParam.m_commandLineParameters.m_broadcastPort);
+		oParam.m_commandLineParameters.m_broadcastPort = DEFAULT_BROADCAST_PORT;
+		ORWELL_LOG_DEBUG("by default, broadcast-port = "
+				<< oParam.m_commandLineParameters.m_broadcastPort);
 	}
 
 	return CheckParametersConsistency(oParam);
@@ -119,7 +145,7 @@ bool Application::ParseParametersFromCommandLine(
 		Application::Parameters & oParam)
 {
 	// Parse the command line arguments
-	options_description aDescription("Usage: " + std::string(argv[0]) + " [PpAvTdrhnB]");
+	options_description aDescription("Usage: " + std::string(argv[0]) + " [PpARvTdrhnB]");
 
 	// ??? : Do we want to have default values or not? Feel free to add them when integrating.
 	aDescription.add_options()
@@ -127,6 +153,7 @@ bool Application::ParseParametersFromCommandLine(
 				("publisher-port,P", value<uint16_t>(),    "Publisher port")
 				("puller-port,p",    value<uint16_t>(),    "Puller port")
 				("agent-port,A",     value<uint16_t>(),    "Agent Port")
+				("replier-port,R",   value<uint16_t>(),    "Replier Port")
 				("orwellrc,r",       value<std::string>(), "Load technical configuration from rc file")
 				("gamefile,g",       value<std::string>(), "Load game configuration from game file")
 				("tick-interval,T",  value<uint32_t>(),    "Interval in ticks between GameState messages")
@@ -194,6 +221,12 @@ bool Application::ParseParametersFromCommandLine(
 	{
 		oParam.m_commandLineParameters.m_agentPort = aVariablesMap["agent-port"].as<uint16_t>();
 		ORWELL_LOG_DEBUG("agent-port from command line = " << oParam.m_commandLineParameters.m_agentPort);
+	}
+
+	if (aVariablesMap.count("replier-port"))
+	{
+		oParam.m_commandLineParameters.m_replierPort = aVariablesMap["replier-port"].as<uint16_t>();
+		ORWELL_LOG_DEBUG("replier-port from command line = " << oParam.m_commandLineParameters.m_replierPort);
 	}
 
 	if (aVariablesMap.count("tick-interval"))
@@ -273,6 +306,15 @@ bool Application::ParseParametersFromConfigFile(
 		{
 			ioParam.m_commandLineParameters.m_agentPort = aAgentPort;
 			ORWELL_LOG_DEBUG("agent-port from config file = " << ioParam.m_commandLineParameters.m_agentPort);
+		}
+	}
+	if (not ioParam.m_commandLineParameters.m_replierPort)
+	{
+		boost::optional<uint16_t> aReplierPort = aPtree.get_optional<uint16_t>("server.replier-port");
+		if (aReplierPort)
+		{
+			ioParam.m_commandLineParameters.m_replierPort = aReplierPort;
+			ORWELL_LOG_DEBUG("replier-port from config file = " << ioParam.m_commandLineParameters.m_replierPort);
 		}
 	}
 	if (not ioParam.m_commandLineParameters.m_tickInterval)
@@ -429,48 +471,47 @@ void Application::ParseGameConfigFromFile(
 
 bool Application::CheckParametersConsistency(Parameters const & iParam)
 {
-	if (iParam.m_commandLineParameters.m_publisherPort == iParam.m_commandLineParameters.m_pullerPort)
+	std::multimap< uint16_t, std::string > aPortToMap;
+	aPortToMap.insert(std::pair< uint16_t, std::string >(
+				*iParam.m_commandLineParameters.m_publisherPort, "publisher"));
+	aPortToMap.insert(std::pair< uint16_t, std::string >(
+				*iParam.m_commandLineParameters.m_pullerPort, "puller"));
+	aPortToMap.insert(std::pair< uint16_t, std::string >(
+				*iParam.m_commandLineParameters.m_agentPort, "agent"));
+	aPortToMap.insert(std::pair< uint16_t, std::string >(
+				*iParam.m_commandLineParameters.m_replierPort, "replier"));
+	aPortToMap.insert(std::pair< uint16_t, std::string >(
+				*iParam.m_commandLineParameters.m_broadcastPort, "broadcast"));
+	auto aFirstIndenticalPort = std::adjacent_find(
+			aPortToMap.begin(), aPortToMap.end(),
+			[](
+				std::pair< uint16_t, std::string > const & iLeft,
+				std::pair< uint16_t, std::string > const & iRight)
+			{
+				return (iLeft.first == iRight.first);
+			});
+	if (aPortToMap.end() != aFirstIndenticalPort)
 	{
-		ORWELL_LOG_ERROR("Publisher and puller ports have the same value (" << iParam.m_commandLineParameters.m_pullerPort << ") which is not allowed.");
+		auto aSecondIndenticalPort = std::next(aFirstIndenticalPort);
+		ORWELL_LOG_ERROR(
+				"Ports for " << aFirstIndenticalPort->second << " and " 
+				<< aSecondIndenticalPort->second << " have the same value ("
+				<< aFirstIndenticalPort->first << ") which is not allowed.");
 		return false;
 	}
-	if (iParam.m_commandLineParameters.m_publisherPort == iParam.m_commandLineParameters.m_agentPort)
+	auto aNullRange = aPortToMap.equal_range(0);
+	if (aNullRange.first != aNullRange.second)
 	{
-		ORWELL_LOG_ERROR("Publisher and agent ports have the same value (" << iParam.m_commandLineParameters.m_agentPort << ") which is not allowed.");
-		return false;
-	}
-	if (iParam.m_commandLineParameters.m_pullerPort == iParam.m_commandLineParameters.m_agentPort)
-	{
-		ORWELL_LOG_ERROR("Puller and agent ports have the same value (" << iParam.m_commandLineParameters.m_agentPort << ") which is not allowed.");
-		return false;
-	}
-	if (iParam.m_commandLineParameters.m_publisherPort == iParam.m_commandLineParameters.m_broadcastPort)
-	{
-		ORWELL_LOG_ERROR("Publisher and broadcaster ports have the same value (" << iParam.m_commandLineParameters.m_broadcastPort << ") which is not allowed.");
-		return false;
-	}
-	if (iParam.m_commandLineParameters.m_pullerPort == iParam.m_commandLineParameters.m_broadcastPort)
-	{
-		ORWELL_LOG_ERROR("Puller and broadcaster ports have the same value (" << iParam.m_commandLineParameters.m_broadcastPort << ") which is not allowed.");
-		return false;
-	}
-	if (iParam.m_commandLineParameters.m_broadcastPort == iParam.m_commandLineParameters.m_agentPort)
-	{
-		ORWELL_LOG_ERROR("Broadcaster and agent ports have the same value (" << iParam.m_commandLineParameters.m_agentPort << ") which is not allowed.");
-		return false;
-	}
-	if ((*iParam.m_commandLineParameters.m_publisherPort) == 0 or (*iParam.m_commandLineParameters.m_pullerPort == 0))
-	{
-		ORWELL_LOG_ERROR("Invalid port information. Ports are \n Puller=" << iParam.m_commandLineParameters.m_pullerPort << "\n Publisher=" << iParam.m_commandLineParameters.m_publisherPort);
-		return false;
-	}
-	if ((iParam.m_commandLineParameters.m_broadcastPort) and ((*iParam.m_commandLineParameters.m_broadcastPort) == 0))
-	{
-		ORWELL_LOG_ERROR("Broadcast port cannot be 0.");
+		for (auto aPortIter = aNullRange.first
+				; aPortIter != aNullRange.second
+				; ++aPortIter)
+		{
+			ORWELL_LOG_ERROR("The port for " << aPortIter->second << " cannot be 0.");
+		}
 		return false;
 	}
 
-
+	// @TODO: remove code related to video forwarding ?
 	//each robot needs 1 port for the video retransmission and 1 port to send commands to the associated server
 	if (iParam.m_videoPorts.size() < 2 * iParam.m_robots.size())
 	{
@@ -632,11 +673,16 @@ orwell::Server * Application::accessServer(bool const iUnsafe)
 
 void Application::initServer(Parameters const & iParam)
 {
-	ORWELL_LOG_INFO("Initialize server : publisher tcp://*:" << iParam.m_commandLineParameters.m_publisherPort << " puller tcp://*:" << iParam.m_commandLineParameters.m_pullerPort);
+	ORWELL_LOG_INFO("Initialize server : publisher tcp://*:"
+			<< iParam.m_commandLineParameters.m_publisherPort
+			<< " puller tcp://*:" << iParam.m_commandLineParameters.m_pullerPort
+			<< " replier tcp://*:" << iParam.m_commandLineParameters.m_replierPort
+			<< " agent tcp://*:" << iParam.m_commandLineParameters.m_agentPort);
 
 	std::string aAgentAddress = "tcp://*:" + boost::lexical_cast<std::string>(*iParam.m_commandLineParameters.m_agentPort);
 	std::string aPublisherAddress = "tcp://*:" + boost::lexical_cast<std::string>(*iParam.m_commandLineParameters.m_publisherPort);
 	std::string aPullerAddress = "tcp://*:" + boost::lexical_cast<std::string>(*iParam.m_commandLineParameters.m_pullerPort);
+	std::string aReplierAddress = "tcp://*:" + boost::lexical_cast<std::string>(*iParam.m_commandLineParameters.m_replierPort);
 
 	m_server = new orwell::Server(
 			m_systemProxy,
@@ -645,6 +691,7 @@ void Application::initServer(Parameters const & iParam)
 			aAgentAddress,
 			aPullerAddress,
 			aPublisherAddress,
+			aReplierAddress,
 			iParam.m_commandLineParameters.m_tickInterval.get(),
 			iParam.m_commandLineParameters.m_gameDuration.get());
 
@@ -686,10 +733,13 @@ void Application::initBroadcastServer(Parameters const & iParam)
 			"tcp://*:" + boost::lexical_cast< std::string >(*iParam.m_commandLineParameters.m_publisherPort);
 		std::string aPullerAddress =
 			"tcp://*:" + boost::lexical_cast< std::string >(*iParam.m_commandLineParameters.m_pullerPort);
+		std::string aReplierAddress =
+			"tcp://*:" + boost::lexical_cast< std::string >(*iParam.m_commandLineParameters.m_replierPort);
 		m_broadcastServer = new orwell::BroadcastServer(
 				*iParam.m_commandLineParameters.m_broadcastPort,
 				aPullerAddress,
-				aPublisherAddress);
+				aPublisherAddress,
+				aReplierAddress);
 	}
 }
 

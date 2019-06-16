@@ -9,14 +9,16 @@
 
 #include "Common.hpp"
 
-static void Application()
+static void Application(uint16_t const iAgentPort)
 {
-	system("../server_main -A 9003 --tic 10");
+	system(std::string(
+				"../server_main -A " + std::to_string(iAgentPort)
+				+ " --tic 10").c_str());
 }
 
-static void Stopper()
+static void Stopper(uint16_t const iAgentPort)
 {
-	TestAgent aTestAgent(9003);
+	TestAgent aTestAgent(iAgentPort);
 	aTestAgent.sendCommand("ping", std::string("pong"));
 	aTestAgent.sendCommand("stop application");
 }
@@ -27,11 +29,11 @@ int main()
 	log4cxx::NDC ndc("test_main");
 	ORWELL_LOG_INFO("Test starts\n");
 
-	std::thread aApplicationThread(Application);
-	std::thread aAgentThread(Stopper);
+	uint16_t const aAgentPort{9003};
+	std::thread aApplicationThread(Application, aAgentPort);
+	std::thread aAgentThread(Stopper, aAgentPort);
 	aApplicationThread.join();
 	aAgentThread.join();
 	orwell::support::GlobalLogger::Clear();
 	return 0;
 }
-

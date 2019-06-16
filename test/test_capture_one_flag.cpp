@@ -71,4 +71,3 @@ colour = -1
 	orwell::support::GlobalLogger::Clear();
 	return 0;
 }
-

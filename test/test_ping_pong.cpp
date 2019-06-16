@@ -15,6 +15,7 @@
 #include "orwell/Application.hpp"
 #include "orwell/game/Game.hpp"
 #include "orwell/support/GlobalLogger.hpp"
+#include "orwell/com/Url.hpp"
 #include "orwell/com/Sender.hpp"
 #include "orwell/com/Receiver.hpp"
 #include "orwell/com/RawMessage.hpp"
@@ -34,6 +35,7 @@ int g_status = 0;
 static void const ClientSendsPing(
 	int32_t iServerPullerPort,
 	int32_t iServerPublisherPort,
+	int32_t iServerReplierPort,
 	std::string const & iRobotId)
 {
 	using namespace orwell::com;
@@ -41,23 +43,18 @@ static void const ClientSendsPing(
 	log4cxx::NDC ndc("client");
 	zmq::context_t aContext(1);
 
-	std::string aPusherUrl = "tcp://127.0.0.1:" +
-		boost::lexical_cast<std::string>(iServerPullerPort);
-	std::string aSubscriberUrl = "tcp://127.0.0.1:" +
-		boost::lexical_cast<std::string>(iServerPublisherPort);
-
-	usleep(6 * 1000);
 	Sender aPusher(
-			aPusherUrl,
+			orwell::com::Url("tcp", "localhost", iServerPullerPort).toString(),
 			ZMQ_PUSH,
 			orwell::com::ConnectionMode::CONNECT,
 			aContext);
 	Receiver aSubscriber(
-			aSubscriberUrl,
+			orwell::com::Url("tcp", "localhost", iServerPublisherPort).toString(),
 			ZMQ_SUB,
 			orwell::com::ConnectionMode::CONNECT,
 			aContext);
-	usleep(6 * 1000);
+
+	Common::Synchronize(iServerReplierPort, aContext);
 
 	Ping aPingMessage;
 	orwell::messages::Timing * aTiming = aPingMessage.add_timing();
@@ -183,7 +180,8 @@ static void ExpectRegistered(
 
 static void proxy(
 	int32_t iServerPullerPort,
-	int32_t iServerPublisherPort)
+	int32_t iServerPublisherPort,
+	int32_t iServerReplierPort)
 {
 	log4cxx::NDC ndc("proxy");
 	ORWELL_LOG_INFO("proxy ...");
@@ -192,7 +190,6 @@ static void proxy(
 		boost::lexical_cast<std::string>(iServerPullerPort);
 	std::string aSubscriberUrl = "tcp://127.0.0.1:" +
 		boost::lexical_cast<std::string>(iServerPublisherPort);
-	usleep(6 * 1000);
 	Sender aPusher(
 			aPusherUrl,
 			ZMQ_PUSH,
@@ -203,7 +200,9 @@ static void proxy(
 			ZMQ_SUB,
 			orwell::com::ConnectionMode::CONNECT,
 			aContext);
-	usleep(6 * 1000);
+
+	Common::Synchronize(iServerReplierPort, aContext);
+
 	ExpectRegistered("jambon", aPusher, aSubscriber);
 	ORWELL_LOG_INFO("after Registered try to get Ping");
 	ExpectPing(aPusher, aSubscriber);
@@ -232,6 +231,7 @@ int main()
 	aCommandLineArguments.m_publisherPort = 9000;
 	aCommandLineArguments.m_pullerPort = 9001;
 	aCommandLineArguments.m_agentPort = 9003;
+	aCommandLineArguments.m_replierPort = 9004;
 	aCommandLineArguments.m_tickInterval = 10;
 	aCommandLineArguments.m_gameDuration = 200;
 	aCommandLineArguments.m_dryRun = false;
@@ -259,7 +259,8 @@ int main()
 	std::thread aProxyThread(
 			proxy,
 			*aParameters.m_commandLineParameters.m_pullerPort,
-			*aParameters.m_commandLineParameters.m_publisherPort);
+			*aParameters.m_commandLineParameters.m_publisherPort,
+			*aParameters.m_commandLineParameters.m_replierPort);
 	for (uint32_t i = 0 ; i < 500 ; ++i)
 	{
 		usleep(100);
@@ -272,6 +273,7 @@ int main()
 	ClientSendsPing(
 			*aParameters.m_commandLineParameters.m_pullerPort,
 			*aParameters.m_commandLineParameters.m_publisherPort,
+			*aParameters.m_commandLineParameters.m_replierPort,
 			aRobotId);
 
 	for (uint32_t i = 0 ; i < 500 ; ++i)

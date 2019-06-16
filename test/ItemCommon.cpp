@@ -12,6 +12,7 @@
 
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/com/RawMessage.hpp"
+#include "orwell/com/Url.hpp"
 #include "orwell/com/Sender.hpp"
 #include "orwell/com/Receiver.hpp"
 #include "orwell/Server.hpp"
@@ -20,30 +21,27 @@
 using namespace orwell::messages;
 
 static void const ProxySendsRobotState(
-	int32_t iServerPullerPort,
-	int32_t iServerPublisherPort,
+	int32_t iPullerPort,
+	int32_t iPublisherPort,
+	int32_t iReplierPort,
 	std::string const & iRobotId,
 	std::vector< FlagAndTime > const & iFlagsAndTimes)
 {
 	log4cxx::NDC ndc("client");
 	zmq::context_t aContext(1);
 
-	std::string aPusherUrl = "tcp://127.0.0.1:" + boost::lexical_cast<std::string>(iServerPullerPort);
-	std::string aSubscriberUrl = "tcp://127.0.0.1:" + boost::lexical_cast<std::string>(iServerPublisherPort);
-
-	usleep(6 * 1000);
-
 	orwell::com::Sender aPusher(
-			aPusherUrl,
+			orwell::com::Url("tcp", "localhost", iPullerPort).toString(),
 			ZMQ_PUSH,
 			orwell::com::ConnectionMode::CONNECT,
 			aContext);
 	orwell::com::Receiver aSubscriber(
-			aSubscriberUrl,
+			orwell::com::Url("tcp", "localhost", iPublisherPort).toString(),
 			ZMQ_SUB,
 			orwell::com::ConnectionMode::CONNECT,
 			aContext);
-	usleep(6 * 1000);
+
+	Common::Synchronize(iReplierPort, aContext);
 
 	ServerRobotState aRobotState;
 	Rfid * aRfidMessage = aRobotState.add_rfid();
@@ -131,6 +129,7 @@ ItemTester::ItemTester(
 			ProxySendsRobotState,
 			*m_parameters.m_commandLineParameters.m_pullerPort,
 			*m_parameters.m_commandLineParameters.m_publisherPort,
+			*m_parameters.m_commandLineParameters.m_replierPort,
 			aRobotId,
 			iFlagsAndTimes);
 }
@@ -144,4 +143,3 @@ void ItemTester::run()
 	m_testAgent.sendCommand("stop application");
 	m_applicationThread.join();
 }
-

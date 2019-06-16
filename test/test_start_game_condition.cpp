@@ -10,6 +10,7 @@
 
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/support/ISystemProxy.hpp"
+#include "orwell/com/Url.hpp"
 #include "orwell/com/Sender.hpp"
 #include "orwell/com/Receiver.hpp"
 #include "orwell/Server.hpp"
@@ -69,17 +70,31 @@ static void ExpectGameState(
 }
 
 
-static void client()
+static void client(
+		uint16_t const iPusherPort,
+		uint16_t const iSubscriberPort,
+		uint16_t const iFakeAgentPort)
 {
 	log4cxx::NDC ndc("client");
 	ORWELL_LOG_INFO("client ...");
 	zmq::context_t aContext(1);
-	usleep(1 * 1000);
 	ORWELL_LOG_INFO("create pusher");
-	Sender aPusher("tcp://127.0.0.1:9000", ZMQ_PUSH, orwell::com::ConnectionMode::CONNECT, aContext);
+	Sender aPusher(
+			orwell::com::Url("tcp", "localhost", iPusherPort).toString(),
+			ZMQ_PUSH,
+			orwell::com::ConnectionMode::CONNECT,
+			aContext);
 	ORWELL_LOG_INFO("create subscriber");
-	Receiver aSubscriber("tcp://127.0.0.1:9001", ZMQ_SUB, orwell::com::ConnectionMode::CONNECT, aContext);
-	usleep(1 * 1000);
+	Receiver aSubscriber(
+			orwell::com::Url("tcp", "localhost", iSubscriberPort).toString(),
+			ZMQ_SUB,
+			orwell::com::ConnectionMode::CONNECT,
+			aContext);
+
+	TestAgent aTestAgent(iFakeAgentPort);
+	ORWELL_LOG_INFO("Synchronizing ping sent");
+	aTestAgent.sendCommand("ping", std::string("pong"));
+	ORWELL_LOG_INFO("Synchronizing pong received");
 
 	Hello aHelloMessage;
 	aHelloMessage.set_name("playername");
@@ -96,18 +111,29 @@ static void client()
 
 
 static void const server(
-		std::shared_ptr< orwell::Server > ioServer)
+		std::shared_ptr< orwell::Server > ioServer,
+		uint16_t const iFakeAgentPort)
 {
 	log4cxx::NDC ndc("server");
 	ORWELL_LOG_INFO("server ...");
+	zmq::context_t aContext(1);
+	orwell::com::Socket aFakeAgentSocket(
+				orwell::com::Url("tcp", "*", iFakeAgentPort).toString(),
+				ZMQ_REP,
+				orwell::com::ConnectionMode::BIND,
+				aContext,
+				0);
+	std::string aPing;
+	aFakeAgentSocket.receiveString(aPing, true);
+	ORWELL_LOG_INFO("Synchronizing ping received");
+	aFakeAgentSocket.sendString("pong");
+	ORWELL_LOG_INFO("Synchronizing pong sent");
 	for (int i = 0 ; i < 2 ; ++i)
 	{
 		usleep(3 * 1000); // sleep for 3 ms
 		ORWELL_LOG_INFO("server loop " << i);
 		ioServer->loopUntilOneMessageIsProcessed();
 	}
-	ORWELL_LOG_INFO("dirty sleep to let python threads time to start.");
-	usleep(2000);
 	ORWELL_LOG_INFO("quit server");
 }
 
@@ -119,6 +145,9 @@ int main()
 			"test_start_game_condition.log",
 			true);
 	log4cxx::NDC ndc("test_start_game_condition");
+	uint16_t const aPusherPort(9000);
+	uint16_t const aSubscriberPort(9001);
+	uint16_t const aFakeAgentPort(9004);
 	FakeAgentProxy aFakeAgentProxy;
 	orwell::game::Ruleset aRuleset;
 	aRuleset.m_scoreToWin = 1;
@@ -131,8 +160,9 @@ int main()
 			aFakeAgentProxy,
 			aRuleset,
 			"tcp://*:9003",
-			"tcp://*:9000",
-			"tcp://*:9001");
+			orwell::com::Url("tcp", "*", aPusherPort).toString(),
+			orwell::com::Url("tcp", "*", aSubscriberPort).toString(),
+			"tcp://*:9002");
 	ORWELL_LOG_INFO("server created");
 	std::vector< std::string > aRobots = {"Gipsy Danger"};
 	std::string const aTeamName("TEAM");
@@ -140,11 +170,14 @@ int main()
 	aServer->accessContext().addRobot(aRobots[0], aTeamName, 8001, 8004, "robot1");
 	aServer->accessContext().accessRobot(aRobots[0])->setHasRealRobot(true);
 	ORWELL_LOG_INFO("robot added 1");
-	std::thread aServerThread(server, aServer);
-	std::thread aClientThread(client);
+	std::thread aServerThread(server, aServer, aFakeAgentPort);
+	std::thread aClientThread(
+			client,
+			aPusherPort,
+			aSubscriberPort,
+			aFakeAgentPort);
 	aClientThread.join();
 	aServerThread.join();
 	orwell::support::GlobalLogger::Clear();
 	return g_status;
 }
-
