@@ -40,7 +40,6 @@ using namespace log4cxx;
 
 using namespace orwell::com;
 using namespace orwell::messages;
-using namespace std;
 
 static orwell::BroadcastServer * ServerPtr;
 
@@ -239,6 +238,7 @@ int main(int argc, const char * argv [])
 	std::string const aPullerUrl("tcp://*:9800");
 	std::string const aPublisherUrl("tcp://*:9991");
 	std::string const aRequestUrl("tcp://*:9992");
+	std::string const aAgentUrl("tcp://*:9993");
 	
 	// we want to stop the server when we receive SIGCHLD
 	// this will be received when the child exits
@@ -259,7 +259,7 @@ int main(int argc, const char * argv [])
 		default:
 			// parent
 			ServerPtr = new orwell::BroadcastServer(
-					9080, aPullerUrl, aPublisherUrl, aRequestUrl);
+					9080, aPullerUrl, aPublisherUrl, aRequestUrl, aAgentUrl);
 			simulateServer();
 			ORWELL_LOG_INFO("Delete server in parent");
 			delete ServerPtr;
