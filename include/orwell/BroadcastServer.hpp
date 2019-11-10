@@ -13,7 +13,7 @@ public:
 			std::string const & iPullerUrl,
 			std::string const & iPublisherUrl,
 			std::string const & iReplierUrl,
-			std::string const & iAgenUrl);
+			std::string const & iAgentUrl);
 
 	~BroadcastServer();
 
