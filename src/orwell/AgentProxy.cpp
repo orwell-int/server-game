@@ -663,7 +663,7 @@ void AgentProxy::getGame(
 			oValue = boost::lexical_cast< std::string >(
 					m_application.accessServer()
 						->accessContext().getDuration().total_seconds());
-			ORWELL_LOG_INFO("running = " << oValue);
+			ORWELL_LOG_INFO("duration = " << oValue);
 		}
 		else
 		{
