@@ -23,13 +23,15 @@ BroadcastServer::BroadcastServer(
 		uint16_t const iBroadcastPort,
 		std::string const & iPullerUrl,
 		std::string const & iPublisherUrl,
-		std::string const & iReplierUrl)
+		std::string const & iReplierUrl,
+		std::string const & iAgentUrl)
 	: _mainLoopRunning(false)
 	, _forcedStop(false)
 	, m_broadcastPort(iBroadcastPort)
 	, _pullerUrl(iPullerUrl)
 	, _publisherUrl(iPublisherUrl)
 	, _replierUrl(iReplierUrl)
+	, _agentUrl(iAgentUrl)
 {
 }
 
@@ -121,6 +123,12 @@ void BroadcastServer::runBroadcastReceiver()
 			aOstream << (uint8_t) _replierUrl.size();         // size of REQ/REP url      ( 1 byte )
 			aOstream << (const char *) _replierUrl.c_str();   // Address of REQ/REP       (12 bytes)
 			// the rumour said 32 bytes was the limit but this still works even if bigger
+		}
+		if (aVersion >= 2)
+		{
+			aOstream << (uint8_t) 0xA3;                       // A3 is the agent        ( 1 byte )
+			aOstream << (uint8_t) _agentUrl.size();           // size of agent url      ( 1 byte )
+			aOstream << (const char *) _agentUrl.c_str();     // Address of agent       (12 bytes)
 		}
 		aOstream << (uint8_t) 0x00;                       // End of message               ( 1 byte )
 

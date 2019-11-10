@@ -735,11 +735,14 @@ void Application::initBroadcastServer(Parameters const & iParam)
 			"tcp://*:" + boost::lexical_cast< std::string >(*iParam.m_commandLineParameters.m_pullerPort);
 		std::string aReplierAddress =
 			"tcp://*:" + boost::lexical_cast< std::string >(*iParam.m_commandLineParameters.m_replierPort);
+		std::string aAgentAddress =
+			"tcp://*:" + boost::lexical_cast< std::string >(*iParam.m_commandLineParameters.m_agentPort);
 		m_broadcastServer = new orwell::BroadcastServer(
 				*iParam.m_commandLineParameters.m_broadcastPort,
 				aPullerAddress,
 				aPublisherAddress,
-				aReplierAddress);
+				aReplierAddress,
+				aAgentAddress);
 	}
 }
 
