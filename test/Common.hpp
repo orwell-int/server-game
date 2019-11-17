@@ -260,14 +260,14 @@ public:
 class MinimalistPrinter : public ::testing::EmptyTestEventListener
 {
 	// Called before a test starts.
-	virtual void OnTestStart(::testing::TestInfo const& test_info)
+	void OnTestStart(::testing::TestInfo const& test_info) override
 	{
 		ORWELL_LOG_INFO("Test starts (" << test_info.test_case_name() << "."
 				<< test_info.name()<< ")\n");
 	}
 
 	// Called after a failed assertion or a SUCCESS().
-	virtual void OnTestPartResult(const ::testing::TestPartResult& test_part_result)
+	void OnTestPartResult(const ::testing::TestPartResult& test_part_result) override
 	{
 		if (test_part_result.failed())
 		{
@@ -278,7 +278,7 @@ class MinimalistPrinter : public ::testing::EmptyTestEventListener
 	}
 
 	// Called after a test ends.
-	virtual void OnTestEnd(const ::testing::TestInfo& test_info)
+	void OnTestEnd(const ::testing::TestInfo& test_info) override
 	{
 		ORWELL_LOG_INFO("Test ends (" << test_info.test_case_name() << "."
 				<< test_info.name()<< ")\n");
