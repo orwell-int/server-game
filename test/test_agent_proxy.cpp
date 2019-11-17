@@ -17,135 +17,28 @@
 
 #include "Common.hpp"
 
-bool gOK;
 uint32_t const gGameDuration = 10;
 
-static void test_1(
-		orwell::Application & ioApplication,
-		uint16_t const iAgentPort)
+class TestAgentProxyJson: public ::testing::Test
 {
-	TestAgent aTestAgent(iAgentPort);
-	gOK = false;
-	ORWELL_LOG_DEBUG("test_1");
-	orwell::AgentProxy aAgentProxy(ioApplication);
-	std::string aAgentReply;
-	std::string aTeamList;
-	std::string aPlayerList;
-	std::string aRobotList;
-	std::string const aTeamName = "TEAM";
-	assert(aAgentProxy.step("add team " + aTeamName, aAgentReply));
-	assert(aAgentProxy.step("add player Player1", aAgentReply));
-	assert(aAgentProxy.step("add robot Robot1 TEAM", aAgentReply));
-	// list team {
-	assert(aAgentProxy.step("list team", aTeamList));
-	ORWELL_LOG_DEBUG("aTeamList = " << aTeamList);
-	std::string aExpectedTeamList(R"(Teams:
-	TEAM
-)");
-	ORWELL_ASSERT(aExpectedTeamList, aTeamList, "list team KO");
-	// } list team
-	// list player {
-	assert(aAgentProxy.step("list player", aPlayerList));
-	ORWELL_LOG_DEBUG("aPlayerList = " << aPlayerList);
-	std::string aExpectedPlayerList(R"(Players:
-	Player1 -> name = Player1 ; robot = 
-)");
-	ORWELL_ASSERT(aExpectedPlayerList, aPlayerList, "list player KO");
-	// } list player
-	// list robot {
-	assert(aAgentProxy.step("list robot", aRobotList));
-	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
-	std::string aExpectedRobotList(R"(Robots:
-	Robot1 -> name = Robot1 ; not registered ; video_url =  ; player = 
-)");
-	ORWELL_ASSERT(aExpectedRobotList, aRobotList, "list robot KO");
-	// } list robot
-	// register robot {
-	assert(aAgentProxy.step("register robot Robot1", aAgentReply));
-	// make sure that Robot1 is now registered
-	assert(aAgentProxy.step("list robot", aRobotList));
-	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
-	aExpectedRobotList = (R"(Robots:
-	Robot1 -> name = Robot1 ; registered ; video_url =  ; player = 
-)");
-	ORWELL_ASSERT(aExpectedRobotList, aRobotList, "register KO");
-	// } register robot
-	// set robot {
-	assert(aAgentProxy.step("set robot Robot1 video_url titi", aAgentReply));
-	// } set robot
-	// get / set team score {
-	std::string const aScore = "2";
-	assert(aAgentProxy.step("get team " + aTeamName + " score 0", aAgentReply));
-	assert(aAgentProxy.step("set team " + aTeamName + " score " + aScore, aAgentReply));
-	assert(aAgentProxy.step("get team " + aTeamName + " score " + aScore, aAgentReply));
-	ASSERT_EQ(aScore, aAgentReply);
-	// } get / set team score
-	// unregister robot {
-	assert(aAgentProxy.step("unregister robot Robot1", aAgentReply));
-	// make sure that Robot1 is now unregistered
-	assert(aAgentProxy.step("list robot", aRobotList));
-	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
-	aExpectedRobotList = (R"(Robots:
-	Robot1 -> name = Robot1 ; not registered ; video_url = titi ; player = 
-)");
-	ORWELL_ASSERT(aExpectedRobotList, aRobotList, "unregister KO");
-	// } unregister robot
-	assert(aAgentProxy.step("start game", aAgentReply));
-	assert(aAgentProxy.step("stop game", aAgentReply));
-	assert(aAgentProxy.step("remove robot Robot1", aAgentReply));
-	// add robot with space in the name {
-	assert(aAgentProxy.step("add robot \"Robot One\" TEAM", aAgentReply));
-	assert(aAgentProxy.step("list robot", aRobotList));
-	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
-	std::string aExpectedRobotListWithSpace(R"(Robots:
-	Robot One -> name = Robot One ; not registered ; video_url =  ; player = 
-)");
-	ORWELL_ASSERT(aExpectedRobotListWithSpace, aRobotList, "list robot KO");
-	assert(aAgentProxy.step("remove robot \"Robot One\"", aAgentReply));
-	// } add robot with space in the name
-	assert(aAgentProxy.step("remove player Player1", aAgentReply));
-	assert(aAgentProxy.step("remove team TEAM", aAgentReply));
-	assert(aAgentProxy.step("list team", aTeamList));
-	ORWELL_LOG_DEBUG("aTeamList = " << aTeamList);
-	aExpectedTeamList = (R"(Teams:
-)");
-	ORWELL_ASSERT(aExpectedTeamList, aTeamList, "empty team KO");
-	assert(aAgentProxy.step("list player", aPlayerList));
-	ORWELL_LOG_DEBUG("aPlayerList = " << aPlayerList);
-	aExpectedPlayerList = (R"(Players:
-)");
-	ORWELL_ASSERT(aExpectedPlayerList, aPlayerList, "empty player KO");
-	assert(aAgentProxy.step("list robot", aRobotList));
-	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
-	aExpectedRobotList = (R"(Robots:
-)");
-	// get and set game duration {
-	assert(aAgentProxy.step("get game duration", aAgentReply));
-	ASSERT_EQ(boost::lexical_cast< std::string >(gGameDuration), aAgentReply);
-	std::string const aNewGameDuration = "30";
-	assert(aAgentProxy.step("set game duration " + aNewGameDuration, aAgentReply));
-	assert(aAgentProxy.step("get game duration", aAgentReply));
-	ASSERT_EQ(aNewGameDuration, aAgentReply);
-	// } get and set game duration
-	ORWELL_ASSERT(aExpectedRobotList, aRobotList, "empty robot KO");
-	assert(aAgentProxy.step("stop application", aAgentReply));
-	gOK = true;
-}
-
-
-int main()
-{
-	orwell::support::GlobalLogger::Create(
-			"test_agent_proxy", "test_agent_proxy.log", true);
-	log4cxx::NDC ndc("test_agent_proxy");
-	ORWELL_LOG_INFO("Test starts\n");
+protected:
+	static void SetUpTestSuite()
 	{
-		orwell::Application & aApplication = orwell::Application::GetInstance();
+	}
+
+	static void TearDownTestSuite()
+	{
+	}
+
+	TestAgentProxyJson()
+		: m_application(orwell::Application::GetInstance())
+		, m_agentPort(9003)
+	{
 
 		orwell::Application::CommandLineParameters aCommandLineArguments;
 		aCommandLineArguments.m_publisherPort = 9001;
 		aCommandLineArguments.m_pullerPort = 9000;
-		aCommandLineArguments.m_agentPort = 9003;
+		aCommandLineArguments.m_agentPort = m_agentPort;
 		aCommandLineArguments.m_tickInterval = 500;
 		aCommandLineArguments.m_gameDuration = 300;
 		aCommandLineArguments.m_dryRun = true;
@@ -159,10 +52,162 @@ int main()
 				aArguments.m_argc,
 				aArguments.m_argv,
 				aParameters);
-		aApplication.run(aParameters);
-		test_1(aApplication, *aCommandLineArguments.m_agentPort);
-		assert(gOK);
+		m_application.run(aParameters);
 	}
-	orwell::support::GlobalLogger::Clear();
-	return 0;
+
+	~TestAgentProxyJson()
+	{
+	}
+
+	orwell::Application & m_application;
+	uint16_t const m_agentPort;
+};
+
+TEST_F(TestAgentProxyJson, Test1)
+{
+	TestAgent aTestAgent(m_agentPort);
+	ORWELL_LOG_DEBUG("test_1");
+	orwell::AgentProxy aAgentProxy(m_application);
+	std::string aAgentReply;
+	std::string aTeamList;
+	std::string aPlayerList;
+	std::string aRobotList;
+	std::string const aTeamName = "TEAM";
+	EXPECT_TRUE(aAgentProxy.step("add team " + aTeamName, aAgentReply));
+	EXPECT_TRUE(aAgentProxy.step("add player Player1", aAgentReply));
+	EXPECT_TRUE(aAgentProxy.step("add robot Robot1 TEAM", aAgentReply));
+	// list team {
+	EXPECT_TRUE(aAgentProxy.step("list team", aTeamList));
+	ORWELL_LOG_DEBUG("aTeamList = " << aTeamList);
+	std::string aExpectedTeamList(R"(Teams:
+	TEAM
+)");
+	ASSERT_EQ(aTeamList, aExpectedTeamList) << "list team KO";
+	// } list team
+	// list player {
+	EXPECT_TRUE(aAgentProxy.step("list player", aPlayerList));
+	ORWELL_LOG_DEBUG("aPlayerList = " << aPlayerList);
+	std::string aExpectedPlayerList(R"(Players:
+	Player1 -> name = Player1 ; robot = 
+)");
+	EXPECT_EQ(aPlayerList, aExpectedPlayerList) << "list player KO";
+	// } list player
+	// list robot {
+	EXPECT_TRUE(aAgentProxy.step("list robot", aRobotList));
+	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
+	std::string aExpectedRobotList(R"(Robots:
+	Robot1 -> name = Robot1 ; not registered ; video_url =  ; player = 
+)");
+	EXPECT_EQ(aRobotList, aExpectedRobotList) << "list robot KO";
+	// } list robot
+	// register robot {
+	EXPECT_TRUE(aAgentProxy.step("register robot Robot1", aAgentReply));
+	// make sure that Robot1 is now registered
+	EXPECT_TRUE(aAgentProxy.step("list robot", aRobotList));
+	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
+	aExpectedRobotList = (R"(Robots:
+	Robot1 -> name = Robot1 ; registered ; video_url =  ; player = 
+)");
+	EXPECT_EQ(aRobotList, aExpectedRobotList) << "register KO";
+	// } register robot
+	// set robot {
+	EXPECT_TRUE(aAgentProxy.step("set robot Robot1 video_url titi", aAgentReply));
+	// } set robot
+	// get / set team score {
+	std::string const aScore = "2";
+	EXPECT_TRUE(aAgentProxy.step("get team " + aTeamName + " score 0", aAgentReply));
+	EXPECT_TRUE(aAgentProxy.step("set team " + aTeamName + " score " + aScore, aAgentReply));
+	EXPECT_TRUE(aAgentProxy.step("get team " + aTeamName + " score " + aScore, aAgentReply));
+	EXPECT_EQ(aScore, aAgentReply);
+	// } get / set team score
+	// unregister robot {
+	EXPECT_TRUE(aAgentProxy.step("unregister robot Robot1", aAgentReply));
+	// make sure that Robot1 is now unregistered
+	EXPECT_TRUE(aAgentProxy.step("list robot", aRobotList));
+	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
+	aExpectedRobotList = (R"(Robots:
+	Robot1 -> name = Robot1 ; not registered ; video_url = titi ; player = 
+)");
+	EXPECT_EQ(aRobotList, aExpectedRobotList) << "unregister KO";
+	// } unregister robot
+	EXPECT_TRUE(aAgentProxy.step("start game", aAgentReply));
+	EXPECT_TRUE(aAgentProxy.step("stop game", aAgentReply));
+	EXPECT_TRUE(aAgentProxy.step("remove robot Robot1", aAgentReply));
+	// add robot with space in the name {
+	EXPECT_TRUE(aAgentProxy.step("add robot \"Robot One\" TEAM", aAgentReply));
+	EXPECT_TRUE(aAgentProxy.step("list robot", aRobotList));
+	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
+	std::string aExpectedRobotListWithSpace(R"(Robots:
+	Robot One -> name = Robot One ; not registered ; video_url =  ; player = 
+)");
+	EXPECT_EQ(aRobotList, aExpectedRobotListWithSpace) << "list robot KO";
+	EXPECT_TRUE(aAgentProxy.step("remove robot \"Robot One\"", aAgentReply));
+	// } add robot with space in the name
+	EXPECT_TRUE(aAgentProxy.step("remove player Player1", aAgentReply));
+	EXPECT_TRUE(aAgentProxy.step("remove team TEAM", aAgentReply));
+	EXPECT_TRUE(aAgentProxy.step("list team", aTeamList));
+	ORWELL_LOG_DEBUG("aTeamList = " << aTeamList);
+	aExpectedTeamList = (R"(Teams:
+)");
+	EXPECT_EQ(aTeamList, aExpectedTeamList) << "empty team KO";
+	EXPECT_TRUE(aAgentProxy.step("list player", aPlayerList));
+	ORWELL_LOG_DEBUG("aPlayerList = " << aPlayerList);
+	aExpectedPlayerList = (R"(Players:
+)");
+	EXPECT_EQ(aPlayerList, aExpectedPlayerList) << "empty player KO";
+	EXPECT_TRUE(aAgentProxy.step("list robot", aRobotList));
+	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
+	aExpectedRobotList = (R"(Robots:
+)");
+	// get and set game duration {
+	EXPECT_TRUE(aAgentProxy.step("get game duration", aAgentReply));
+	ASSERT_EQ(boost::lexical_cast< std::string >(gGameDuration), aAgentReply);
+	std::string const aNewGameDuration = "30";
+	EXPECT_TRUE(aAgentProxy.step("set game duration " + aNewGameDuration, aAgentReply));
+	EXPECT_TRUE(aAgentProxy.step("get game duration", aAgentReply));
+	ASSERT_EQ(aNewGameDuration, aAgentReply);
+	// } get and set game duration
+	EXPECT_EQ(aRobotList, aExpectedRobotList) << "empty robot KO";
+	EXPECT_TRUE(aAgentProxy.step("stop application", aAgentReply));
+}
+
+class MinimalistPrinter : public ::testing::EmptyTestEventListener
+{
+	// Called before a test starts.
+	virtual void OnTestStart(::testing::TestInfo const& test_info)
+	{
+		ORWELL_LOG_INFO("Test starts (" << test_info.test_case_name() << "."
+				<< test_info.name()<< ")\n");
+	}
+
+	// Called after a failed assertion or a SUCCESS().
+	virtual void OnTestPartResult(const ::testing::TestPartResult& test_part_result)
+	{
+		if (test_part_result.failed())
+		{
+			ORWELL_LOG_ERROR("Failure in " << test_part_result.file_name()
+					<< ":" << test_part_result.line_number() << "\n"
+					<< test_part_result.summary());
+		}
+	}
+
+	// Called after a test ends.
+	virtual void OnTestEnd(const ::testing::TestInfo& test_info)
+	{
+		ORWELL_LOG_INFO("Test ends (" << test_info.test_case_name() << "."
+				<< test_info.name()<< ")\n");
+	}
+};
+
+int main(int argc, char **argv)
+{
+	orwell::support::GlobalLogger::Create(
+			"test_agent_proxy", "test_agent_proxy.log", true);
+	log4cxx::NDC ndc("test_agent_proxy");
+	::testing::InitGoogleTest(&argc, argv);
+	::testing::TestEventListeners& listeners =
+		::testing::UnitTest::GetInstance()->listeners();
+	// Adds a listener to the end.  googletest takes the ownership.
+	listeners.Append(new MinimalistPrinter);
+	return RUN_ALL_TESTS();
 }
