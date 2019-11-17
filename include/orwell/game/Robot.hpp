@@ -40,11 +40,11 @@ public:
 	Team const & getTeam() const;
 
 	void setHasRealRobot(bool const iHasRealRobot);
-	bool const getHasRealRobot() const;
+	bool getHasRealRobot() const;
 
 	void setPlayer(std::shared_ptr< Player > const iPlayer);
-	std::shared_ptr< Player > const getPlayer() const;
-	bool const getHasPlayer() const;
+	std::shared_ptr< Player > getPlayer() const;
+	bool getHasPlayer() const;
 
 	void setVideoUrl(std::string const & iVideoUrl);
 	std::string const & getVideoUrl() const;
@@ -56,7 +56,7 @@ public:
 	std::string const & getName() const;
 	std::string const & getRobotId() const;
 
-	bool const getIsAvailable() const;
+	bool getIsAvailable() const;
 
 	void fire();
 	void stop();

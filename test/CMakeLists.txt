@@ -21,6 +21,7 @@ include_directories(
 	${LOG4CXX_INCLUDE_DIR}
 	${CMAKE_SOURCE_DIR}/third_party/googletest/googletest/include
 	${CMAKE_SOURCE_DIR}/third_party/googletest/googlemock/include
+	${CMAKE_SOURCE_DIR}/third_party/nlohmann_json/include
 	)
 
 
@@ -28,6 +29,7 @@ include_directories(
 add_library(orwell_test SHARED ${SOURCES})
 target_link_libraries(
 	orwell_test
+	PUBLIC
 	orwell_server_game
 	gtest_main
 	gmock_main
@@ -37,7 +39,9 @@ target_link_libraries(
 	${Boost_LIBRARIES}
 	${LOG4CXX_LIBRARIES}
 	${OpenCV_LIBS}
-	${CMAKE_THREAD_LIBS_INIT})
+	${CMAKE_THREAD_LIBS_INIT}
+	PRIVATE
+	nlohmann_json::nlohmann_json)
 
 
 include_directories(

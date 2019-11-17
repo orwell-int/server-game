@@ -4,18 +4,139 @@
 #include "orwell/Server.hpp"
 #include "orwell/game/Player.hpp"
 #include "orwell/game/Robot.hpp"
-#include "orwell/com/Url.hpp"
 
 #include "orwell/support/GlobalLogger.hpp"
 
 #include <sstream>
 #include <functional>
 
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
 namespace orwell
 {
 
+enum class OutputMode
+{
+	kText,
+	kJson,
+};
+
+class SwitchOutputMode
+{
+public:
+	explicit SwitchOutputMode(OutputMode const iOutputMode, orwell::AgentProxy & ioAgentProxy)
+		: m_agentProxy(ioAgentProxy)
+		, m_previousOutputMode(m_agentProxy.getOutputMode())
+		, m_newOutputMode(iOutputMode)
+		, m_restored(false)
+	{
+		m_agentProxy.setOutputMode(m_newOutputMode);
+	}
+
+	~SwitchOutputMode()
+	{
+		restore();
+	}
+
+	void restore()
+	{
+		if (not m_restored)
+		{
+			m_agentProxy.setOutputMode(m_previousOutputMode);
+			m_restored = true;
+		}
+	}
+
+private:
+	orwell::AgentProxy & m_agentProxy;
+	OutputMode const m_previousOutputMode;
+	OutputMode const m_newOutputMode;
+	bool m_restored;
+};
+
+std::ostream & operator<<(std::ostream & ioStream, OutputMode const iOutputMode)
+{
+	switch (iOutputMode)
+	{
+		case OutputMode::kText:
+		{
+			ioStream << "text";
+			break;
+		}
+		case OutputMode::kJson:
+		{
+			ioStream << "json";
+			break;
+		}
+	}
+	return ioStream;
+}
+
+struct SimpleRobot
+{
+	SimpleRobot(std::shared_ptr< game::Robot > const iRobot)
+		: m_name(iRobot->getName())
+		, m_registered(iRobot->getHasRealRobot())
+		, m_videoUrl(iRobot->getVideoUrl())
+		, m_player(iRobot->getHasPlayer() ? iRobot->getPlayer()->getName() : "")
+	{
+	}
+
+	SimpleRobot(SimpleRobot const & iOther)
+		: m_name(iOther.m_name)
+		, m_registered(iOther.m_registered)
+		, m_videoUrl(iOther.m_videoUrl)
+		, m_player(iOther.m_player)
+	{
+	}
+
+	std::string const m_name;
+	bool const m_registered;
+	std::string const m_videoUrl;
+	std::string const m_player;
+};
+
+struct SimplePlayer
+{
+	SimplePlayer(std::shared_ptr< game::Player > const iPlayer)
+		: m_name(iPlayer->getName())
+		, m_robot(iPlayer->getHasRobot() ? iPlayer->getRobot()->getName() : "")
+	{
+	}
+
+	SimplePlayer(SimplePlayer const & iOther)
+		: m_name(iOther.m_name)
+		, m_robot(iOther.m_robot)
+	{
+	}
+
+	std::string const m_name;
+	std::string const m_robot;
+};
+
+void to_json(json & oJson, SimplePlayer const & iPlayer)
+{
+	oJson = json {
+			{"name", iPlayer.m_name},
+			{"robot", iPlayer.m_robot}
+	};
+}
+
+void to_json(json & oJson, SimpleRobot const & iRobot)
+{
+	oJson = json {
+			{"name", iRobot.m_name},
+			{"registered", iRobot.m_registered},
+			{"video_url", iRobot.m_videoUrl},
+			{"player", iRobot.m_player}
+	};
+}
+
 AgentProxy::AgentProxy(orwell::Application & ioApplication)
 	: m_application(ioApplication)
+	, m_outputMode(OutputMode::kText)
 {
 }
 
@@ -149,204 +270,215 @@ bool AgentProxy::step(
 			}
 		}
 	}
-	else if ("start" == aAction)
+	else if (OutputMode::kText == m_outputMode)
 	{
-		std::string aObject;
-		aStream >> aObject;
-		if ("game" == aObject)
+		if ("start" == aAction)
 		{
-			Dispatch(
-					aStream,
-					std::bind(&AgentProxy::startGame, this),
-					aResult,
-					ioReply);
+			std::string aObject;
+			aStream >> aObject;
+			if ("game" == aObject)
+			{
+				Dispatch(
+						aStream,
+						std::bind(&AgentProxy::startGame, this),
+						aResult,
+						ioReply);
+			}
 		}
-	}
-	else if ("stop" == aAction)
-	{
-		std::string aObject;
-		aStream >> aObject;
-		if ("application" == aObject)
+		else if ("stop" == aAction)
 		{
-			Dispatch(
-					aStream,
-					std::bind(&AgentProxy::stopApplication, this),
-					aResult,
-					ioReply);
+			std::string aObject;
+			aStream >> aObject;
+			if ("application" == aObject)
+			{
+				Dispatch(
+						aStream,
+						std::bind(&AgentProxy::stopApplication, this),
+						aResult,
+						ioReply);
+			}
+			else if ("game" == aObject)
+			{
+				Dispatch(
+						aStream,
+						std::bind(&AgentProxy::stopGame, this),
+						aResult,
+						ioReply);
+			}
 		}
-		else if ("game" == aObject)
+		else if ("add" == aAction)
 		{
-			Dispatch(
-					aStream,
-					std::bind(&AgentProxy::stopGame, this),
-					aResult,
-					ioReply);
+			std::string aObject;
+			aStream >> aObject;
+			if ("team" == aObject)
+			{
+				DispatchArgument(
+						aStream,
+						std::bind(&AgentProxy::addTeam, this, _1),
+						aResult,
+						ioReply);
+			}
+			else if ("robot" == aObject)
+			{
+				std::string aName;
+				ReadName(aStream, aName);
+				std::string aTeam;
+				ReadName(aStream, aTeam);
+				Dispatch(
+						aStream,
+						std::bind(&AgentProxy::addRobot, this, aName, aTeam),
+						aResult,
+						ioReply);
+			}
+			else if ("player" == aObject)
+			{
+				DispatchArgument(
+						aStream,
+						std::bind(&AgentProxy::addPlayer, this, _1),
+						aResult,
+						ioReply);
+			}
 		}
-	}
-	else if ("add" == aAction)
-	{
-		std::string aObject;
-		aStream >> aObject;
-		if ("team" == aObject)
+		else if ("remove" == aAction)
 		{
-			DispatchArgument(
-					aStream,
-					std::bind(&AgentProxy::addTeam, this, _1),
-					aResult,
-					ioReply);
+			std::string aObject;
+			aStream >> aObject;
+			if ("team" == aObject)
+			{
+				DispatchArgument(
+						aStream,
+						std::bind(&AgentProxy::removeTeam, this, _1),
+						aResult,
+						ioReply);
+			}
+			else if ("robot" == aObject)
+			{
+				DispatchArgument(
+						aStream,
+						std::bind(&AgentProxy::removeRobot, this, _1),
+						aResult,
+						ioReply);
+			}
+			else if ("player" == aObject)
+			{
+				DispatchArgument(
+						aStream,
+						std::bind(&AgentProxy::removePlayer, this, _1),
+						aResult,
+						ioReply);
+			}
 		}
-		else if ("robot" == aObject)
+		else if ("register" == aAction)
 		{
+			std::string aObject;
+			aStream >> aObject;
+			if ("robot" == aObject)
+			{
+				DispatchArgument(
+						aStream,
+						std::bind(&AgentProxy::registerRobot, this, _1),
+						aResult,
+						ioReply);
+			}
+		}
+		else if ("unregister" == aAction)
+		{
+			std::string aObject;
+			aStream >> aObject;
+			if ("robot" == aObject)
+			{
+				DispatchArgument(
+						aStream,
+						std::bind(&AgentProxy::unregisterRobot, this, _1),
+						aResult,
+						ioReply);
+			}
+		}
+		else if ("set" == aAction)
+		{
+			std::string aObject;
+			aStream >> aObject;
+			if ("game" == aObject)
+			{
+				std::string aProperty;
+				aStream >> aProperty;
+				uint32_t aValue;
+				aStream >> aValue;
+				Dispatch(
+						aStream,
+						std::bind(&AgentProxy::setGame, this, aProperty, aValue),
+						aResult,
+						ioReply);
+			}
+			else if ("robot" == aObject)
+			{
+				std::string aName;
+				ReadName(aStream, aName);
+				std::string aProperty;
+				aStream >> aProperty;
+				std::string aValue;
+				aStream >> aValue;
+				Dispatch(
+						aStream,
+						std::bind(&AgentProxy::setRobot, this, aName, aProperty, aValue),
+						aResult,
+						ioReply);
+			}
+			else if ("team" == aObject)
+			{
+				std::string aName;
+				ReadName(aStream, aName);
+				std::string aProperty;
+				aStream >> aProperty;
+				std::string aValue;
+				aStream >> aValue;
+				Dispatch(
+						aStream,
+						std::bind(&AgentProxy::setTeam, this, aName, aProperty, aValue),
+						aResult,
+						ioReply);
+			}
+		}
+		else if ("get" == aAction)
+		{
+			std::string aObject;
+			aStream >> aObject;
 			std::string aName;
-			ReadName(aStream, aName);
-			std::string aTeam;
-			ReadName(aStream, aTeam);
-			Dispatch(
-					aStream,
-					std::bind(&AgentProxy::addRobot, this, aName, aTeam),
-					aResult,
-					ioReply);
-		}
-		else if ("player" == aObject)
-		{
-			DispatchArgument(
-					aStream,
-					std::bind(&AgentProxy::addPlayer, this, _1),
-					aResult,
-					ioReply);
-		}
-	}
-	else if ("remove" == aAction)
-	{
-		std::string aObject;
-		aStream >> aObject;
-		if ("team" == aObject)
-		{
-			DispatchArgument(
-					aStream,
-					std::bind(&AgentProxy::removeTeam, this, _1),
-					aResult,
-					ioReply);
-		}
-		else if ("robot" == aObject)
-		{
-			DispatchArgument(
-					aStream,
-					std::bind(&AgentProxy::removeRobot, this, _1),
-					aResult,
-					ioReply);
-		}
-		else if ("player" == aObject)
-		{
-			DispatchArgument(
-					aStream,
-					std::bind(&AgentProxy::removePlayer, this, _1),
-					aResult,
-					ioReply);
-		}
-	}
-	else if ("register" == aAction)
-	{
-		std::string aObject;
-		aStream >> aObject;
-		if ("robot" == aObject)
-		{
-			DispatchArgument(
-					aStream,
-					std::bind(&AgentProxy::registerRobot, this, _1),
-					aResult,
-					ioReply);
-		}
-	}
-	else if ("unregister" == aAction)
-	{
-		std::string aObject;
-		aStream >> aObject;
-		if ("robot" == aObject)
-		{
-			DispatchArgument(
-					aStream,
-					std::bind(&AgentProxy::unregisterRobot, this, _1),
-					aResult,
-					ioReply);
-		}
-	}
-	else if ("set" == aAction)
-	{
-		std::string aObject;
-		aStream >> aObject;
-		if ("game" == aObject)
-		{
+			if (("robot" == aObject) or ("team" == aObject))
+			{
+				ReadName(aStream, aName);
+			}
 			std::string aProperty;
 			aStream >> aProperty;
-			uint32_t aValue;
-			aStream >> aValue;
-			Dispatch(
-					aStream,
-					std::bind(&AgentProxy::setGame, this, aProperty, aValue),
-					aResult,
-					ioReply);
+			if ("robot" == aObject)
+			{
+				getRobot(aName, aProperty, ioReply);
+				aResult = true;
+			}
+			else if ("team" == aObject)
+			{
+				getTeam(aName, aProperty, ioReply);
+				aResult = true;
+			}
+			else if ("game" == aObject)
+			{
+				getGame(aProperty, ioReply);
+				aResult = true;
+			}
 		}
-		else if ("robot" == aObject)
+		else if ("ping" == aAction)
 		{
-			std::string aName;
-			ReadName(aStream, aName);
-			std::string aProperty;
-			aStream >> aProperty;
-			std::string aValue;
-			aStream >> aValue;
-			Dispatch(
-					aStream,
-					std::bind(&AgentProxy::setRobot, this, aName, aProperty, aValue),
-					aResult,
-					ioReply);
-		}
-		else if ("team" == aObject)
-		{
-			std::string aName;
-			ReadName(aStream, aName);
-			std::string aProperty;
-			aStream >> aProperty;
-			std::string aValue;
-			aStream >> aValue;
-			Dispatch(
-					aStream,
-					std::bind(&AgentProxy::setTeam, this, aName, aProperty, aValue),
-					aResult,
-					ioReply);
-		}
-	}
-	else if ("get" == aAction)
-	{
-		std::string aObject;
-		aStream >> aObject;
-		std::string aName;
-		if (("robot" == aObject) or ("team" == aObject))
-		{
-			ReadName(aStream, aName);
-		}
-		std::string aProperty;
-		aStream >> aProperty;
-		if ("robot" == aObject)
-		{
-			getRobot(aName, aProperty, ioReply);
+			ioReply = "pong";
 			aResult = true;
 		}
-		else if ("team" == aObject)
+		else if ("json" == aAction)
 		{
-			getTeam(aName, aProperty, ioReply);
-			aResult = true;
+			SwitchOutputMode aSentinel(OutputMode::kJson, *this);
+			std::string const aNewCommand(iCommand.substr(std::string("json ").size()));
+			ORWELL_LOG_DEBUG("json stripped command: '" << aNewCommand << "'");
+			aResult = step(aNewCommand, ioReply);
+			aSentinel.restore();
 		}
-		else if ("game" == aObject)
-		{
-			getGame(aProperty, ioReply);
-			aResult = true;
-		}
-	}
-	else if ("ping" == aAction)
-	{
-		ioReply = "pong";
-		aResult = true;
 	}
 	ORWELL_LOG_DEBUG("Parsing result = " << aResult);
 	if (not aResult)
@@ -365,13 +497,27 @@ void AgentProxy::stopApplication()
 
 void AgentProxy::listTeam(std::string & ioReply)
 {
-	ORWELL_LOG_INFO("list team");
+	ORWELL_LOG_INFO("list team " << m_outputMode);
 	std::vector< std::string > aTeams;
 	m_application.accessServer()->accessContext().getTeams(aTeams);
-	ioReply = "Teams:\n";
-	for (auto const & aTeam : aTeams)
+	switch (m_outputMode)
 	{
-		ioReply += "\t" + aTeam + "\n";
+		case OutputMode::kText:
+		{
+			ioReply = "Teams:\n";
+			for (auto const & aTeam : aTeams)
+			{
+				ioReply += "\t" + aTeam + "\n";
+			}
+			break;
+		}
+		case OutputMode::kJson:
+		{
+			json aJsonTeams;
+			aJsonTeams["Teams"] = aTeams;
+			ioReply = aJsonTeams.dump();
+			break;
+		}
 	}
 }
 
@@ -452,28 +598,47 @@ void AgentProxy::setTeam(
 
 void AgentProxy::listRobot(std::string & ioReply)
 {
-	ORWELL_LOG_INFO("list robot");
+	ORWELL_LOG_INFO("list robot " << m_outputMode);
 	std::map< std::string, std::shared_ptr< orwell::game::Robot > > aRobots =
 		m_application.accessServer()->accessContext().getRobots();
-	ioReply = "Robots:\n";
-	for (auto const & aPair : aRobots)
+	switch (m_outputMode)
 	{
-		ioReply += "\t" + aPair.first + " -> ";
-		ioReply += "name = " + aPair.second->getName() + " ; ";
-		if (not aPair.second->getHasRealRobot())
+		case OutputMode::kText:
 		{
-			ioReply += "not ";
+			ioReply = "Robots:\n";
+			for (auto const & aPair : aRobots)
+			{
+				ioReply += "\t" + aPair.first + " -> ";
+				ioReply += "name = " + aPair.second->getName() + " ; ";
+				if (not aPair.second->getHasRealRobot())
+				{
+					ioReply += "not ";
+				}
+				ioReply += "registered ; ";
+				ioReply += "video_url = " + aPair.second->getVideoUrl() + " ; ";
+				bool aHasPlayer(aPair.second->getPlayer());
+				if (aHasPlayer)
+				{
+					ioReply += "player = " + aPair.second->getPlayer()->getName() + "\n";
+				}
+				else
+				{
+					ioReply += "player = \n";
+				}
+			}
+			break;
 		}
-		ioReply += "registered ; ";
-		ioReply += "video_url = " + aPair.second->getVideoUrl() + " ; ";
-		bool aHasPlayer(aPair.second->getPlayer());
-		if (aHasPlayer)
+		case OutputMode::kJson:
 		{
-			ioReply += "player = " + aPair.second->getPlayer()->getName() + "\n";
-		}
-		else
-		{
-			ioReply += "player = \n";
+			json aJsonRobots;
+			std::vector< SimpleRobot > aRobotList;
+			for (auto const & aPair : aRobots)
+			{
+				aRobotList.push_back({ aPair.second });
+			}
+			aJsonRobots["Robots"] = aRobotList;
+			ioReply = aJsonRobots.dump();
+			break;
 		}
 	}
 }
@@ -593,22 +758,41 @@ void AgentProxy::getRobot(
 
 void AgentProxy::listPlayer(std::string & ioReply)
 {
-	ORWELL_LOG_INFO("list player");
+	ORWELL_LOG_INFO("list player " << m_outputMode);
 	std::map< std::string, std::shared_ptr< orwell::game::Player > > aPlayers =
 		m_application.accessServer()->accessContext().getPlayers();
-	ioReply = "Players:\n";
-	for (auto const & aPair : aPlayers)
+	switch (m_outputMode)
 	{
-		ioReply += "\t" + aPair.first + " -> ";
-		ioReply += "name = " + aPair.second->getName() + " ; ";
-		bool aHasRobot(aPair.second->getRobot());
-		if (aHasRobot)
+		case OutputMode::kText:
 		{
-			ioReply += "robot = " + aPair.second->getRobot()->getName() + "\n";
+			ioReply = "Players:\n";
+			for (auto const & aPair : aPlayers)
+			{
+				ioReply += "\t" + aPair.first + " -> ";
+				ioReply += "name = " + aPair.second->getName() + " ; ";
+				bool aHasRobot(aPair.second->getRobot());
+				if (aHasRobot)
+				{
+					ioReply += "robot = " + aPair.second->getRobot()->getName() + "\n";
+				}
+				else
+				{
+					ioReply += "robot = \n";
+				}
+			}
+			break;
 		}
-		else
+		case OutputMode::kJson:
 		{
-			ioReply += "robot = \n";
+			json aJsonPlayers;
+			std::vector< SimplePlayer > aPlayerList;
+			for (auto const & aPair : aPlayers)
+			{
+				aPlayerList.push_back({ aPair.second });
+			}
+			aJsonPlayers["Players"] = aPlayerList;
+			ioReply = aJsonPlayers.dump();
+			break;
 		}
 	}
 }
@@ -699,6 +883,17 @@ void AgentProxy::setGame(
 	{
 		ORWELL_LOG_ERROR(anException.what());
 	}
+}
+
+void AgentProxy::setOutputMode(OutputMode const iOutputMode)
+{
+	ORWELL_LOG_DEBUG("Set output mode to " << iOutputMode);
+	m_outputMode = iOutputMode;
+}
+
+OutputMode AgentProxy::getOutputMode() const
+{
+	return m_outputMode;
 }
 
 // protected

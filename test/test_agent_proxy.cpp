@@ -1,7 +1,4 @@
-#include <zmq.hpp>
-
 #include <sys/types.h>
-#include <cassert>
 
 #include <boost/lexical_cast.hpp>
 
@@ -12,8 +9,6 @@
 #include "orwell/Application.hpp"
 #include "orwell/AgentProxy.hpp"
 #include "orwell/Server.hpp"
-#include "orwell/com/Receiver.hpp"
-#include "orwell/com/Url.hpp"
 
 #include "Common.hpp"
 

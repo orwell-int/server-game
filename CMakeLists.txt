@@ -98,6 +98,14 @@ find_package(OpenCV REQUIRED)
 enable_testing()
 add_subdirectory(third_party/googletest/)
 
+# nlohmann_json {
+
+# do not run tests
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+add_subdirectory(third_party/nlohmann_json/)
+
+# } nlohmann_json
+
 # Helpful debug stuff?
 #message ("-- cmake current bin dir "${CMAKE_CURRENT_BINARY_DIR})
 #message ("-- cmake zmq bin dir "${ZMQ_INCLUDE_DIRS})
@@ -107,12 +115,15 @@ add_subdirectory(third_party/googletest/)
 add_library(orwell_server_game SHARED ${SOURCES})
 target_link_libraries(
 	orwell_server_game
+	PUBLIC
 	orwell_messages
 	${ZMQ_LIBRARIES}
 	${PROTOBUF_LIBRARIES}
 	${Boost_LIBRARIES}
 	${LOG4CXX_LIBRARIES}
-	${OpenCV_LIBS})
+	${OpenCV_LIBS}
+	PRIVATE
+	nlohmann_json::nlohmann_json)
 
 # Where to install stuff, protobuf messages generated H included
 install(TARGETS orwell_server_game LIBRARY DESTINATION lib)

@@ -15,8 +15,6 @@
 #include "orwell/support/ISystemProxy.hpp"
 
 
-using namespace std;
-
 namespace orwell
 {
 namespace game
@@ -24,7 +22,7 @@ namespace game
 
 Robot::Robot(
 		support::ISystemProxy const & iSystemProxy,
-		string const & iName,
+		std::string const & iName,
 		std::string const & iRobotId,
 		Team & iTeam,
 		uint16_t const & iVideoRetransmissionPort,
@@ -59,7 +57,7 @@ void Robot::setHasRealRobot(bool const iHasRealRobot)
 	m_hasRealRobot = iHasRealRobot;
 }
 
-bool const Robot::getHasRealRobot() const
+bool Robot::getHasRealRobot() const
 {
 	return m_hasRealRobot;
 }
@@ -69,14 +67,14 @@ void Robot::setPlayer(std::shared_ptr< Player > const iPlayer)
 	m_player = iPlayer;
 }
 
-std::shared_ptr< Player > const Robot::getPlayer() const
+std::shared_ptr< Player > Robot::getPlayer() const
 {
 	return m_player.lock();
 }
 
-bool const Robot::getHasPlayer() const
+bool Robot::getHasPlayer() const
 {
-	return (nullptr != getPlayer().get());
+	return not m_player.expired();
 }
 
 void Robot::setVideoUrl(std::string const & iVideoUrl)
@@ -109,7 +107,7 @@ std::string const & Robot::getRobotId() const
 	return m_robotId;
 }
 
-bool const Robot::getIsAvailable() const
+bool Robot::getIsAvailable() const
 {
 	return ((m_hasRealRobot) and (not getHasPlayer()));
 }

@@ -10,6 +10,10 @@ namespace orwell
 {
 class Application;
 
+enum class OutputMode;
+
+class SwitchOutputMode;
+
 /// Class that gives access to commands to be run from an agent.
 class AgentProxy : public IAgentProxy
 {
@@ -107,11 +111,15 @@ public :
 			uint32_t const iValue) override;
 
 protected :
+	friend class SwitchOutputMode;
+	void setOutputMode(OutputMode const iOutputMode);
+	OutputMode getOutputMode() const;
 
 private :
 	AgentProxy(AgentProxy const & iRight) = delete;
 	AgentProxy & operator=(AgentProxy const & iRight) = delete;
 
 	orwell::Application & m_application;
+	OutputMode m_outputMode;
 };
 }

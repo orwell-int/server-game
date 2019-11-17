@@ -5,8 +5,10 @@
 #include <string>
 #include <memory>
 
-namespace orwell {
-namespace game {
+namespace orwell
+{
+namespace game
+{
 
 class Robot;
 
@@ -18,11 +20,13 @@ public:
 
 	void setRobot(std::shared_ptr< Robot > aRobot);
 	std::string const & getName() const;
-	std::shared_ptr< Robot > const getRobot() const;
+	std::shared_ptr< Robot > getRobot() const;
+	bool getHasRobot() const;
 
 private:
 	std::string m_name;
 	std::weak_ptr< Robot > m_robot;
 };
 
-}} //end namespace
+}
+}
