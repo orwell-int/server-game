@@ -257,6 +257,34 @@ public:
 		std::shared_ptr< orwell::game::Item > const iItem));
 };
 
+class MinimalistPrinter : public ::testing::EmptyTestEventListener
+{
+	// Called before a test starts.
+	virtual void OnTestStart(::testing::TestInfo const& test_info)
+	{
+		ORWELL_LOG_INFO("Test starts (" << test_info.test_case_name() << "."
+				<< test_info.name()<< ")\n");
+	}
+
+	// Called after a failed assertion or a SUCCESS().
+	virtual void OnTestPartResult(const ::testing::TestPartResult& test_part_result)
+	{
+		if (test_part_result.failed())
+		{
+			ORWELL_LOG_ERROR("Failure in " << test_part_result.file_name()
+					<< ":" << test_part_result.line_number() << "\n"
+					<< test_part_result.summary());
+		}
+	}
+
+	// Called after a test ends.
+	virtual void OnTestEnd(const ::testing::TestInfo& test_info)
+	{
+		ORWELL_LOG_INFO("Test ends (" << test_info.test_case_name() << "."
+				<< test_info.name()<< ")\n");
+	}
+};
+
 std::ostream & operator<<(
 		std::ostream & ioOstream,
 		Arguments const & iArguments);
