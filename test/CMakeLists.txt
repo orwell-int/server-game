@@ -67,6 +67,22 @@ FUNCTION(add_orwell_test test_name file_name)
 	endforeach(configFile)
 ENDFUNCTION()
 
+FUNCTION(add_google_test test_name)
+	add_executable(${test_name} ${test_name}.cpp)
+	target_link_libraries(
+		${test_name}
+		gtest)
+		#gtest_main)
+	target_link_libraries(
+		${test_name}
+		orwell_server_game
+		orwell_test)
+	add_test(${test_name} ${CMAKE_CURRENT_BINARY_DIR}/${test_name})
+	foreach(configFile ${CONFIG})
+		add_custom_command(TARGET ${test_name} COMMAND ${CMAKE_COMMAND} -E copy_if_different ${configFile} ${CMAKE_CURRENT_BINARY_DIR})
+	endforeach(configFile)
+ENDFUNCTION()
+
 add_orwell_test(test_ping_pong "test_ping_pong.cpp")
 add_orwell_test(test_input_to_robot "test_input_to_robot.cpp")
 add_orwell_test(test_hello_client "test_hello_client.cpp")
@@ -77,6 +93,7 @@ else()
 	add_orwell_test(test_broadcast "test_broadcast.cpp")
 endif()
 add_orwell_test(test_agent_proxy "test_agent_proxy.cpp")
+add_google_test(test_agent_proxy_json)
 add_orwell_test(test_agent "test_agent.cpp")
 add_orwell_test(test_register_robot "test_register_robot.cpp")
 add_orwell_test(test_start_game_condition "test_start_game_condition.cpp")
