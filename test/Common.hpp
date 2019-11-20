@@ -260,28 +260,28 @@ public:
 class MinimalistPrinter : public ::testing::EmptyTestEventListener
 {
 	// Called before a test starts.
-	void OnTestStart(::testing::TestInfo const& test_info) override
+	void OnTestStart(::testing::TestInfo const & iTestInfo) override
 	{
-		ORWELL_LOG_INFO("Test starts (" << test_info.test_case_name() << "."
-				<< test_info.name()<< ")\n");
+		ORWELL_LOG_INFO("Test starts (" << iTestInfo.test_case_name() << "."
+				<< iTestInfo.name()<< ")\n");
 	}
 
 	// Called after a failed assertion or a SUCCESS().
-	void OnTestPartResult(const ::testing::TestPartResult& test_part_result) override
+	void OnTestPartResult(::testing::TestPartResult const & iTestPartResult) override
 	{
-		if (test_part_result.failed())
+		if (iTestPartResult.failed())
 		{
-			ORWELL_LOG_ERROR("Failure in " << test_part_result.file_name()
-					<< ":" << test_part_result.line_number() << "\n"
-					<< test_part_result.summary());
+			ORWELL_LOG_ERROR("Failure in " << iTestPartResult.file_name()
+					<< ":" << iTestPartResult.line_number() << "\n"
+					<< iTestPartResult.summary());
 		}
 	}
 
 	// Called after a test ends.
-	void OnTestEnd(const ::testing::TestInfo& test_info) override
+	void OnTestEnd(::testing::TestInfo const & iTestInfo) override
 	{
-		ORWELL_LOG_INFO("Test ends (" << test_info.test_case_name() << "."
-				<< test_info.name()<< ")\n");
+		ORWELL_LOG_INFO("Test ends (" << iTestInfo.test_case_name() << "."
+				<< iTestInfo.name()<< ")\n");
 	}
 };
 
