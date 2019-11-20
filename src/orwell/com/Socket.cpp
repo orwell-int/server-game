@@ -78,7 +78,17 @@ bool Socket::receiveString(
 	{
 		aFlags = ZMQ_NOBLOCK;
 	}
-	bool const aReceived = m_zmqSocket->recv(&aZmqMessage, aFlags);
+	bool aReceived(false);
+	try
+	{
+		aReceived = m_zmqSocket->recv(&aZmqMessage, aFlags);
+	}
+	catch (zmq::error_t const & aException)
+	{
+		ORWELL_LOG_ERROR(
+				"Exception while trying to receive with zmq:\n"
+				<< aException.what());
+	}
 	if (aReceived)
 	{
 		ORWELL_LOG_TRACE("message received");
@@ -131,6 +141,12 @@ void Socket::sendString(std::string const & iMessage) const
 	{
 		m_zmqSocket->send(aZmqMessage);
 		ORWELL_LOG_TRACE("Sent " << iMessage);
+	}
+	catch (zmq::error_t const & aException)
+	{
+		ORWELL_LOG_ERROR(
+				"Exception while trying to send with zmq:\n"
+				<< aException.what());
 	}
 	catch (...)
 	{
