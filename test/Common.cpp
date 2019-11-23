@@ -2,6 +2,12 @@
 
 #include <iostream>
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+
+#include <unistd.h>
+
+#include <log4cxx/ndc.h>
+
 #include "orwell/com/Url.hpp"
 #include "orwell/com/Receiver.hpp"
 #include "orwell/com/Sender.hpp"
@@ -11,10 +17,6 @@
 #include "orwell/Application.hpp"
 #include "controller.pb.h"
 #include "MissingFromTheStandard.hpp"
-
-#include <boost/date_time/posix_time/posix_time.hpp>
-
-#include <unistd.h>
 
 #define ARG_HELP "-h"
 #define ARG_PUBLISHER_PORT "-P"
@@ -30,9 +32,6 @@
 #define ARG_NO_BROADCAST "--no-broadcast"
 #define ARG_DRY_RUN "-n"
 #define ARG_BROADCAST_PORT "-B"
-
-
-using namespace log4cxx;
 
 Application_CommandLineParameters::Application_CommandLineParameters(
 			orwell::Application_CommandLineParameters const & iParameters)
@@ -333,4 +332,19 @@ TempFile::~TempFile()
 		remove(m_fileName.c_str());
 		m_fileName.erase();
 	}
+}
+
+int RunTest(int argc, char ** argv, std::string const& iTestName)
+{
+	orwell::support::GlobalLogger::Create(iTestName, iTestName + ".log", true);
+	log4cxx::NDC ndc(iTestName);
+	ORWELL_LOG_INFO("Test starts\n");
+	::testing::InitGoogleTest(&argc, argv);
+	::testing::TestEventListeners& aListeners =
+		::testing::UnitTest::GetInstance()->listeners();
+	// Adds a listener to the end.  googletest takes the ownership.
+	aListeners.Append(new MinimalistPrinter);
+	int const aResult = RUN_ALL_TESTS();
+	orwell::support::GlobalLogger::Clear();
+	return aResult;
 }

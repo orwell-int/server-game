@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <list>
 #include <memory>
 
@@ -8,7 +9,7 @@ namespace orwell
 {
 namespace game
 {
-class Player;
+class Robot;
 class Item;
 
 class Team
@@ -17,6 +18,10 @@ public:
 	Team();
 	Team(std::string const & iName);
 	~Team();
+
+	Team(Team const & iOther) = default;
+
+	Team & operator =(Team const & iOther) = default;
 
 	static Team & GetNeutralTeam();
 
@@ -30,14 +35,19 @@ public:
 
 	void resetScore();
 
-	void addPlayer(std::shared_ptr<Player> ioPlayer);
-	void removePlayer(std::shared_ptr<Player> ioPlayer);
+	void addRobot(std::shared_ptr<Robot> ioRobot);
+	void removeRobot(std::shared_ptr<Robot> ioRobot);
 
 	void captureItem(std::shared_ptr< Item > ioItem);
+
+	std::vector< std::string > getRobots() const;
+
+	bool getIsNeutralTeam() const;
 private:
 	std::string m_name;
 	uint32_t m_score;
-	std::list< std::shared_ptr< Player > > m_players;
+	std::list< std::shared_ptr< Robot > > m_robots;
+	bool m_isNeutralTeam;
 };
 
 } // game

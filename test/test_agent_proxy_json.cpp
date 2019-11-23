@@ -1,7 +1,5 @@
 #include <sys/types.h>
 
-#include <log4cxx/ndc.h>
-
 #include <gtest/gtest.h>
 
 #include "orwell/Application.hpp"
@@ -67,6 +65,11 @@ TEST_F(TestAgentProxyJson, Test1)
 	std::string aRobotList;
 	std::string const aTeamName = "TEAM";
 	EXPECT_TRUE(aAgentProxy.step("add team " + aTeamName, aAgentReply));
+	// json view team {
+	EXPECT_TRUE(aAgentProxy.step("json view team TEAM", aAgentReply));
+	std::string aExpectedTeam = R"({"Team":{"name":"TEAM","robots":[],"score":0}})";
+	EXPECT_EQ(aAgentReply, aExpectedTeam) << "empty team KO";
+	// } json view team
 	EXPECT_TRUE(aAgentProxy.step("add player Player1", aAgentReply));
 	EXPECT_TRUE(aAgentProxy.step("add robot Robot1 TEAM", aAgentReply));
 	// json list team {
@@ -85,7 +88,7 @@ TEST_F(TestAgentProxyJson, Test1)
 	EXPECT_TRUE(aAgentProxy.step("json list robot", aRobotList));
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
 	std::string aExpectedRobotList(
-			R"({"Robots":[{"name":"Robot1","player":"","registered":false,"video_url":""}]})");
+			R"({"Robots":[{"name":"Robot1","player":"","registered":false,"team":"TEAM","video_url":""}]})");
 	EXPECT_EQ(aRobotList, aExpectedRobotList) << "json list robot KO";
 	// } json list robot
 	// register robot {
@@ -94,7 +97,7 @@ TEST_F(TestAgentProxyJson, Test1)
 	EXPECT_TRUE(aAgentProxy.step("json list robot", aRobotList));
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
 	aExpectedRobotList =
-		R"({"Robots":[{"name":"Robot1","player":"","registered":true,"video_url":""}]})";
+		R"({"Robots":[{"name":"Robot1","player":"","registered":true,"team":"TEAM","video_url":""}]})";
 	EXPECT_EQ(aRobotList, aExpectedRobotList) << "register KO";
 	// } register robot
 	// set robot {
@@ -110,11 +113,17 @@ TEST_F(TestAgentProxyJson, Test1)
 	EXPECT_TRUE(aAgentProxy.step("add robot \"Robot One\" TEAM", aAgentReply));
 	EXPECT_TRUE(aAgentProxy.step("json list robot", aRobotList));
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
-	std::string aExpectedRobotListWithSpace(
-			R"({"Robots":[{"name":"Robot One","player":"","registered":false,"video_url":""}]})");
+	std::string const aExpectedRobotListWithSpace(
+			R"({"Robots":[{"name":"Robot One","player":"","registered":false,"team":"TEAM","video_url":""}]})");
 	EXPECT_EQ(aRobotList, aExpectedRobotListWithSpace) << "json list robot KO";
 	EXPECT_TRUE(aAgentProxy.step("remove robot \"Robot One\"", aAgentReply));
 	// } add robot with space in the name
+	// json view team {
+	EXPECT_TRUE(aAgentProxy.step("json view team TEAM", aAgentReply));
+	aExpectedTeam =
+			R"({"Team":{"name":"TEAM","robots":["Robot1","Robot One"],"score":0}})";
+	//EXPECT_EQ(aAgentReply, aExpectedTeam) << "json view team KO";
+	// } json view team
 	EXPECT_TRUE(aAgentProxy.step("remove player Player1", aAgentReply));
 	EXPECT_TRUE(aAgentProxy.step("remove team TEAM", aAgentReply));
 	EXPECT_TRUE(aAgentProxy.step("json list team", aTeamList));
@@ -129,18 +138,13 @@ TEST_F(TestAgentProxyJson, Test1)
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
 	aExpectedRobotList = (R"({"Robots":[]})");
 	EXPECT_EQ(aRobotList, aExpectedRobotList) << "empty robot KO";
+	EXPECT_TRUE(aAgentProxy.step("json view team TEAM", aAgentReply));
+	aExpectedTeam = R"({"Team":null})";
+	EXPECT_EQ(aAgentReply, aExpectedTeam) << "null team KO";
 	EXPECT_TRUE(aAgentProxy.step("stop application", aAgentReply));
 }
 
 int main(int argc, char **argv)
 {
-	orwell::support::GlobalLogger::Create(
-			"test_agent_proxy_json", "test_agent_proxy_json.log", true);
-	log4cxx::NDC ndc("test_agent_proxy_json");
-	::testing::InitGoogleTest(&argc, argv);
-	::testing::TestEventListeners& listeners =
-		::testing::UnitTest::GetInstance()->listeners();
-	// Adds a listener to the end.  googletest takes the ownership.
-	listeners.Append(new MinimalistPrinter);
-	return RUN_ALL_TESTS();
+	return RunTest(argc, argv, "test_agent_proxy_json");
 }

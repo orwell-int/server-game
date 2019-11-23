@@ -26,13 +26,13 @@ protected:
 		, m_videoPort(42)
 		, m_commandPort(43)
 		, m_team(m_teamName)
-		, m_robot(
+		, m_robot(orwell::game::Robot::MakeRobot(
 			m_fakeSystemProxy,
 			m_robotName,
 			m_robotId,
 			m_team,
 			m_videoPort,
-			m_commandPort)
+			m_commandPort))
 	{
 	}
 
@@ -51,27 +51,27 @@ protected:
 	uint16_t const m_videoPort;
 	uint16_t const m_commandPort;
 	orwell::game::Team m_team;
-	orwell::game::Robot m_robot;
+	std::shared_ptr< orwell::game::Robot > m_robot;
 };
 
 
 TEST_F(TestOrwellGameRobot, Create)
 {
-	EXPECT_EQ(m_teamName, m_robot.getTeam().getName())
+	EXPECT_EQ(m_teamName, m_robot->getTeam().getName())
 		<< "The team should be the same.";
-	EXPECT_EQ(m_robotName, m_robot.getName())
+	EXPECT_EQ(m_robotName, m_robot->getName())
 		<< "The robot name should be the same.";
-	EXPECT_EQ(m_robotId, m_robot.getRobotId())
+	EXPECT_EQ(m_robotId, m_robot->getRobotId())
 		<< "The robot id should be the same.";
-	EXPECT_EQ(m_videoPort, m_robot.getVideoRetransmissionPort())
+	EXPECT_EQ(m_videoPort, m_robot->getVideoRetransmissionPort())
 		<< "The video port should be the same.";
-	EXPECT_EQ(m_commandPort, m_robot.getServerCommandPort())
+	EXPECT_EQ(m_commandPort, m_robot->getServerCommandPort())
 		<< "The command port should be the same.";
-	EXPECT_FALSE(m_robot.getIsAvailable())
+	EXPECT_FALSE(m_robot->getIsAvailable())
 		<< "A robot should start as NOT available.";
-	EXPECT_FALSE(m_robot.getHasPlayer())
+	EXPECT_FALSE(m_robot->getHasPlayer())
 		<< "A robot should start without a player.";
-	EXPECT_EQ("", m_robot.getVideoUrl())
+	EXPECT_EQ("", m_robot->getVideoUrl())
 		<< "A robot should start without a video URL.";
 }
 
@@ -82,7 +82,7 @@ TEST_F(TestOrwellGameRobot, StartVideoWithoutURL)
 	EXPECT_CALL(m_fakeSystemProxy, mkstemp(_)).Times(0);
 	EXPECT_CALL(m_fakeSystemProxy, close(_)).Times(0);
 	EXPECT_CALL(m_fakeSystemProxy, system(_)).Times(0);
-	m_robot.startVideo();
+	m_robot->startVideo();
 }
 
 
@@ -92,8 +92,8 @@ TEST_F(TestOrwellGameRobot, StartVideoWithURL)
 	EXPECT_CALL(m_fakeSystemProxy, mkstemp(_)).Times(0);
 	EXPECT_CALL(m_fakeSystemProxy, close(_)).Times(0);
 	EXPECT_CALL(m_fakeSystemProxy, system(_)).Times(0);
-	m_robot.setVideoUrl("http://url.test:1234");
-	m_robot.startVideo();
+	m_robot->setVideoUrl("http://url.test:1234");
+	m_robot->startVideo();
 }
 
 
@@ -102,8 +102,8 @@ TEST_F(TestOrwellGameRobot, StartVideoWithURL_nc)
 	using ::testing::_;
 	EXPECT_CALL(m_fakeSystemProxy, mkstemp(_)).Times(0);
 	EXPECT_CALL(m_fakeSystemProxy, system(_)).Times(0);
-	m_robot.setVideoUrl("nc:12.34.56.78:90");
-	m_robot.startVideo();
+	m_robot->setVideoUrl("nc:12.34.56.78:90");
+	m_robot->startVideo();
 }
 
 

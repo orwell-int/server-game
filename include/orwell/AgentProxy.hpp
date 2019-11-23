@@ -33,7 +33,7 @@ public :
 
 	/// List all the teams present.
 	///
-	void listTeam(std::string & ioReply) override;
+	void listTeam(std::string & ioReply) const override;
 
 	/// add team <name>
 	void addTeam(
@@ -46,7 +46,7 @@ public :
 	void getTeam(
 			std::string const & iTeamName,
 			std::string const & iProperty,
-			std::string & oValue) override;
+			std::string & oValue) const override;
 
 	/// set property <property> of team
 	void setTeam(
@@ -56,7 +56,7 @@ public :
 
 	/// List all the robots present.
 	///
-	void listRobot(std::string & ioReply) override;
+	void listRobot(std::string & ioReply) const override;
 
 	/// add robot <name>
 	void addRobot(
@@ -82,11 +82,11 @@ public :
 	void getRobot(
 			std::string const & iRobotName,
 			std::string const & iProperty,
-			std::string & oValue) override;
+			std::string & oValue) const override;
 
 	/// List all the players present.
 	///
-	void listPlayer(std::string & ioReply) override;
+	void listPlayer(std::string & ioReply) const override;
 
 	/// add player <name>
 	void addPlayer(std::string const & iPlayerName) override;
@@ -103,12 +103,17 @@ public :
 	/// get property <property> of game
 	void getGame(
 			std::string const & iProperty,
-			std::string & oValue) override;
+			std::string & oValue) const override;
 
 	/// set property <property> of game
 	void setGame(
 			std::string const & iProperty,
 			uint32_t const iValue) override;
+
+	/// view a team in details
+	void viewTeam(
+			std::string const & iName,
+			std::string & oReply) const override;
 
 protected :
 	friend class SwitchOutputMode;

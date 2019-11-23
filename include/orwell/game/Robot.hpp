@@ -26,13 +26,22 @@ class Team;
 class Robot
 {
 public:
+	static std::shared_ptr< Robot> MakeRobot(
+			support::ISystemProxy const & iSystemProxy,
+			std::string const & iName,
+			std::string const & iRobotId,
+			Team & ioTeam,
+			uint16_t const & iVideoRetransmissionPort,
+			uint16_t const & iServerCommandPort);
+
 	Robot(
 			support::ISystemProxy const & iSystemProxy,
 			std::string const & iName,
 			std::string const & iRobotId,
-			Team & iTeam,
+			Team & ioTeam,
 			uint16_t const & iVideoRetransmissionPort,
 			uint16_t const & iServerCommandPort);
+
 	~Robot();
 
 	Team & getTeam();

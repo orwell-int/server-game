@@ -51,7 +51,7 @@ macro(add_test _target)
 endmacro()
 
 # Initialize CXXFLAGS.
-set(CMAKE_CXX_FLAGS                "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
+set(CMAKE_CXX_FLAGS                "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -fPIC")
 set(CMAKE_CXX_FLAGS_DEBUG          "-O0 -g")
 set(CMAKE_CXX_FLAGS_MINSIZEREL     "-Os -DNDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE        "-O4 -DNDEBUG")
@@ -168,10 +168,11 @@ IF(ORWELL_COVERAGE)
 		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fprofile-arcs -ftest-coverage")
 		include(CodeCoverage)
 		SET(COVERAGE_INCLUDES
-			'${CMAKE_SOURCE_DIR}/*'
+			'${CMAKE_SOURCE_DIR}/src/*'
+			'${CMAKE_SOURCE_DIR}/include/*'
 			)
 		SET(COVERAGE_EXCLUDES
-			'${CMAKE_SOURCE_DIR}/test/*'
+			'${CMAKE_SOURCE_DIR}/third_party/*'
 			)
 		get_property(VAR_ALL_TARGETS GLOBAL PROPERTY P_ALL_TARGETS)
 		setup_target_for_coverage(

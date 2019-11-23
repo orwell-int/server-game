@@ -2,8 +2,6 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include <log4cxx/ndc.h>
-
 #include <gtest/gtest.h>
 
 #include "orwell/Application.hpp"
@@ -69,6 +67,12 @@ TEST_F(TestAgentProxyJson, Test1)
 	std::string aRobotList;
 	std::string const aTeamName = "TEAM";
 	EXPECT_TRUE(aAgentProxy.step("add team " + aTeamName, aAgentReply));
+	// view team {
+	EXPECT_TRUE(aAgentProxy.step("view team TEAM", aAgentReply));
+	std::string aExpectedTeam(R"(Team TEAM:
+	score = 0 ; robots = [])");
+	EXPECT_EQ(aAgentReply, aExpectedTeam) << "view team KO";
+	// } view team
 	EXPECT_TRUE(aAgentProxy.step("add player Player1", aAgentReply));
 	EXPECT_TRUE(aAgentProxy.step("add robot Robot1 TEAM", aAgentReply));
 	// list team {
@@ -138,6 +142,12 @@ TEST_F(TestAgentProxyJson, Test1)
 	EXPECT_EQ(aRobotList, aExpectedRobotListWithSpace) << "list robot KO";
 	EXPECT_TRUE(aAgentProxy.step("remove robot \"Robot One\"", aAgentReply));
 	// } add robot with space in the name
+	// view team {
+	EXPECT_TRUE(aAgentProxy.step("view team TEAM", aAgentReply));
+	aExpectedTeam = R"(Team TEAM:
+	score = 0 ; robots = ["Robot1", "Robot One"])";
+	EXPECT_EQ(aAgentReply, aExpectedTeam) << "view team KO";
+	// } view team
 	EXPECT_TRUE(aAgentProxy.step("remove player Player1", aAgentReply));
 	EXPECT_TRUE(aAgentProxy.step("remove team TEAM", aAgentReply));
 	EXPECT_TRUE(aAgentProxy.step("list team", aTeamList));
@@ -168,13 +178,5 @@ TEST_F(TestAgentProxyJson, Test1)
 
 int main(int argc, char **argv)
 {
-	orwell::support::GlobalLogger::Create(
-			"test_agent_proxy", "test_agent_proxy.log", true);
-	log4cxx::NDC ndc("test_agent_proxy");
-	::testing::InitGoogleTest(&argc, argv);
-	::testing::TestEventListeners& listeners =
-		::testing::UnitTest::GetInstance()->listeners();
-	// Adds a listener to the end.  googletest takes the ownership.
-	listeners.Append(new MinimalistPrinter);
-	return RUN_ALL_TESTS();
+	return RunTest(argc, argv, "test_agent_proxy");
 }

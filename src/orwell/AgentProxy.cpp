@@ -78,24 +78,27 @@ struct SimpleRobot
 {
 	SimpleRobot(std::shared_ptr< game::Robot > const iRobot)
 		: m_name(iRobot->getName())
-		, m_registered(iRobot->getHasRealRobot())
-		, m_videoUrl(iRobot->getVideoUrl())
 		, m_player(iRobot->getHasPlayer() ? iRobot->getPlayer()->getName() : "")
+		, m_registered(iRobot->getHasRealRobot())
+		, m_team(iRobot->getTeam().getName())
+		, m_videoUrl(iRobot->getVideoUrl())
 	{
 	}
 
 	SimpleRobot(SimpleRobot const & iOther)
 		: m_name(iOther.m_name)
-		, m_registered(iOther.m_registered)
-		, m_videoUrl(iOther.m_videoUrl)
 		, m_player(iOther.m_player)
+		, m_registered(iOther.m_registered)
+		, m_team(iOther.m_team)
+		, m_videoUrl(iOther.m_videoUrl)
 	{
 	}
 
 	std::string const m_name;
-	bool const m_registered;
-	std::string const m_videoUrl;
 	std::string const m_player;
+	bool const m_registered;
+	std::string const m_team;
+	std::string const m_videoUrl;
 };
 
 struct SimplePlayer
@@ -116,6 +119,27 @@ struct SimplePlayer
 	std::string const m_robot;
 };
 
+struct SimpleTeam
+{
+	SimpleTeam(game::Team const & iTeam)
+		: m_name(iTeam.getName())
+		, m_score(iTeam.getScore())
+		, m_robots(iTeam.getRobots())
+	{
+	}
+
+	SimpleTeam(SimpleTeam const & iOther)
+		: m_name(iOther.m_name)
+		, m_score(iOther.m_score)
+		, m_robots(iOther.m_robots)
+	{
+	}
+
+	std::string const m_name;
+	uint32_t const m_score;
+	std::vector< std::string > const m_robots;
+};
+
 void to_json(json & oJson, SimplePlayer const & iPlayer)
 {
 	oJson = json {
@@ -128,9 +152,19 @@ void to_json(json & oJson, SimpleRobot const & iRobot)
 {
 	oJson = json {
 			{"name", iRobot.m_name},
+			{"player", iRobot.m_player},
 			{"registered", iRobot.m_registered},
+			{"team", iRobot.m_team},
 			{"video_url", iRobot.m_videoUrl},
-			{"player", iRobot.m_player}
+	};
+}
+
+void to_json(json & oJson, SimpleTeam const & iTeam)
+{
+	oJson = json {
+			{"name", iTeam.m_name},
+			{"score", iTeam.m_score},
+			{"robots", iTeam.m_robots}
 	};
 }
 
@@ -239,6 +273,7 @@ bool AgentProxy::step(
 		std::string const & iCommand,
 		std::string & ioReply)
 {
+	ORWELL_LOG_DEBUG("AgentProxy::step(" << iCommand << ")");
 	bool aResult = false;
 	std::string aAction;
 	using std::placeholders::_1;
@@ -268,6 +303,18 @@ bool AgentProxy::step(
 			{
 				aResult = false;
 			}
+		}
+	}
+	else if ("view" == aAction)
+	{
+		std::string aObject;
+		aStream >> aObject;
+		std::string aName;
+		if ("team" == aObject)
+		{
+			ReadName(aStream, aName);
+			viewTeam(aName, ioReply);
+			aResult = true;
 		}
 	}
 	else if (OutputMode::kText == m_outputMode)
@@ -495,7 +542,7 @@ void AgentProxy::stopApplication()
 	m_application.stop();
 }
 
-void AgentProxy::listTeam(std::string & ioReply)
+void AgentProxy::listTeam(std::string & ioReply) const
 {
 	ORWELL_LOG_INFO("list team " << m_outputMode);
 	std::vector< std::string > aTeams;
@@ -537,7 +584,7 @@ void AgentProxy::removeTeam(std::string const & iTeamName)
 void AgentProxy::getTeam(
 		std::string const & iTeamName,
 		std::string const & iProperty,
-		std::string & oValue)
+		std::string & oValue) const
 {
 	ORWELL_LOG_INFO("get team " << iTeamName << " " << iProperty);
 	try
@@ -596,7 +643,7 @@ void AgentProxy::setTeam(
 	}
 }
 
-void AgentProxy::listRobot(std::string & ioReply)
+void AgentProxy::listRobot(std::string & ioReply) const
 {
 	ORWELL_LOG_INFO("list robot " << m_outputMode);
 	std::map< std::string, std::shared_ptr< orwell::game::Robot > > aRobots =
@@ -718,7 +765,7 @@ void AgentProxy::setRobot(
 void AgentProxy::getRobot(
 		std::string const & iRobotName,
 		std::string const & iProperty,
-		std::string & oValue)
+		std::string & oValue) const
 {
 	ORWELL_LOG_INFO("get robot '" << iRobotName << "' " << iProperty);
 	try
@@ -756,7 +803,7 @@ void AgentProxy::getRobot(
 	}
 }
 
-void AgentProxy::listPlayer(std::string & ioReply)
+void AgentProxy::listPlayer(std::string & ioReply) const
 {
 	ORWELL_LOG_INFO("list player " << m_outputMode);
 	std::map< std::string, std::shared_ptr< orwell::game::Player > > aPlayers =
@@ -823,7 +870,7 @@ void AgentProxy::stopGame()
 
 void AgentProxy::getGame(
 		std::string const & iProperty,
-		std::string & oValue)
+		std::string & oValue) const
 {
 	ORWELL_LOG_INFO("get game " << iProperty);
 	try
@@ -882,6 +929,58 @@ void AgentProxy::setGame(
 	catch (std::exception const & anException)
 	{
 		ORWELL_LOG_ERROR(anException.what());
+	}
+}
+
+void AgentProxy::viewTeam(
+		std::string const & iName,
+		std::string & oReply) const
+{
+	ORWELL_LOG_INFO("view team '" << iName << "' " << m_outputMode);
+	game::Team const & aTeam = m_application.accessServer()->accessContext().getTeam(iName);
+	switch (m_outputMode)
+	{
+		case OutputMode::kText:
+		{
+			if (aTeam.getIsNeutralTeam())
+			{
+				oReply = "Invalid team name (" + iName + ")";
+				return;
+			}
+			oReply = "Team " + iName + ":\n";
+			oReply += "\tscore = " + std::to_string(aTeam.getScore())  + " ; ";
+			oReply += "robots = [";
+
+			bool aFirst(true);
+			for (std::string const & aRobotName: aTeam.getRobots())
+			{
+				if (aFirst)
+				{
+					aFirst = false;
+				}
+				else
+				{
+					oReply += ", ";
+				}
+				oReply += "\"" + aRobotName + "\"";
+			}
+			oReply += "]";
+			break;
+		}
+		case OutputMode::kJson:
+		{
+			json aJsonTeam;
+			if (aTeam.getIsNeutralTeam())
+			{
+				aJsonTeam["Team"] = nullptr;
+			}
+			else
+			{
+				aJsonTeam["Team"] = SimpleTeam(aTeam);
+			}
+			oReply = aJsonTeam.dump();
+			break;
+		}
 	}
 }
 

@@ -32,7 +32,7 @@ protected:
 		, m_videoPort(42)
 		, m_commandPort(43)
 		, m_team(m_teamName)
-		, m_robot(std::make_shared< orwell::game::Robot >(
+		, m_robot(orwell::game::Robot::MakeRobot(
 				m_fakeSystemProxy,
 				m_robotName,
 				m_robotId,

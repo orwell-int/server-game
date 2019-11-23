@@ -24,11 +24,10 @@ public :
 	virtual void stopApplication() = 0;
 
 	/// get the list of teams
-	virtual void listTeam(std::string & ioReply) = 0;
+	virtual void listTeam(std::string & ioReply) const = 0;
 
 	/// add team <name>
-	virtual void addTeam(
-			std::string const & iTeamName) = 0;
+	virtual void addTeam(std::string const & iTeamName) = 0;
 
 	/// remove team <name>
 	virtual void removeTeam(std::string const & iTeamName) = 0;
@@ -37,7 +36,7 @@ public :
 	virtual void getTeam(
 			std::string const & iTeamName,
 			std::string const & iProperty,
-			std::string & oValue) = 0;
+			std::string & oValue) const = 0;
 
 	/// set property <property> of team
 	virtual void setTeam(
@@ -46,7 +45,7 @@ public :
 			std::string const & iValue) = 0;
 
 	/// get the list of robots
-	virtual void listRobot(std::string & ioReply) = 0;
+	virtual void listRobot(std::string & ioReply) const = 0;
 
 	/// add robot <name>
 	virtual void addRobot(
@@ -72,10 +71,10 @@ public :
 	virtual void getRobot(
 			std::string const & iRobotName,
 			std::string const & iProperty,
-			std::string & oValue) = 0;
+			std::string & oValue) const = 0;
 
 	/// get the list of players
-	virtual void listPlayer(std::string & ioReply) = 0;
+	virtual void listPlayer(std::string & ioReply) const = 0;
 
 	/// add player <name>
 	virtual void addPlayer(std::string const & iPlayerName) = 0;
@@ -92,11 +91,16 @@ public :
 	/// get property <property> of game
 	virtual void getGame(
 			std::string const & iProperty,
-			std::string & oValue) = 0;
+			std::string & oValue) const = 0;
 
 	/// set property <property> of game
 	virtual void setGame(
 			std::string const & iProperty,
 			uint32_t const iValue) = 0;
+
+	/// view a team in details
+	virtual void viewTeam(
+			std::string const & iName,
+			std::string & oReply) const = 0;
 };
 }
