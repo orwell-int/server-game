@@ -32,17 +32,15 @@ static void const ClientSendsInput(
 	int32_t iServerReplierPort,
 	std::string const & iRobotId)
 {
-	using namespace orwell::com;
-	using namespace orwell::messages;
 	log4cxx::NDC ndc("client");
 	zmq::context_t aContext(1);
 
-	Sender aPusher(
+	orwell::com::Sender aPusher(
 			orwell::com::Url("tcp", "localhost", iServerPullerPort).toString(),
 			ZMQ_PUSH,
 			orwell::com::ConnectionMode::CONNECT,
 			aContext);
-	Receiver aSubscriber(
+	orwell::com::Receiver aSubscriber(
 			orwell::com::Url("tcp", "localhost", iServerPublisherPort).toString(),
 			ZMQ_SUB,
 			orwell::com::ConnectionMode::CONNECT,
@@ -50,7 +48,7 @@ static void const ClientSendsInput(
 
 	Common::Synchronize(iServerReplierPort, aContext);
 
-	Input aInputMessage;
+	orwell::messages::Input aInputMessage;
 	aInputMessage.mutable_move()->set_left(1);
 	aInputMessage.mutable_move()->set_right(1);
 	aInputMessage.mutable_fire()->set_weapon1(true);
@@ -62,7 +60,8 @@ static void const ClientSendsInput(
 	ORWELL_LOG_INFO("message built : w1:" << aInputMessage.fire().weapon1() <<
 			"-w2:" << aInputMessage.fire().weapon2());
 	std::string aType = "Input";
-	RawMessage aMessage(iRobotId, aType, aInputMessage.SerializeAsString());
+	orwell::com::RawMessage aMessage(
+			iRobotId, aType, aInputMessage.SerializeAsString());
 	aPusher.send(aMessage);
 	if (not Common::ExpectMessage(aType, aSubscriber, aMessage, 100))
 	{

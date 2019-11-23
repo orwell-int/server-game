@@ -20,9 +20,11 @@
 #include <map>
 #include <utility>
 
-using namespace boost::program_options;
-using namespace boost::property_tree;
-using namespace log4cxx;
+using boost::program_options::options_description;
+using boost::program_options::value;
+using boost::program_options::variables_map;
+using boost::property_tree::ini_parser::read_ini;
+using boost::property_tree::ptree;
 using std::make_shared;
 using std::string;
 
@@ -266,13 +268,12 @@ bool Application::ParseParametersFromCommandLine(
 	return true;
 }
 
-bool Application::ParseParametersFromConfigFile(
-		Parameters & ioParam)
+bool Application::ParseParametersFromConfigFile(Parameters & ioParam)
 {
 	ptree aPtree;
 	try
 	{
-		ini_parser::read_ini(*ioParam.m_commandLineParameters.m_rcFilePath, aPtree);
+		read_ini(*ioParam.m_commandLineParameters.m_rcFilePath, aPtree);
 	}
 	catch (std::exception const & aExc)
 	{
@@ -382,7 +383,7 @@ void Application::ParseGameConfigFromFile(
 		Parameters & ioParam)
 {
 	ptree aPtree;
-	ini_parser::read_ini(*ioParam.m_commandLineParameters.m_gameFilePath, aPtree);
+	read_ini(*ioParam.m_commandLineParameters.m_gameFilePath, aPtree);
 
 	if (not ioParam.m_commandLineParameters.m_gameDuration)
 	{
@@ -951,4 +952,3 @@ bool operator==(
 	}
 	return true;
 }
-

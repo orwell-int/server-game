@@ -5,8 +5,6 @@
 #include <unistd.h>
 #include <cstdint>
 
-#include <log4cxx/ndc.h>
-
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/game/Item.hpp"
 #include "orwell/game/Ruleset.hpp"
@@ -59,7 +57,7 @@ protected:
 	{
 	}
 
-	void sendColour(uint32_t iColourCode);
+	void sendColour(uint32_t const iColourCode);
 
 	std::string m_type;
 	std::string const m_name;
@@ -78,7 +76,7 @@ protected:
 	orwell::game::item::FlagDetector m_flagDetector;
 };
 
-void TestOrwellGameItemFlagDetector::sendColour(uint32_t iColourCode)
+void TestOrwellGameItemFlagDetector::sendColour(uint32_t const iColourCode)
 {
 	m_flagDetector.setColour(
 			iColourCode,
@@ -147,12 +145,5 @@ TEST_F(TestOrwellGameItemFlagDetector, Frontier_Colour_Frontier_with_None)
 
 int main(int argc, char ** argv)
 {
-	std::string const aName = "test_orwell_game_item_FlagDetector";
-	orwell::support::GlobalLogger::Create(aName, aName, true);
-	log4cxx::NDC ndc(aName);
-	ORWELL_LOG_INFO("Test starts\n");
-	::testing::InitGoogleTest(&argc, argv);
-	int aResult = RUN_ALL_TESTS();
-	orwell::support::GlobalLogger::Clear();
-	return aResult;
+	return RunTest(argc, argv, "test_orwell_game_item_FlagDetector");
 }

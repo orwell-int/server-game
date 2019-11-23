@@ -756,12 +756,5 @@ b = 0
 
 int main(int argc, char ** argv)
 {
-	orwell::support::GlobalLogger::Create("test_application", "test_application.log", true);
-	log4cxx::NDC ndc("test_application");
-
-	::testing::InitGoogleTest(&argc, argv);
-	int const aResult = RUN_ALL_TESTS();
-	orwell::support::GlobalLogger::Clear();
-	return aResult;
+	return RunTest(argc, argv, "test_application");
 }
-

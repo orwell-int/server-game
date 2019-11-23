@@ -25,19 +25,13 @@
 #include <mutex>
 #include <thread>
 
-using namespace log4cxx;
-
-using namespace orwell::com;
-using namespace orwell::messages;
-using namespace std;
-
 int g_status = 0;
 
 static void ExpectGameState(
 		bool const iGameStarted,
-		Receiver & ioSubscriber)
+		orwell::com::Receiver & ioSubscriber)
 {
-	RawMessage aResponse;
+	orwell::com::RawMessage aResponse;
 	bool aGotWhatExpected = false;
 	int const aMaxLoops = 100;
 	int aCurrentLoop = 0;
@@ -50,7 +44,7 @@ static void ExpectGameState(
 		}
 		else
 		{
-			GameState aGameState;
+			orwell::messages::GameState aGameState;
 			aGameState.ParsePartialFromString(aResponse._payload);
 
 			if (aGameState.playing() == iGameStarted)
@@ -79,13 +73,13 @@ static void client(
 	ORWELL_LOG_INFO("client ...");
 	zmq::context_t aContext(1);
 	ORWELL_LOG_INFO("create pusher");
-	Sender aPusher(
+	orwell::com::Sender aPusher(
 			orwell::com::Url("tcp", "localhost", iPusherPort).toString(),
 			ZMQ_PUSH,
 			orwell::com::ConnectionMode::CONNECT,
 			aContext);
 	ORWELL_LOG_INFO("create subscriber");
-	Receiver aSubscriber(
+	orwell::com::Receiver aSubscriber(
 			orwell::com::Url("tcp", "localhost", iSubscriberPort).toString(),
 			ZMQ_SUB,
 			orwell::com::ConnectionMode::CONNECT,
@@ -96,10 +90,10 @@ static void client(
 	aTestAgent.sendCommand("ping", std::string("pong"));
 	ORWELL_LOG_INFO("Synchronizing pong received");
 
-	Hello aHelloMessage;
+	orwell::messages::Hello aHelloMessage;
 	aHelloMessage.set_name("playername");
 	aHelloMessage.set_ready(true);
-	RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
+	orwell::com::RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
 	aPusher.send(aMessage);
 
 	ExpectGameState(true, aSubscriber);

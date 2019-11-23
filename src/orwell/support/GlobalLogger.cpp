@@ -7,9 +7,6 @@
 #include <log4cxx/helpers/exception.h>
 #include <log4cxx/filter/levelrangefilter.h>
 
-using namespace log4cxx;
-using namespace log4cxx::helpers;
-
 namespace orwell
 {
 namespace support
@@ -23,28 +20,28 @@ struct GlobalLogger::Pimpl
 
 	~Pimpl();
 
-	PatternLayoutPtr m_patternLayout;
-	ConsoleAppenderPtr m_consoleAppender;
-	filter::LevelRangeFilterPtr m_levelFilter;
-	FileAppenderPtr m_fileApender;
+	log4cxx::PatternLayoutPtr m_patternLayout;
+	log4cxx::ConsoleAppenderPtr m_consoleAppender;
+	log4cxx::filter::LevelRangeFilterPtr m_levelFilter;
+	log4cxx::FileAppenderPtr m_fileApender;
 };
 
 GlobalLogger::Pimpl::Pimpl(
 		std::string const & iOutput,
 		bool const iDebug)
 {
-	m_patternLayout = new PatternLayout("%d %-5p %x (%F:%L) - %m%n");
-	m_consoleAppender = new ConsoleAppender(m_patternLayout);
-	m_levelFilter = new filter::LevelRangeFilter();
+	m_patternLayout = new log4cxx::PatternLayout("%d %-5p %x (%F:%L) - %m%n");
+	m_consoleAppender = new log4cxx::ConsoleAppender(m_patternLayout);
+	m_levelFilter = new log4cxx::filter::LevelRangeFilter();
 	if (not iDebug)
 	{
-		m_levelFilter->setLevelMin(Level::getInfo());
+		m_levelFilter->setLevelMin(log4cxx::Level::getInfo());
 
 	}
 	m_consoleAppender->addFilter(m_levelFilter);
-	FileAppenderPtr m_fileApender = new FileAppender(m_patternLayout, iOutput);
-	BasicConfigurator::configure(m_fileApender);
-	BasicConfigurator::configure(m_consoleAppender);
+	log4cxx::FileAppenderPtr m_fileApender = new log4cxx::FileAppender(m_patternLayout, iOutput);
+	log4cxx::BasicConfigurator::configure(m_fileApender);
+	log4cxx::BasicConfigurator::configure(m_consoleAppender);
 }
 
 GlobalLogger::Pimpl::~Pimpl()

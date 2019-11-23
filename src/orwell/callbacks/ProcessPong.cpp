@@ -1,17 +1,14 @@
 #include "orwell/callbacks/ProcessPong.hpp"
 
+#include <unistd.h>
+
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 #include "orwell/com/RawMessage.hpp"
 
 #include "robot.pb.h"
 
 #include "orwell/support/GlobalLogger.hpp"
-
-#include <unistd.h>
-
-#include <boost/date_time/posix_time/posix_time.hpp>
-
-using namespace log4cxx;
-using namespace log4cxx::helpers;
 
 using orwell::messages::Pong;
 using orwell::com::RawMessage;

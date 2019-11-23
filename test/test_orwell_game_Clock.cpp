@@ -177,12 +177,5 @@ TEST(Application, test_Clock_tick_2)
 
 int main(int argc, char ** argv)
 {
-	orwell::support::GlobalLogger::Create("test_orwell_game_Clock", "test_orwell_game_Clock.log", true);
-	log4cxx::NDC ndc("test_orwell_game_Clock");
-	ORWELL_LOG_INFO("Test starts\n");
-
-	::testing::InitGoogleTest(&argc, argv);
-	int const aResult = RUN_ALL_TESTS();
-	orwell::support::GlobalLogger::Clear();
-	return aResult;
+	return RunTest(argc, argv, "test_orwell_game_Clock");
 }
