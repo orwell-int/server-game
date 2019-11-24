@@ -25,31 +25,26 @@
 #include <mutex>
 #include <thread>
 
-using namespace log4cxx;
-
-using namespace orwell::com;
-using namespace orwell::messages;
-
 int g_status = 0;
 
 static void ExpectRegistered(
 		std::string const & iTemporaryRobotId,
 		std::string const & iExpectedRobotId,
 		std::string const & iExpectedTeam,
-		Sender & ioPusher,
-		Receiver & ioSubscriber)
+		orwell::com::Sender & ioPusher,
+		orwell::com::Receiver & ioSubscriber)
 {
-	Register aRegisterMessage;
+	orwell::messages::Register aRegisterMessage;
 	aRegisterMessage.set_temporary_robot_id(iTemporaryRobotId);
 	aRegisterMessage.set_video_url("http://localhost:80");
 	aRegisterMessage.set_image("this is a photo of the robot.jpg");
-	RawMessage aMessage(
+	orwell::com::RawMessage aMessage(
 			iTemporaryRobotId,
 			"Register",
 			aRegisterMessage.SerializeAsString());
 	ioPusher.send(aMessage);
 
-	RawMessage aResponse;
+	orwell::com::RawMessage aResponse;
 	if (not Common::ExpectMessage("Registered", ioSubscriber, aResponse))
 	{
 		ORWELL_LOG_ERROR("Expected Registered but received '" << aResponse._type << "'");
@@ -57,7 +52,7 @@ static void ExpectRegistered(
 	}
 	else
 	{
-		Registered aRegistered;
+		orwell::messages::Registered aRegistered;
 		aRegistered.ParsePartialFromString(aResponse._payload);
 
 		if (aRegistered.robot_id() != iExpectedRobotId)
@@ -93,30 +88,30 @@ static void proxy()
 	ORWELL_LOG_INFO("proxy ...");
 	zmq::context_t aContext(1);
 	ORWELL_LOG_INFO("create pusher");
-	Sender aPusher(
+	orwell::com::Sender aPusher(
 			"tcp://127.0.0.1:9000",
 			ZMQ_PUSH,
 			orwell::com::ConnectionMode::CONNECT,
 			aContext);
 	ORWELL_LOG_INFO("create subscriber");
-	Receiver aSubscriber(
+	orwell::com::Receiver aSubscriber(
 			"tcp://127.0.0.1:9001",
 			ZMQ_SUB,
 			orwell::com::ConnectionMode::CONNECT,
 			aContext);
 	ORWELL_LOG_INFO("create requester");
-	Socket aRequester(
+	orwell::com::Socket aRequester(
 			"tcp://127.0.0.1:9002",
 			ZMQ_REQ,
 			orwell::com::ConnectionMode::CONNECT,
 			aContext);
 
 	// this is only for synchronisation purpose
-	Hello aHelloMessage;
+	orwell::messages::Hello aHelloMessage;
 	aHelloMessage.set_name("jambon");
-	RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
+	orwell::com::RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
 	aRequester.send(aMessage);
-	RawMessage aReply;
+	orwell::com::RawMessage aReply;
 	aRequester.receive(aReply, true);
 
 	ExpectRegistered("jambon", "robot1", "TEAM", aPusher, aSubscriber);

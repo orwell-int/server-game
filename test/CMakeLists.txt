@@ -21,13 +21,14 @@ include_directories(
 	${LOG4CXX_INCLUDE_DIR}
 	${CMAKE_SOURCE_DIR}/third_party/googletest/googletest/include
 	${CMAKE_SOURCE_DIR}/third_party/googletest/googlemock/include
+	${CMAKE_SOURCE_DIR}/third_party/nlohmann_json/include
 	)
-
 
 # Library compilation and linking
 add_library(orwell_test SHARED ${SOURCES})
 target_link_libraries(
 	orwell_test
+	PUBLIC
 	orwell_server_game
 	gtest_main
 	gmock_main
@@ -37,7 +38,9 @@ target_link_libraries(
 	${Boost_LIBRARIES}
 	${LOG4CXX_LIBRARIES}
 	${OpenCV_LIBS}
-	${CMAKE_THREAD_LIBS_INIT})
+	${CMAKE_THREAD_LIBS_INIT}
+	PRIVATE
+	nlohmann_json::nlohmann_json)
 
 
 include_directories(
@@ -55,8 +58,10 @@ include_directories(
 	${CMAKE_BINARY_DIR}/messages
 	)
 
-FUNCTION(add_orwell_test test_name file_name)
-	add_executable(${test_name} ${file_name})
+FUNCTION(add_orwell_test test_filename)
+	string(FIND ${test_filename} ".cpp" pos REVERSE)
+	string(SUBSTRING ${test_filename} 0 ${pos} test_name)
+	add_executable(${test_name} ${test_filename})
 	target_link_libraries(
 		${test_name}
 		orwell_server_game
@@ -67,34 +72,53 @@ FUNCTION(add_orwell_test test_name file_name)
 	endforeach(configFile)
 ENDFUNCTION()
 
-add_orwell_test(test_ping_pong "test_ping_pong.cpp")
-add_orwell_test(test_input_to_robot "test_input_to_robot.cpp")
-add_orwell_test(test_hello_client "test_hello_client.cpp")
-add_orwell_test(test_application "test_application.cpp")
+FUNCTION(add_google_test test_filename)
+	string(FIND ${test_filename} ".cpp" pos REVERSE)
+	string(SUBSTRING ${test_filename} 0 ${pos} test_name)
+	add_executable(${test_name} ${test_filename})
+	target_link_libraries(
+		${test_name}
+		gtest)
+		#gtest_main)
+	target_link_libraries(
+		${test_name}
+		orwell_server_game
+		orwell_test)
+	add_test(${test_name} ${CMAKE_CURRENT_BINARY_DIR}/${test_name})
+	foreach(configFile ${CONFIG})
+		add_custom_command(TARGET ${test_name} COMMAND ${CMAKE_COMMAND} -E copy_if_different ${configFile} ${CMAKE_CURRENT_BINARY_DIR})
+	endforeach(configFile)
+ENDFUNCTION()
+
+add_orwell_test(test_ping_pong.cpp)
+add_orwell_test(test_input_to_robot.cpp)
+add_orwell_test(test_hello_client.cpp)
+add_orwell_test(test_application.cpp)
 # this is not nice, but used to disable the test when running with Travis CI.
 if (DEFINED ENV{ORWELL_DISABLE_TEST_BROADCAST})
 else()
-	add_orwell_test(test_broadcast "test_broadcast.cpp")
+	add_orwell_test(test_broadcast.cpp)
 endif()
-add_orwell_test(test_agent_proxy "test_agent_proxy.cpp")
-add_orwell_test(test_agent "test_agent.cpp")
-add_orwell_test(test_register_robot "test_register_robot.cpp")
-add_orwell_test(test_start_game_condition "test_start_game_condition.cpp")
-add_orwell_test(test_socket "test_socket.cpp")
-add_orwell_test(test_input "test_input.cpp")
-add_orwell_test(test_main "test_main.cpp")
-add_orwell_test(test_main_plus "test_main_plus.cpp")
-add_orwell_test(test_opencv "test_opencv.cpp")
-add_orwell_test(test_capture_one_flag "test_capture_one_flag.cpp")
-add_orwell_test(test_capture_multiflag "test_capture_multiflag.cpp")
-add_orwell_test(test_stop_after_game_duration "test_stop_after_game_duration.cpp")
-add_orwell_test(test_orwell_game_Clock "test_orwell_game_Clock.cpp")
-add_orwell_test(test_orwell_game_Robot "test_orwell_game_Robot.cpp")
-add_orwell_test(test_orwell_game_Game "test_orwell_game_Game.cpp")
-add_orwell_test(test_orwell_game_Item "test_orwell_game_Item.cpp")
-add_orwell_test(test_orwell_game_item_Flag "test_orwell_game_item_Flag.cpp")
-add_orwell_test(test_orwell_game_item_FlagDetector "test_orwell_game_item_FlagDetector.cpp")
-add_orwell_test(test_orwell_game_ItemEncoder "test_orwell_game_ItemEncoder.cpp")
+add_google_test(test_agent_proxy.cpp)
+add_google_test(test_agent_proxy_json.cpp)
+add_orwell_test(test_agent.cpp)
+add_orwell_test(test_register_robot.cpp)
+add_orwell_test(test_start_game_condition.cpp)
+add_google_test(test_socket.cpp)
+add_orwell_test(test_input.cpp)
+add_orwell_test(test_main.cpp)
+add_orwell_test(test_main_plus.cpp)
+add_google_test(test_opencv.cpp)
+add_orwell_test(test_capture_one_flag.cpp)
+add_orwell_test(test_capture_multiflag.cpp)
+add_orwell_test(test_stop_after_game_duration.cpp)
+add_google_test(test_orwell_game_Clock.cpp)
+add_google_test(test_orwell_game_Robot.cpp)
+add_google_test(test_orwell_game_Game.cpp)
+add_google_test(test_orwell_game_Item.cpp)
+add_google_test(test_orwell_game_item_Flag.cpp)
+add_google_test(test_orwell_game_item_FlagDetector.cpp)
+add_google_test(test_orwell_game_ItemEncoder.cpp)
 add_dependencies(test_main server_main)
 add_dependencies(test_main_plus server_main)
 foreach(image ${OPENCV_IMAGES})

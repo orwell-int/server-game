@@ -69,7 +69,7 @@ void BroadcastServer::runBroadcastReceiver()
 	/* Bind server socket */
 	bind(aBsdSocket, (struct sockaddr *) &aBroadcastServerAddress, sizeof(aBroadcastServerAddress));
 
-	/* use setsockopt() to request that the kernel join a multicast group */
+	/* use setsockopt() to request that the kernel joins a multicast group */
 	aGroup.imr_multiaddr.s_addr = inet_addr(MULTICAST_GROUP);
 	aGroup.imr_interface.s_addr = htonl(INADDR_ANY);
 	if (setsockopt(aBsdSocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &aGroup, sizeof(aGroup)) < 0)
@@ -126,12 +126,12 @@ void BroadcastServer::runBroadcastReceiver()
 		}
 		if (aVersion >= 2)
 		{
-			aOstream << (uint8_t) 0xA3;                       // A3 is the agent        ( 1 byte )
-			aOstream << (uint8_t) _agentUrl.size();           // size of agent url      ( 1 byte )
-			aOstream << (const char *) _agentUrl.c_str();     // Address of agent       (12 bytes)
+			aOstream << (uint8_t) 0xA3;                       // A3 is the agent          ( 1 byte )
+			aOstream << (uint8_t) _agentUrl.size();           // size of agent url        ( 1 byte )
+			aOstream << (const char *) _agentUrl.c_str();     // Address of agent         (12 bytes)
 		}
-		aOstream << (uint8_t) 0x00;                       // End of message               ( 1 byte )
-
+		aOstream << (uint8_t) 0x00;                           // End of message           ( 1 byte )
+		//                                                       Total                    (57 bytes)
 		ssize_t aMessageLength = sendto(
 				aBsdSocket,
 				aOstream.str().c_str(),

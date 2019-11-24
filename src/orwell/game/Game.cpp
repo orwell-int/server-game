@@ -276,7 +276,7 @@ bool Game::addRobot(
 		std::map<std::string, Team>::iterator aTeamIterator = m_teams.find(iTeamName);
 		if (m_teams.end() != aTeamIterator)
 		{
-			shared_ptr<Robot> aRobot = make_shared<Robot>(
+			shared_ptr<Robot> aRobot = Robot::MakeRobot(
 					m_systemProxy,
 					iName,
 					iRobotId,

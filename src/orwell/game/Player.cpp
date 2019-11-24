@@ -1,18 +1,16 @@
 #include "orwell/game/Player.hpp"
 
-using namespace std;
-
-namespace orwell {
-namespace game {
-
-Player::Player(string const & iName) : m_name(iName)
+namespace orwell
+{
+namespace game
 {
 
+Player::Player(std::string const & iName) : m_name(iName)
+{
 }
 
 Player::~Player()
 {
-
 }
 
 void Player::setRobot(std::shared_ptr< Robot > aRobot)
@@ -20,16 +18,21 @@ void Player::setRobot(std::shared_ptr< Robot > aRobot)
 	m_robot = aRobot;
 }
 
-string const & Player::getName() const
+std::string const & Player::getName() const
 {
 	return m_name;
 }
 
-std::shared_ptr< Robot > const Player::getRobot() const
+std::shared_ptr< Robot > Player::getRobot() const
 {
 	return m_robot.lock();
 }
 
+bool Player::getHasRobot() const
+{
+	return not m_robot.expired();
+}
 
-}} // namespaces
 
+}
+}

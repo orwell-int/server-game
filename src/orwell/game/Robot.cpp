@@ -10,29 +10,46 @@
 
 #include <zmq.hpp>
 
+#include "orwell/game/Team.hpp"
 #include "orwell/com/ConnectionMode.hpp"
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/support/ISystemProxy.hpp"
-
-
-using namespace std;
 
 namespace orwell
 {
 namespace game
 {
 
+std::shared_ptr< Robot> Robot::MakeRobot(
+		support::ISystemProxy const & iSystemProxy,
+		std::string const & iName,
+		std::string const & iRobotId,
+		Team & ioTeam,
+		uint16_t const & iVideoRetransmissionPort,
+		uint16_t const & iServerCommandPort)
+{
+	std::shared_ptr< Robot > aRobot = std::make_shared< Robot >(
+			iSystemProxy,
+			iName,
+			iRobotId,
+			ioTeam,
+			iVideoRetransmissionPort,
+			iServerCommandPort);
+	ioTeam.addRobot(aRobot);
+	return aRobot;
+}
+
 Robot::Robot(
 		support::ISystemProxy const & iSystemProxy,
-		string const & iName,
+		std::string const & iName,
 		std::string const & iRobotId,
-		Team & iTeam,
+		Team & ioTeam,
 		uint16_t const & iVideoRetransmissionPort,
 		uint16_t const & iServerCommandPort)
 	: m_systemProxy(iSystemProxy)
 	, m_name(iName)
 	, m_robotId(iRobotId)
-	, m_team(iTeam)
+	, m_team(ioTeam)
 	, m_videoRetransmissionPort(iVideoRetransmissionPort)
 	, m_serverCommandPort(iServerCommandPort)
 	, m_hasRealRobot(false)
@@ -59,7 +76,7 @@ void Robot::setHasRealRobot(bool const iHasRealRobot)
 	m_hasRealRobot = iHasRealRobot;
 }
 
-bool const Robot::getHasRealRobot() const
+bool Robot::getHasRealRobot() const
 {
 	return m_hasRealRobot;
 }
@@ -69,14 +86,14 @@ void Robot::setPlayer(std::shared_ptr< Player > const iPlayer)
 	m_player = iPlayer;
 }
 
-std::shared_ptr< Player > const Robot::getPlayer() const
+std::shared_ptr< Player > Robot::getPlayer() const
 {
 	return m_player.lock();
 }
 
-bool const Robot::getHasPlayer() const
+bool Robot::getHasPlayer() const
 {
-	return (nullptr != getPlayer().get());
+	return not m_player.expired();
 }
 
 void Robot::setVideoUrl(std::string const & iVideoUrl)
@@ -109,7 +126,7 @@ std::string const & Robot::getRobotId() const
 	return m_robotId;
 }
 
-bool const Robot::getIsAvailable() const
+bool Robot::getIsAvailable() const
 {
 	return ((m_hasRealRobot) and (not getHasPlayer()));
 }

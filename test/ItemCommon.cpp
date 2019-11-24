@@ -18,8 +18,6 @@
 #include "orwell/Server.hpp"
 #include "orwell/game/Robot.hpp"
 
-using namespace orwell::messages;
-
 static void const ProxySendsRobotState(
 	int32_t iPullerPort,
 	int32_t iPublisherPort,
@@ -43,10 +41,10 @@ static void const ProxySendsRobotState(
 
 	Common::Synchronize(iReplierPort, aContext);
 
-	ServerRobotState aRobotState;
-	Rfid * aRfidMessage = aRobotState.add_rfid();
+	orwell::messages::ServerRobotState aRobotState;
+	orwell::messages::Rfid * aRfidMessage = aRobotState.add_rfid();
 
-	aRfidMessage->set_status(ON);
+	aRfidMessage->set_status(orwell::messages::ON);
 	for (FlagAndTime const & aFlagAndTime : iFlagsAndTimes)
 	{
 		aRfidMessage->set_rfid(aFlagAndTime.m_flag);
@@ -65,7 +63,7 @@ static void const ProxySendsRobotState(
 			}
 			else
 			{
-				GameState aGameState;
+				orwell::messages::GameState aGameState;
 				aGameState.ParsePartialFromString(aResponse._payload);
 
 				if (aFlagAndTime.m_hasWinner)

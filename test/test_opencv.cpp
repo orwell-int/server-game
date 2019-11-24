@@ -1,24 +1,19 @@
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include <iostream>
 
-#include <log4cxx/ndc.h>
-
 #include "orwell/support/GlobalLogger.hpp"
+#include "orwell/game/Game.hpp"
 
-#include <gtest/gtest.h>
+#include "Common.hpp"
 
-int main()
+TEST(OpenCV, Simple)
 {
-	orwell::support::GlobalLogger::Create("test_opencv", "test_opencv.log", true);
-	log4cxx::NDC ndc("test_opencv");
-	ORWELL_LOG_INFO("Test starts\n");
 	cv::Mat aImage = cv::imread("circles.jpg", 0);
 	if (aImage.empty())
 	{
-		ORWELL_LOG_ERROR("Could not read image");
-		return -1;
+		FAIL() << "Could not read image";
 	}
 
 	cv::Mat aGrayScaleImage;
@@ -51,7 +46,9 @@ int main()
 
 	cv::imwrite("temp.jpg", aImage);
 	cv::imwrite("output.jpg", aGrayScaleImage);
+}
 
-	orwell::support::GlobalLogger::Clear();
-	return 0;
+int main(int argc, char **argv)
+{
+	return RunTest(argc, argv, "test_opencv");
 }

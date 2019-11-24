@@ -51,7 +51,7 @@ macro(add_test _target)
 endmacro()
 
 # Initialize CXXFLAGS.
-set(CMAKE_CXX_FLAGS                "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
+set(CMAKE_CXX_FLAGS                "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -fPIC")
 set(CMAKE_CXX_FLAGS_DEBUG          "-O0 -g")
 set(CMAKE_CXX_FLAGS_MINSIZEREL     "-Os -DNDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE        "-O4 -DNDEBUG")
@@ -98,6 +98,14 @@ find_package(OpenCV REQUIRED)
 enable_testing()
 add_subdirectory(third_party/googletest/)
 
+# nlohmann_json {
+
+# do not run tests
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+add_subdirectory(third_party/nlohmann_json/)
+
+# } nlohmann_json
+
 # Helpful debug stuff?
 #message ("-- cmake current bin dir "${CMAKE_CURRENT_BINARY_DIR})
 #message ("-- cmake zmq bin dir "${ZMQ_INCLUDE_DIRS})
@@ -107,12 +115,15 @@ add_subdirectory(third_party/googletest/)
 add_library(orwell_server_game SHARED ${SOURCES})
 target_link_libraries(
 	orwell_server_game
+	PUBLIC
 	orwell_messages
 	${ZMQ_LIBRARIES}
 	${PROTOBUF_LIBRARIES}
 	${Boost_LIBRARIES}
 	${LOG4CXX_LIBRARIES}
-	${OpenCV_LIBS})
+	${OpenCV_LIBS}
+	PRIVATE
+	nlohmann_json::nlohmann_json)
 
 # Where to install stuff, protobuf messages generated H included
 install(TARGETS orwell_server_game LIBRARY DESTINATION lib)
@@ -157,10 +168,11 @@ IF(ORWELL_COVERAGE)
 		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fprofile-arcs -ftest-coverage")
 		include(CodeCoverage)
 		SET(COVERAGE_INCLUDES
-			'${CMAKE_SOURCE_DIR}/*'
+			'${CMAKE_SOURCE_DIR}/src/*'
+			'${CMAKE_SOURCE_DIR}/include/*'
 			)
 		SET(COVERAGE_EXCLUDES
-			'${CMAKE_SOURCE_DIR}/test/*'
+			'${CMAKE_SOURCE_DIR}/third_party/*'
 			)
 		get_property(VAR_ALL_TARGETS GLOBAL PROPERTY P_ALL_TARGETS)
 		setup_target_for_coverage(

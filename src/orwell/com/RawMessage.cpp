@@ -2,10 +2,10 @@
 
 #include <iostream>
 
-using namespace std;
-
-namespace orwell {
-namespace com {
+namespace orwell
+{
+namespace com
+{
 
 RawMessage::RawMessage()
 {
@@ -21,5 +21,6 @@ RawMessage::RawMessage(
 {
 }
 
-}} //namespaces
+}
+}
 

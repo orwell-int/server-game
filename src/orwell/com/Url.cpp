@@ -2,10 +2,10 @@
 #include <string>
 #include <boost/lexical_cast.hpp>
 
-#include "orwell/support/GlobalLogger.hpp"
-
-using std::string;
-using namespace orwell::com;
+namespace orwell
+{
+namespace com
+{
 
 Url::Url(
 		std::string const & iProtocol,
@@ -29,11 +29,10 @@ void Url::resetUrl()
 	m_url += "://";
 	m_url += m_host;
 	m_url += ":";
-	m_url += boost::lexical_cast<string>(m_port);
-	//ORWELL_LOG_DEBUG("url = '" << m_url << "'");
+	m_url += boost::lexical_cast<std::string>(m_port);
 }
 
-void Url::setProtocol(string const & iProtocol)
+void Url::setProtocol(std::string const & iProtocol)
 {
 	if (!iProtocol.empty())
 	{
@@ -42,7 +41,7 @@ void Url::setProtocol(string const & iProtocol)
 	}
 }
 
-void Url::setHost(string const & iHost)
+void Url::setHost(std::string const & iHost)
 {
 	if (!iHost.empty())
 	{
@@ -57,7 +56,7 @@ void Url::setPort(uint16_t const iPort)
 	resetUrl();
 }
 
-string const & Url::toString() const
+std::string const & Url::toString() const
 {
 	return m_url;
 }
@@ -72,3 +71,5 @@ uint16_t const & Url::getPort() const
 	return m_port;
 }
 
+}
+}

@@ -1,5 +1,7 @@
 #include "orwell/callbacks/ProcessHello.hpp"
 
+#include <unistd.h>
+
 #include "orwell/com/RawMessage.hpp"
 
 #include "controller.pb.h"
@@ -10,11 +12,6 @@
 #include "orwell/game/Player.hpp"
 #include "orwell/game/Robot.hpp"
 #include "orwell/com/Sender.hpp"
-
-#include <unistd.h>
-
-using namespace log4cxx;
-using namespace log4cxx::helpers;
 
 using orwell::messages::Hello;
 using orwell::messages::Welcome;
@@ -127,4 +124,3 @@ void ProcessHello::execute()
 
 }
 }
-

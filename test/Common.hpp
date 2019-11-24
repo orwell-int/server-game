@@ -132,13 +132,13 @@ public:
 
 	MOCK_METHOD0(stopApplication, void());
 	
-	MOCK_METHOD1(listTeam, void(std::string & ioReply));
+	MOCK_CONST_METHOD1(listTeam, void(std::string & ioReply));
 
 	MOCK_METHOD1(addTeam, void(std::string const & iTeamName));
 
 	MOCK_METHOD1(removeTeam, void(std::string const & iTeamName));
 
-	MOCK_METHOD3(getTeam, void(
+	MOCK_CONST_METHOD3(getTeam, void(
 			std::string const & iTeamName,
 			std::string const & iProperty,
 			std::string & oValue));
@@ -148,7 +148,7 @@ public:
 			std::string const & iProperty,
 			std::string const & iValue));
 
-	MOCK_METHOD1(listRobot, void(std::string & ioReply));
+	MOCK_CONST_METHOD1(listRobot, void(std::string & ioReply));
 
 	MOCK_METHOD2(addRobot, void(
 				std::string const & iRobotName,
@@ -165,12 +165,12 @@ public:
 			std::string const & iProperty,
 			std::string const & iValue));
 
-	MOCK_METHOD3(getRobot, void(
+	MOCK_CONST_METHOD3(getRobot, void(
 			std::string const & iRobotName,
 			std::string const & iProperty,
 			std::string & oValue));
 
-	MOCK_METHOD1(listPlayer, void(std::string & ioReply));
+	MOCK_CONST_METHOD1(listPlayer, void(std::string & ioReply));
 
 	MOCK_METHOD1(addPlayer, void(std::string const & iPlayerName));
 
@@ -180,13 +180,17 @@ public:
 
 	MOCK_METHOD0(stopGame, void());
 
-	MOCK_METHOD2(getGame, void(
+	MOCK_CONST_METHOD2(getGame, void(
 			std::string const & iProperty,
 			std::string & oValue));
 
 	MOCK_METHOD2(setGame, void(
 			std::string const & iProperty,
 			uint32_t const iValue));
+
+	MOCK_CONST_METHOD2(viewTeam, void(
+			std::string const & iName,
+			std::string & oReply));
 };
 
 struct TempFile
@@ -256,6 +260,36 @@ public:
 		std::string const & iRobotId,
 		std::shared_ptr< orwell::game::Item > const iItem));
 };
+
+class MinimalistPrinter : public ::testing::EmptyTestEventListener
+{
+	// Called before a test starts.
+	void OnTestStart(::testing::TestInfo const & iTestInfo) override
+	{
+		ORWELL_LOG_INFO("Test starts (" << iTestInfo.test_case_name() << "."
+				<< iTestInfo.name()<< ")\n");
+	}
+
+	// Called after a failed assertion or a SUCCESS().
+	void OnTestPartResult(::testing::TestPartResult const & iTestPartResult) override
+	{
+		if (iTestPartResult.failed())
+		{
+			ORWELL_LOG_ERROR("Failure in " << iTestPartResult.file_name()
+					<< ":" << iTestPartResult.line_number() << "\n"
+					<< iTestPartResult.summary());
+		}
+	}
+
+	// Called after a test ends.
+	void OnTestEnd(::testing::TestInfo const & iTestInfo) override
+	{
+		ORWELL_LOG_INFO("Test ends (" << iTestInfo.test_case_name() << "."
+				<< iTestInfo.name()<< ")\n");
+	}
+};
+
+int RunTest(int argc, char ** argv, std::string const& iTestName);
 
 std::ostream & operator<<(
 		std::ostream & ioOstream,

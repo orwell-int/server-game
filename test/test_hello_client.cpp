@@ -22,18 +22,12 @@
 #include <mutex>
 #include <thread>
 
-using namespace log4cxx;
-
-using namespace orwell::com;
-using namespace orwell::messages;
-using namespace std;
-
 int g_status = 0;
 
 static void ExpectWelcome(
-		string const & iPlayerName,
-		string const & iExpectedRobotName,
-		Socket & ioRequester,
+		std::string const & iPlayerName,
+		std::string const & iExpectedRobotName,
+		orwell::com::Socket & ioRequester,
 		uint32_t const iMaxRetry = 0)
 {
 	int aLocalStatus;
@@ -41,12 +35,12 @@ static void ExpectWelcome(
 	do
 	{
 		aLocalStatus = 0;
-		Hello aHelloMessage;
+		orwell::messages::Hello aHelloMessage;
 		aHelloMessage.set_name(iPlayerName);
-		RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
+		orwell::com::RawMessage aMessage("randomid", "Hello", aHelloMessage.SerializeAsString());
 		ioRequester.send(aMessage);
 
-		RawMessage aResponse;
+		orwell::com::RawMessage aResponse;
 		ioRequester.receive(aResponse, true);
 		if ("Welcome" != aResponse._type)
 		{
@@ -57,7 +51,7 @@ static void ExpectWelcome(
 		}
 		else
 		{
-			Welcome aWelcome;
+			orwell::messages::Welcome aWelcome;
 			aWelcome.ParsePartialFromString(aResponse._payload);
 
 			if (aWelcome.robot() != iExpectedRobotName)
@@ -87,19 +81,19 @@ static void client(
 	ORWELL_LOG_INFO("client ...");
 	zmq::context_t aContext(1);
 	ORWELL_LOG_INFO("create subscriber");
-	Receiver aSubscriber(
+	orwell::com::Receiver aSubscriber(
 			orwell::com::Url("tcp", "localhost", iPublisherPort).toString(),
 			ZMQ_SUB,
 			orwell::com::ConnectionMode::CONNECT,
 			aContext);
 	ORWELL_LOG_INFO("create pusher");
-	Sender aPusher(
+	orwell::com::Sender aPusher(
 			orwell::com::Url("tcp", "localhost", iPullerPort).toString(),
 			ZMQ_PUSH,
 			orwell::com::ConnectionMode::CONNECT,
 			aContext);
 	ORWELL_LOG_INFO("create requester");
-	Socket aRequester(
+	orwell::com::Socket aRequester(
 			orwell::com::Url("tcp", "localhost", iReplierPort).toString(),
 			ZMQ_REQ,
 			orwell::com::ConnectionMode::CONNECT,
@@ -114,13 +108,13 @@ static void client(
 	ExpectWelcome("poulet", "Securitron", aRequester);
 
 	// this tests the case where there is no longer any available robot
-	Hello aHelloMessage2;
+	orwell::messages::Hello aHelloMessage2;
 	aHelloMessage2.set_name("rutabagas");
 
-	RawMessage aMessage2("randomid", "Hello", aHelloMessage2.SerializeAsString());
+	orwell::com::RawMessage aMessage2("randomid", "Hello", aHelloMessage2.SerializeAsString());
 	aPusher.send(aMessage2);
 
-	RawMessage aResponse2;
+	orwell::com::RawMessage aResponse2;
 	if (not Common::ExpectMessage("Goodbye", aSubscriber, aResponse2))
 	{
 		ORWELL_LOG_ERROR("Expected Goodbye but received '" << aResponse2._type << "'");

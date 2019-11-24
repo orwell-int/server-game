@@ -1,6 +1,5 @@
 #include "orwell/com/Socket.hpp"
 
-//std
 #include <iostream>
 #include <unistd.h>
 #include <ctype.h>
@@ -12,8 +11,6 @@
 
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/com/RawMessage.hpp"
-
-using std::string;
 
 namespace orwell
 {
@@ -78,11 +75,22 @@ bool Socket::receiveString(
 	{
 		aFlags = ZMQ_NOBLOCK;
 	}
-	bool const aReceived = m_zmqSocket->recv(&aZmqMessage, aFlags);
+	bool aReceived(false);
+	try
+	{
+		aReceived = m_zmqSocket->recv(&aZmqMessage, aFlags);
+	}
+	catch (zmq::error_t const & aException)
+	{
+		ORWELL_LOG_ERROR(
+				"Exception while trying to receive with zmq:\n"
+				<< aException.what());
+	}
 	if (aReceived)
 	{
 		ORWELL_LOG_TRACE("message received");
-		oMessage = string(static_cast<char*>(aZmqMessage.data()), aZmqMessage.size());
+		oMessage = std::string(
+				static_cast<char*>(aZmqMessage.data()), aZmqMessage.size());
 		ORWELL_LOG_DEBUG("message received: '" << Repr(oMessage) << "'");
 	}
 	return aReceived;
@@ -92,21 +100,21 @@ bool Socket::receive(
 		RawMessage & oMessage,
 		bool const iBlocking)
 {
-	string aType;
-	string aPayload;
-	string aDest;
+	std::string aType;
+	std::string aPayload;
+	std::string aDest;
 
 	std::string aMessageData;
 	bool const aReceived = receiveString(aMessageData, iBlocking);
 	if (aReceived)
 	{
 		size_t aEndDestFlag = aMessageData.find(" ", 0);
-		if (string::npos != aEndDestFlag)
+		if (std::string::npos != aEndDestFlag)
 		{
 			aDest = aMessageData.substr(0, aEndDestFlag);
 
 			size_t aEndTypeFlag = aMessageData.find(" ", aEndDestFlag + 1);
-			if (aEndTypeFlag != string::npos)
+			if (aEndTypeFlag != std::string::npos)
 			{
 				aType = aMessageData.substr(
 						aEndDestFlag + 1, aEndTypeFlag - aEndDestFlag - 1);
@@ -117,7 +125,9 @@ bool Socket::receive(
 		oMessage._type = aType;
 		oMessage._routingId = aDest;
 		oMessage._payload = aPayload;
-		ORWELL_LOG_DEBUG("Received message : type='" << aType << "' dest='" << aDest << "'");
+		ORWELL_LOG_DEBUG(
+				"Received message : type='"
+				<< aType << "' dest='" << aDest << "'");
 	}
 	return aReceived;
 }
@@ -132,6 +142,12 @@ void Socket::sendString(std::string const & iMessage) const
 		m_zmqSocket->send(aZmqMessage);
 		ORWELL_LOG_TRACE("Sent " << iMessage);
 	}
+	catch (zmq::error_t const & aException)
+	{
+		ORWELL_LOG_ERROR(
+				"Exception while trying to send with zmq:\n"
+				<< aException.what());
+	}
 	catch (...)
 	{
 		ORWELL_LOG_TRACE("Failed to send zmq message.");
@@ -140,7 +156,7 @@ void Socket::sendString(std::string const & iMessage) const
 
 void Socket::send(RawMessage const & iMessage) const
 {
-	string aMessage;
+	std::string aMessage;
 	aMessage += iMessage._routingId;
 	aMessage += " ";
 	aMessage += iMessage._type;
@@ -169,18 +185,21 @@ void Socket::innerReset()
 
 	if (ZMQ_SUB == m_socketType)
 	{
-		string atag;
+		std::string atag;
 		m_zmqSocket->setsockopt(ZMQ_SUBSCRIBE, atag.c_str(), atag.size());
 	}
 	if (ConnectionMode::BIND == m_connectionMode)
 	{
-		ORWELL_LOG_INFO("Socket " << m_socketType << " binds on " << m_url.c_str());
+		ORWELL_LOG_INFO(
+				"Socket " << m_socketType << " binds on " << m_url.c_str());
 		m_zmqSocket->bind(m_url.c_str());
 	}
 	else
 	{
 		assert(ConnectionMode::CONNECT == m_connectionMode);
-		ORWELL_LOG_INFO("Socket " << m_socketType << " connects to '" << m_url.c_str() << "'");
+		ORWELL_LOG_INFO(
+				"Socket " << m_socketType
+				<< " connects to '" << m_url.c_str() << "'");
 		m_zmqSocket->connect(m_url.c_str());
 	}
 }

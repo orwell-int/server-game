@@ -26,13 +26,22 @@ class Team;
 class Robot
 {
 public:
+	static std::shared_ptr< Robot> MakeRobot(
+			support::ISystemProxy const & iSystemProxy,
+			std::string const & iName,
+			std::string const & iRobotId,
+			Team & ioTeam,
+			uint16_t const & iVideoRetransmissionPort,
+			uint16_t const & iServerCommandPort);
+
 	Robot(
 			support::ISystemProxy const & iSystemProxy,
 			std::string const & iName,
 			std::string const & iRobotId,
-			Team & iTeam,
+			Team & ioTeam,
 			uint16_t const & iVideoRetransmissionPort,
 			uint16_t const & iServerCommandPort);
+
 	~Robot();
 
 	Team & getTeam();
@@ -40,11 +49,11 @@ public:
 	Team const & getTeam() const;
 
 	void setHasRealRobot(bool const iHasRealRobot);
-	bool const getHasRealRobot() const;
+	bool getHasRealRobot() const;
 
 	void setPlayer(std::shared_ptr< Player > const iPlayer);
-	std::shared_ptr< Player > const getPlayer() const;
-	bool const getHasPlayer() const;
+	std::shared_ptr< Player > getPlayer() const;
+	bool getHasPlayer() const;
 
 	void setVideoUrl(std::string const & iVideoUrl);
 	std::string const & getVideoUrl() const;
@@ -56,7 +65,7 @@ public:
 	std::string const & getName() const;
 	std::string const & getRobotId() const;
 
-	bool const getIsAvailable() const;
+	bool getIsAvailable() const;
 
 	void fire();
 	void stop();

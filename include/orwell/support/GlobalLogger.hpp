@@ -14,11 +14,11 @@ namespace support
 class GlobalLogger
 {
 public :
-	/// The first logger created with be the one used.
+	/// The first logger created will be the one used.
 	/// \param iName
 	///  Used to identify the logger.
 	/// \param iOutput
-	///  Nane of the file used to write the logs to.
+	///  Name of the file used to write the logs to.
 	/// \param iDebug
 	///  Activate all logs if true (only INFO and above allowed otherwise).
 	static void Create(

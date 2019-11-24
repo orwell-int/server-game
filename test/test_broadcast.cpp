@@ -36,11 +36,6 @@
 
 #define MULTICAST_GROUP "225.0.0.42"
 
-using namespace log4cxx;
-
-using namespace orwell::com;
-using namespace orwell::messages;
-
 static orwell::BroadcastServer * ServerPtr;
 
 static void signal_handler(int signum)
@@ -67,10 +62,10 @@ struct IP4
 				(b1 == 0 and b2 == 0 and b3 == 0 and b4 == 0));
 	};
 
-	friend std::ostream & operator<<(std::ostream & _stream, IP4 const & ip4)
+	friend std::ostream & operator<<(std::ostream & ioStream, IP4 const & ip4)
 	{
-		_stream << (std::string) ip4;
-		return _stream;
+		ioStream << (std::string) ip4;
+		return ioStream;
 	};
 };
 

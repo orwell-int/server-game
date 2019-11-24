@@ -9,10 +9,6 @@
 
 #include <log4cxx/ndc.h>
 
-using namespace log4cxx;
-
-using namespace orwell::com;
-
 int main()
 {
 	orwell::support::GlobalLogger::Create(

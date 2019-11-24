@@ -11,7 +11,7 @@
 static void signal_handler(int iSignum)
 {
 	std::cerr << "In process " << getpid() << " ; Signal received: " << iSignum << std::endl;
-	// Stop the application whan a signal is received
+	// Stop the application when a signal is received
 	orwell::Application::GetInstance().stop();
 }
 

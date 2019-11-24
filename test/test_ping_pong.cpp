@@ -25,9 +25,6 @@
 
 #include "Common.hpp"
 
-using namespace orwell::com;
-using namespace orwell::messages;
-
 bool gPongReceived;
 bool gRegisteredReceived;
 int g_status = 0;
@@ -38,17 +35,15 @@ static void const ClientSendsPing(
 	int32_t iServerReplierPort,
 	std::string const & iRobotId)
 {
-	using namespace orwell::com;
-	using namespace orwell::messages;
 	log4cxx::NDC ndc("client");
 	zmq::context_t aContext(1);
 
-	Sender aPusher(
+	orwell::com::Sender aPusher(
 			orwell::com::Url("tcp", "localhost", iServerPullerPort).toString(),
 			ZMQ_PUSH,
 			orwell::com::ConnectionMode::CONNECT,
 			aContext);
-	Receiver aSubscriber(
+	orwell::com::Receiver aSubscriber(
 			orwell::com::Url("tcp", "localhost", iServerPublisherPort).toString(),
 			ZMQ_SUB,
 			orwell::com::ConnectionMode::CONNECT,
@@ -56,16 +51,16 @@ static void const ClientSendsPing(
 
 	Common::Synchronize(iServerReplierPort, aContext);
 
-	Ping aPingMessage;
+	orwell::messages::Ping aPingMessage;
 	orwell::messages::Timing * aTiming = aPingMessage.add_timing();
 	aTiming->set_logger("client");
 	aTiming->set_timestamp(42);
 
 	ORWELL_LOG_INFO("message built (size=" << aPingMessage.ByteSize() << ")");
 	std::string aType = "Ping";
-	RawMessage aMessage(iRobotId, aType, aPingMessage.SerializeAsString());
+	orwell::com::RawMessage aMessage(iRobotId, aType, aPingMessage.SerializeAsString());
 	aPusher.send(aMessage);
-	RawMessage aResponse;
+	orwell::com::RawMessage aResponse;
 	if (not Common::ExpectMessage("Pong", aSubscriber, aResponse))
 	{
 		ORWELL_LOG_ERROR("Expected Pong but received " << aResponse._type);
@@ -75,7 +70,7 @@ static void const ClientSendsPing(
 	else
 	{
 		gPongReceived = true;
-		Pong aPongMessage;
+		orwell::messages::Pong aPongMessage;
 		aPongMessage.ParseFromString(aResponse._payload);
 		ORWELL_LOG_INFO("aPongMessage.timing_size() = " << aPongMessage.timing_size());
 		for (int64_t i = 0 ; i < aPongMessage.timing_size() ; ++i)
@@ -104,10 +99,10 @@ static void const ClientSendsPing(
 }
 
 static void ExpectPing(
-		Sender & ioPusher,
-		Receiver & ioSubscriber)
+		orwell::com::Sender & ioPusher,
+		orwell::com::Receiver & ioSubscriber)
 {
-	RawMessage aResponse;
+	orwell::com::RawMessage aResponse;
 	if (not Common::ExpectMessage("Ping", ioSubscriber, aResponse))
 	{
 		ORWELL_LOG_ERROR("Expected Ping but received '" << aResponse._type << "'");
@@ -115,10 +110,10 @@ static void ExpectPing(
 	}
 	else
 	{
-		Ping aPing;
+		orwell::messages::Ping aPing;
 		aPing.ParseFromString(aResponse._payload);
 		ORWELL_LOG_INFO("Time to reply to ping with pong");
-		Pong aPong;
+		orwell::messages::Pong aPong;
 
 		for (int64_t i = 0 ; i < aPing.timing_size() ; ++i)
 		{
@@ -139,7 +134,7 @@ static void ExpectPing(
 		aNewTiming->set_timestamp(12345);
 		aNewTiming->set_elapsed(67);
 		ORWELL_LOG_INFO("pong: 'proxy' @12345 elapsed = 67");
-		RawMessage aMessage(
+		orwell::com::RawMessage aMessage(
 				aResponse._routingId,
 				"Pong",
 				aPong.SerializeAsString());
@@ -150,20 +145,20 @@ static void ExpectPing(
 
 static void ExpectRegistered(
 		std::string const & iTemporaryRobotId,
-		Sender & ioPusher,
-		Receiver & ioSubscriber)
+		orwell::com::Sender & ioPusher,
+		orwell::com::Receiver & ioSubscriber)
 {
-	Register aRegisterMessage;
+	orwell::messages::Register aRegisterMessage;
 	aRegisterMessage.set_temporary_robot_id(iTemporaryRobotId);
 	//aRegisterMessage.set_video_url("http://localhost:80");
 	aRegisterMessage.set_image("this is a photo of the robot.jpg");
-	RawMessage aMessage(
+	orwell::com::RawMessage aMessage(
 			iTemporaryRobotId,
 			"Register",
 			aRegisterMessage.SerializeAsString());
 	ioPusher.send(aMessage);
 
-	RawMessage aResponse;
+	orwell::com::RawMessage aResponse;
 	if (not Common::ExpectMessage("Registered", ioSubscriber, aResponse))
 	{
 		ORWELL_LOG_ERROR("Expected Registered but received '" << aResponse._type << "'");
@@ -171,7 +166,7 @@ static void ExpectRegistered(
 	}
 	else
 	{
-		Registered aRegistered;
+		orwell::messages::Registered aRegistered;
 		aRegistered.ParseFromString(aResponse._payload);
 		ORWELL_LOG_INFO("Robot registered");
 		gRegisteredReceived = true;
@@ -190,12 +185,12 @@ static void proxy(
 		boost::lexical_cast<std::string>(iServerPullerPort);
 	std::string aSubscriberUrl = "tcp://127.0.0.1:" +
 		boost::lexical_cast<std::string>(iServerPublisherPort);
-	Sender aPusher(
+	orwell::com::Sender aPusher(
 			aPusherUrl,
 			ZMQ_PUSH,
 			orwell::com::ConnectionMode::CONNECT,
 			aContext);
-	Receiver aSubscriber(
+	orwell::com::Receiver aSubscriber(
 			aSubscriberUrl,
 			ZMQ_SUB,
 			orwell::com::ConnectionMode::CONNECT,

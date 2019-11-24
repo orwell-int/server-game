@@ -1,7 +1,5 @@
 #include <sys/types.h>
 
-#include <boost/lexical_cast.hpp>
-
 #include <gtest/gtest.h>
 
 #include "orwell/Application.hpp"
@@ -67,116 +65,86 @@ TEST_F(TestAgentProxyJson, Test1)
 	std::string aRobotList;
 	std::string const aTeamName = "TEAM";
 	EXPECT_TRUE(aAgentProxy.step("add team " + aTeamName, aAgentReply));
-	// view team {
-	EXPECT_TRUE(aAgentProxy.step("view team TEAM", aAgentReply));
-	std::string aExpectedTeam(R"(Team TEAM:
-	score = 0 ; robots = [])");
-	EXPECT_EQ(aAgentReply, aExpectedTeam) << "view team KO";
-	// } view team
+	// json view team {
+	EXPECT_TRUE(aAgentProxy.step("json view team TEAM", aAgentReply));
+	std::string aExpectedTeam = R"({"Team":{"name":"TEAM","robots":[],"score":0}})";
+	EXPECT_EQ(aAgentReply, aExpectedTeam) << "empty team KO";
+	// } json view team
 	EXPECT_TRUE(aAgentProxy.step("add player Player1", aAgentReply));
 	EXPECT_TRUE(aAgentProxy.step("add robot Robot1 TEAM", aAgentReply));
-	// list team {
-	EXPECT_TRUE(aAgentProxy.step("list team", aTeamList));
+	// json list team {
+	EXPECT_TRUE(aAgentProxy.step("json list team", aTeamList));
 	ORWELL_LOG_DEBUG("aTeamList = " << aTeamList);
-	std::string aExpectedTeamList(R"(Teams:
-	TEAM
-)");
-	ASSERT_EQ(aTeamList, aExpectedTeamList) << "list team KO";
-	// } list team
-	// list player {
-	EXPECT_TRUE(aAgentProxy.step("list player", aPlayerList));
+	std::string aExpectedTeamList(R"({"Teams":["TEAM"]})");
+	ASSERT_EQ(aTeamList, aExpectedTeamList) << "json list team KO";
+	// } json list team
+	// json list player {
+	EXPECT_TRUE(aAgentProxy.step("json list player", aPlayerList));
 	ORWELL_LOG_DEBUG("aPlayerList = " << aPlayerList);
-	std::string aExpectedPlayerList(R"(Players:
-	Player1 -> name = Player1 ; robot = 
-)");
-	EXPECT_EQ(aPlayerList, aExpectedPlayerList) << "list player KO";
-	// } list player
-	// list robot {
-	EXPECT_TRUE(aAgentProxy.step("list robot", aRobotList));
+	std::string aExpectedPlayerList(R"({"Players":[{"name":"Player1","robot":""}]})");
+	EXPECT_EQ(aPlayerList, aExpectedPlayerList) << "json list player KO";
+	// } json list player
+	// json list robot {
+	EXPECT_TRUE(aAgentProxy.step("json list robot", aRobotList));
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
-	std::string aExpectedRobotList(R"(Robots:
-	Robot1 -> name = Robot1 ; not registered ; video_url =  ; player = 
-)");
-	EXPECT_EQ(aRobotList, aExpectedRobotList) << "list robot KO";
-	// } list robot
+	std::string aExpectedRobotList(
+			R"({"Robots":[{"name":"Robot1","player":"","registered":false,"team":"TEAM","video_url":""}]})");
+	EXPECT_EQ(aRobotList, aExpectedRobotList) << "json list robot KO";
+	// } json list robot
 	// register robot {
 	EXPECT_TRUE(aAgentProxy.step("register robot Robot1", aAgentReply));
 	// make sure that Robot1 is now registered
-	EXPECT_TRUE(aAgentProxy.step("list robot", aRobotList));
+	EXPECT_TRUE(aAgentProxy.step("json list robot", aRobotList));
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
-	aExpectedRobotList = (R"(Robots:
-	Robot1 -> name = Robot1 ; registered ; video_url =  ; player = 
-)");
+	aExpectedRobotList =
+		R"({"Robots":[{"name":"Robot1","player":"","registered":true,"team":"TEAM","video_url":""}]})";
 	EXPECT_EQ(aRobotList, aExpectedRobotList) << "register KO";
 	// } register robot
 	// set robot {
 	EXPECT_TRUE(aAgentProxy.step("set robot Robot1 video_url titi", aAgentReply));
 	// } set robot
-	// get / set team score {
-	std::string const aScore = "2";
-	EXPECT_TRUE(aAgentProxy.step("get team " + aTeamName + " score 0", aAgentReply));
-	EXPECT_TRUE(aAgentProxy.step("set team " + aTeamName + " score " + aScore, aAgentReply));
-	EXPECT_TRUE(aAgentProxy.step("get team " + aTeamName + " score " + aScore, aAgentReply));
-	EXPECT_EQ(aScore, aAgentReply);
-	// } get / set team score
 	// unregister robot {
 	EXPECT_TRUE(aAgentProxy.step("unregister robot Robot1", aAgentReply));
-	// make sure that Robot1 is now unregistered
-	EXPECT_TRUE(aAgentProxy.step("list robot", aRobotList));
-	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
-	aExpectedRobotList = (R"(Robots:
-	Robot1 -> name = Robot1 ; not registered ; video_url = titi ; player = 
-)");
-	EXPECT_EQ(aRobotList, aExpectedRobotList) << "unregister KO";
 	// } unregister robot
 	EXPECT_TRUE(aAgentProxy.step("start game", aAgentReply));
 	EXPECT_TRUE(aAgentProxy.step("stop game", aAgentReply));
 	EXPECT_TRUE(aAgentProxy.step("remove robot Robot1", aAgentReply));
 	// add robot with space in the name {
 	EXPECT_TRUE(aAgentProxy.step("add robot \"Robot One\" TEAM", aAgentReply));
-	EXPECT_TRUE(aAgentProxy.step("list robot", aRobotList));
+	EXPECT_TRUE(aAgentProxy.step("json list robot", aRobotList));
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
-	std::string aExpectedRobotListWithSpace(R"(Robots:
-	Robot One -> name = Robot One ; not registered ; video_url =  ; player = 
-)");
-	EXPECT_EQ(aRobotList, aExpectedRobotListWithSpace) << "list robot KO";
+	std::string const aExpectedRobotListWithSpace(
+			R"({"Robots":[{"name":"Robot One","player":"","registered":false,"team":"TEAM","video_url":""}]})");
+	EXPECT_EQ(aRobotList, aExpectedRobotListWithSpace) << "json list robot KO";
 	EXPECT_TRUE(aAgentProxy.step("remove robot \"Robot One\"", aAgentReply));
 	// } add robot with space in the name
-	// view team {
-	EXPECT_TRUE(aAgentProxy.step("view team TEAM", aAgentReply));
-	aExpectedTeam = R"(Team TEAM:
-	score = 0 ; robots = ["Robot1", "Robot One"])";
-	EXPECT_EQ(aAgentReply, aExpectedTeam) << "view team KO";
-	// } view team
+	// json view team {
+	EXPECT_TRUE(aAgentProxy.step("json view team TEAM", aAgentReply));
+	aExpectedTeam =
+			R"({"Team":{"name":"TEAM","robots":["Robot1","Robot One"],"score":0}})";
+	//EXPECT_EQ(aAgentReply, aExpectedTeam) << "json view team KO";
+	// } json view team
 	EXPECT_TRUE(aAgentProxy.step("remove player Player1", aAgentReply));
 	EXPECT_TRUE(aAgentProxy.step("remove team TEAM", aAgentReply));
-	EXPECT_TRUE(aAgentProxy.step("list team", aTeamList));
+	EXPECT_TRUE(aAgentProxy.step("json list team", aTeamList));
 	ORWELL_LOG_DEBUG("aTeamList = " << aTeamList);
-	aExpectedTeamList = (R"(Teams:
-)");
+	aExpectedTeamList = (R"({"Teams":[]})");
 	EXPECT_EQ(aTeamList, aExpectedTeamList) << "empty team KO";
-	EXPECT_TRUE(aAgentProxy.step("list player", aPlayerList));
+	EXPECT_TRUE(aAgentProxy.step("json list player", aPlayerList));
 	ORWELL_LOG_DEBUG("aPlayerList = " << aPlayerList);
-	aExpectedPlayerList = (R"(Players:
-)");
+	aExpectedPlayerList = (R"({"Players":[]})");
 	EXPECT_EQ(aPlayerList, aExpectedPlayerList) << "empty player KO";
-	EXPECT_TRUE(aAgentProxy.step("list robot", aRobotList));
+	EXPECT_TRUE(aAgentProxy.step("json list robot", aRobotList));
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
-	aExpectedRobotList = (R"(Robots:
-)");
-	// get and set game duration {
-	EXPECT_TRUE(aAgentProxy.step("get game duration", aAgentReply));
-	ASSERT_EQ(boost::lexical_cast< std::string >(gGameDuration), aAgentReply);
-	std::string const aNewGameDuration = "30";
-	EXPECT_TRUE(aAgentProxy.step("set game duration " + aNewGameDuration, aAgentReply));
-	EXPECT_TRUE(aAgentProxy.step("get game duration", aAgentReply));
-	ASSERT_EQ(aNewGameDuration, aAgentReply);
-	// } get and set game duration
+	aExpectedRobotList = (R"({"Robots":[]})");
 	EXPECT_EQ(aRobotList, aExpectedRobotList) << "empty robot KO";
+	EXPECT_TRUE(aAgentProxy.step("json view team TEAM", aAgentReply));
+	aExpectedTeam = R"({"Team":null})";
+	EXPECT_EQ(aAgentReply, aExpectedTeam) << "null team KO";
 	EXPECT_TRUE(aAgentProxy.step("stop application", aAgentReply));
 }
 
 int main(int argc, char **argv)
 {
-	return RunTest(argc, argv, "test_agent_proxy");
+	return RunTest(argc, argv, "test_agent_proxy_json");
 }

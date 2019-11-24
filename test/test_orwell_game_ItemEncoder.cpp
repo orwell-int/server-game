@@ -5,8 +5,6 @@
 #include <unistd.h>
 #include <cstdint>
 
-#include <log4cxx/ndc.h>
-
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/game/Item.hpp"
 #include "orwell/game/ItemEncoder.hpp"
@@ -83,11 +81,5 @@ TEST_F(TestOrwellGameItemEncoder, Create)
 
 int main(int argc, char ** argv)
 {
-	orwell::support::GlobalLogger::Create("test_orwell_game_ItemEncoder", "test_orwell_game_ItemEncoder.log", true);
-	log4cxx::NDC ndc("test_orwell_game_ItemEncoder");
-	ORWELL_LOG_INFO("Test starts\n");
-	::testing::InitGoogleTest(&argc, argv);
-	int aResult = RUN_ALL_TESTS();
-	orwell::support::GlobalLogger::Clear();
-	return aResult;
+	return RunTest(argc, argv, "test_orwell_game_ItemEncoder");
 }
