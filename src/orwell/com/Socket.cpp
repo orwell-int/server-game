@@ -185,8 +185,8 @@ void Socket::innerReset()
 
 	if (ZMQ_SUB == m_socketType)
 	{
-		std::string atag;
-		m_zmqSocket->setsockopt(ZMQ_SUBSCRIBE, atag.c_str(), atag.size());
+		std::string aTag;
+		m_zmqSocket->setsockopt(ZMQ_SUBSCRIBE, aTag.c_str(), aTag.size());
 	}
 	if (ConnectionMode::BIND == m_connectionMode)
 	{
