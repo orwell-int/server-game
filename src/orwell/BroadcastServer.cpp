@@ -103,7 +103,9 @@ void BroadcastServer::runBroadcastReceiver()
 			aVersion = atoi(aMessageBuffer);
 			memset(aMessageBuffer, 0, aReadSize);
 		}
-		ORWELL_LOG_INFO("Received an UDP broadcast version (" << aVersion << ")");
+		ORWELL_LOG_INFO(
+				"Received an UDP broadcast version (" << aVersion
+				<< ") from " << inet_ntoa(aClientAddress.sin_addr));
 
 		// Reply with PULLER and PUBLISHER url
 		// Since in UDP Discovery we are limited to 32 bytes (like ICMP_ECHO), build a binary message
