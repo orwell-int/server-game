@@ -23,13 +23,13 @@ public:
 	void stop();
 
 private:
-	bool _mainLoopRunning;
-	bool _forcedStop;
+	bool m_mainLoopRunning;
+	bool m_forcedStop;
 	uint16_t const m_broadcastPort;
-	std::string const _pullerUrl;
-	std::string const _publisherUrl;
-	std::string const _replierUrl;
-	std::string const _agentUrl;
+	std::string const m_pullerUrl;
+	std::string const m_publisherUrl;
+	std::string const m_replierUrl;
+	std::string const m_agentUrl;
 };
 
 }

@@ -25,13 +25,13 @@ BroadcastServer::BroadcastServer(
 		std::string const & iPublisherUrl,
 		std::string const & iReplierUrl,
 		std::string const & iAgentUrl)
-	: _mainLoopRunning(false)
-	, _forcedStop(false)
+	: m_mainLoopRunning(false)
+	, m_forcedStop(false)
 	, m_broadcastPort(iBroadcastPort)
-	, _pullerUrl(iPullerUrl)
-	, _publisherUrl(iPublisherUrl)
-	, _replierUrl(iReplierUrl)
-	, _agentUrl(iAgentUrl)
+	, m_pullerUrl(iPullerUrl)
+	, m_publisherUrl(iPublisherUrl)
+	, m_replierUrl(iReplierUrl)
+	, m_agentUrl(iAgentUrl)
 {
 }
 
@@ -81,12 +81,12 @@ void BroadcastServer::runBroadcastReceiver()
 	/* Set the RCV Timeout */
 	setsockopt(aBsdSocket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 
-	_mainLoopRunning = true;
+	m_mainLoopRunning = true;
 	ssize_t aReadSize;
 	int aVersion;
 	char aMessageBuffer[UDP_MESSAGE_LIMIT];
 	memset(aMessageBuffer, 0, UDP_MESSAGE_LIMIT);
-	while (_mainLoopRunning)
+	while (m_mainLoopRunning)
 	{
 		// Wait for message and fill the ClientAddress structure we will use to reply
 		aReadSize = recvfrom(
@@ -103,35 +103,37 @@ void BroadcastServer::runBroadcastReceiver()
 			aVersion = atoi(aMessageBuffer);
 			memset(aMessageBuffer, 0, aReadSize);
 		}
-		ORWELL_LOG_INFO("Received an UDP broadcast version (" << aVersion << ")");
+		ORWELL_LOG_INFO(
+				"Received an UDP broadcast version (" << aVersion
+				<< ") from " << inet_ntoa(aClientAddress.sin_addr));
 
 		// Reply with PULLER and PUBLISHER url
 		// Since in UDP Discovery we are limited to 32 bytes (like ICMP_ECHO), build a binary message
 		std::ostringstream aOstream;
 		if (aVersion >= 0)
 		{
-			aOstream << (uint8_t) 0xA0;                       // A0 identifies the Puller ( 1 byte )
-			aOstream << (uint8_t) _pullerUrl.size();          // size of puller url       ( 1 byte )
-			aOstream << (const char *) _pullerUrl.c_str();    // Address of puller url    (12 bytes)
-			aOstream << (uint8_t) 0xA1;                       // A1 is the Publisher      ( 1 byte )
-			aOstream << (uint8_t) _publisherUrl.size();       // size of publisher url    ( 1 byte )
-			aOstream << (const char *) _publisherUrl.c_str(); // Address of publisher     (12 bytes)
+			aOstream << (uint8_t) 0xA0;                        // A0 identifies the Puller ( 1 byte )
+			aOstream << (uint8_t) m_pullerUrl.size();          // size of puller url       ( 1 byte )
+			aOstream << (const char *) m_pullerUrl.c_str();    // Address of puller url    (12 bytes)
+			aOstream << (uint8_t) 0xA1;                        // A1 is the Publisher      ( 1 byte )
+			aOstream << (uint8_t) m_publisherUrl.size();       // size of publisher url    ( 1 byte )
+			aOstream << (const char *) m_publisherUrl.c_str(); // Address of publisher     (12 bytes)
 		}
 		if (aVersion >= 1)
 		{
-			aOstream << (uint8_t) 0xA2;                       // A2 is the REQ/REP        ( 1 byte )
-			aOstream << (uint8_t) _replierUrl.size();         // size of REQ/REP url      ( 1 byte )
-			aOstream << (const char *) _replierUrl.c_str();   // Address of REQ/REP       (12 bytes)
+			aOstream << (uint8_t) 0xA2;                        // A2 is the REQ/REP        ( 1 byte )
+			aOstream << (uint8_t) m_replierUrl.size();         // size of REQ/REP url      ( 1 byte )
+			aOstream << (const char *) m_replierUrl.c_str();   // Address of REQ/REP       (12 bytes)
 			// the rumour said 32 bytes was the limit but this still works even if bigger
 		}
 		if (aVersion >= 2)
 		{
-			aOstream << (uint8_t) 0xA3;                       // A3 is the agent          ( 1 byte )
-			aOstream << (uint8_t) _agentUrl.size();           // size of agent url        ( 1 byte )
-			aOstream << (const char *) _agentUrl.c_str();     // Address of agent         (12 bytes)
+			aOstream << (uint8_t) 0xA3;                        // A3 is the agent          ( 1 byte )
+			aOstream << (uint8_t) m_agentUrl.size();           // size of agent url        ( 1 byte )
+			aOstream << (const char *) m_agentUrl.c_str();     // Address of agent         (12 bytes)
 		}
-		aOstream << (uint8_t) 0x00;                           // End of message           ( 1 byte )
-		//                                                       Total                    (57 bytes)
+		aOstream << (uint8_t) 0x00;                            // End of message           ( 1 byte )
+		//                                                        Total                    (57 bytes)
 		ssize_t aMessageLength = sendto(
 				aBsdSocket,
 				aOstream.str().c_str(),
@@ -149,8 +151,8 @@ void BroadcastServer::runBroadcastReceiver()
 void BroadcastServer::stop()
 {
 	ORWELL_LOG_INFO("Terminating server main loop");
-	_forcedStop = true;
-	_mainLoopRunning = false;
+	m_forcedStop = true;
+	m_mainLoopRunning = false;
 }
 
 }

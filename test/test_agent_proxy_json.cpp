@@ -122,7 +122,7 @@ TEST_F(TestAgentProxyJson, Test1)
 	EXPECT_TRUE(aAgentProxy.step("json view team TEAM", aAgentReply));
 	aExpectedTeam =
 			R"({"Team":{"name":"TEAM","robots":["Robot1","Robot One"],"score":0}})";
-	//EXPECT_EQ(aAgentReply, aExpectedTeam) << "json view team KO";
+	EXPECT_EQ(aAgentReply, aExpectedTeam) << "json view team KO";
 	// } json view team
 	EXPECT_TRUE(aAgentProxy.step("remove player Player1", aAgentReply));
 	EXPECT_TRUE(aAgentProxy.step("remove team TEAM", aAgentReply));
