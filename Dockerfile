@@ -31,7 +31,6 @@ RUN apt-get install -y -qq libboost-all-dev
 RUN apt-get install -y -qq valgrind
 RUN apt-get install -y -qq libzmq3-dev
 RUN apt-get install -y -qq liblog4cxx10v5 liblog4cxx-dev
-RUN apt-get install -y -qq python2.7
 RUN apt-get install -y -qq lcov
 RUN apt-get install -y -qq libopencv-dev
 RUN apt-get install -y -qq gcovr
