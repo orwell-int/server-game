@@ -9,6 +9,9 @@ project(orwell)
 # Test suite
 include(CTest)
 
+# Compilation optimisation
+include(cotire)
+
 # Generate compile_commands.json (http://clang.llvm.org/docs/JSONCompilationDatabase.html).
 # It is used by YCM (https://github.com/Valloric/YouCompleteMe).
 # You just need to create a symbolic link to the build directory's compile_commands.json file
@@ -154,7 +157,7 @@ target_link_libraries(
 	${Boost_LIBRARIES}
 	${LOG4CXX_LIBRARIES}
 	${OpenCV_LIBS})
-
+cotire(server_main)
 
 OPTION(ORWELL_COVERAGE "Enables code coverage measurements with gcov/lcov." OFF)
 
