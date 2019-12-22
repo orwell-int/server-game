@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:19.10
 
 ## for apt to be noninteractive
 ENV DEBIAN_FRONTEND noninteractive
