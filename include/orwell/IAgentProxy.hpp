@@ -33,7 +33,7 @@ public :
 	virtual void removeTeam(std::string const & iTeamName) = 0;
 
 	/// get property <property> of team <name>
-	virtual void getTeam(
+	virtual bool getTeam(
 			std::string const & iTeamName,
 			std::string const & iProperty,
 			std::string & oValue) const = 0;
@@ -68,7 +68,7 @@ public :
 			std::string const & iValue) = 0;
 
 	/// get property <property> of robot <name>
-	virtual void getRobot(
+	virtual bool getRobot(
 			std::string const & iRobotName,
 			std::string const & iProperty,
 			std::string & oValue) const = 0;
@@ -89,7 +89,7 @@ public :
 	virtual void stopGame() = 0;
 
 	/// get property <property> of game
-	virtual void getGame(
+	virtual bool getGame(
 			std::string const & iProperty,
 			std::string & oValue) const = 0;
 

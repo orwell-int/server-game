@@ -138,7 +138,7 @@ public:
 
 	MOCK_METHOD1(removeTeam, void(std::string const & iTeamName));
 
-	MOCK_CONST_METHOD3(getTeam, void(
+	MOCK_CONST_METHOD3(getTeam, bool(
 			std::string const & iTeamName,
 			std::string const & iProperty,
 			std::string & oValue));
@@ -165,7 +165,7 @@ public:
 			std::string const & iProperty,
 			std::string const & iValue));
 
-	MOCK_CONST_METHOD3(getRobot, void(
+	MOCK_CONST_METHOD3(getRobot, bool(
 			std::string const & iRobotName,
 			std::string const & iProperty,
 			std::string & oValue));
@@ -180,7 +180,7 @@ public:
 
 	MOCK_METHOD0(stopGame, void());
 
-	MOCK_CONST_METHOD2(getGame, void(
+	MOCK_CONST_METHOD2(getGame, bool(
 			std::string const & iProperty,
 			std::string & oValue));
 

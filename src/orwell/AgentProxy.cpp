@@ -274,6 +274,7 @@ bool AgentProxy::step(
 		std::string & ioReply)
 {
 	ORWELL_LOG_DEBUG("AgentProxy::step(" << iCommand << ")");
+	ioReply.clear();
 	bool aResult = false;
 	std::string aAction;
 	using std::placeholders::_1;
@@ -303,6 +304,30 @@ bool AgentProxy::step(
 			{
 				aResult = false;
 			}
+		}
+	}
+	else if ("get" == aAction)
+	{
+		std::string aObject;
+		aStream >> aObject;
+		std::string aName;
+		if (("robot" == aObject) or ("team" == aObject))
+		{
+			ReadName(aStream, aName);
+		}
+		std::string aProperty;
+		aStream >> aProperty;
+		if ("robot" == aObject)
+		{
+			aResult = getRobot(aName, aProperty, ioReply);
+		}
+		else if ("team" == aObject)
+		{
+			aResult = getTeam(aName, aProperty, ioReply);
+		}
+		else if ("game" == aObject)
+		{
+			aResult = getGame(aProperty, ioReply);
 		}
 	}
 	else if ("view" == aAction)
@@ -486,33 +511,6 @@ bool AgentProxy::step(
 						ioReply);
 			}
 		}
-		else if ("get" == aAction)
-		{
-			std::string aObject;
-			aStream >> aObject;
-			std::string aName;
-			if (("robot" == aObject) or ("team" == aObject))
-			{
-				ReadName(aStream, aName);
-			}
-			std::string aProperty;
-			aStream >> aProperty;
-			if ("robot" == aObject)
-			{
-				getRobot(aName, aProperty, ioReply);
-				aResult = true;
-			}
-			else if ("team" == aObject)
-			{
-				getTeam(aName, aProperty, ioReply);
-				aResult = true;
-			}
-			else if ("game" == aObject)
-			{
-				getGame(aProperty, ioReply);
-				aResult = true;
-			}
-		}
 		else if ("ping" == aAction)
 		{
 			ioReply = "pong";
@@ -531,7 +529,23 @@ bool AgentProxy::step(
 	if (not aResult)
 	{
 		ORWELL_LOG_WARN("Command not parsed sucessfully: '" << iCommand << "'");
-		ioReply = "KO";
+		if (ioReply.empty())
+		{
+			switch (m_outputMode)
+			{
+				case OutputMode::kText:
+				{
+					ioReply = "KO";
+					break;
+				}
+				case OutputMode::kJson:
+				{
+					json aJson;
+					ioReply = aJson.dump();
+					break;
+				}
+			}
+		}
 	}
 	return aResult;
 }
@@ -581,11 +595,12 @@ void AgentProxy::removeTeam(std::string const & iTeamName)
 	m_application.accessServer()->accessContext().removeTeam(iTeamName);
 }
 
-void AgentProxy::getTeam(
+bool AgentProxy::getTeam(
 		std::string const & iTeamName,
 		std::string const & iProperty,
 		std::string & oValue) const
 {
+	bool aOK = false;
 	ORWELL_LOG_INFO("get team " << iTeamName << " " << iProperty);
 	try
 	{
@@ -594,23 +609,50 @@ void AgentProxy::getTeam(
 		if (orwell::game::Team::GetNeutralTeam() == aTeam)
 		{
 			ORWELL_LOG_WARN("Invalid team name '" << iTeamName << "'");
-			return;
+			return aOK;
 		}
-		if ("score" == iProperty)
+		switch (m_outputMode)
 		{
-			oValue = boost::lexical_cast< std::string >(aTeam.getScore());
-			ORWELL_LOG_INFO("score = " << oValue);
-		}
-		else
-		{
-			oValue = "KO";
-			ORWELL_LOG_WARN("Unknown property for a team: '" << iProperty << "'");
+			case OutputMode::kText:
+			{
+				if ("score" == iProperty)
+				{
+					oValue = boost::lexical_cast< std::string >(aTeam.getScore());
+					ORWELL_LOG_INFO("score = " << oValue);
+					aOK = true;
+				}
+				else
+				{
+					oValue = "KO";
+					ORWELL_LOG_WARN("Unknown property for a team: '" << iProperty << "'");
+				}
+				break;
+			}
+
+			case OutputMode::kJson:
+			{
+				json aJsonTeam;
+				if ("score" == iProperty)
+				{
+					aJsonTeam[iProperty] = aTeam.getScore();
+					aOK = true;
+				}
+				else
+				{
+					oValue = "KO";
+					ORWELL_LOG_WARN("Unknown property for a team: '" << iProperty << "'");
+				}
+				oValue = aJsonTeam.dump();
+				ORWELL_LOG_INFO(iProperty << " = " << oValue);
+				break;
+			}
 		}
 	}
 	catch (std::exception const & anException)
 	{
 		ORWELL_LOG_ERROR(anException.what());
 	}
+	return aOK;
 }
 
 void AgentProxy::setTeam(
@@ -762,45 +804,76 @@ void AgentProxy::setRobot(
 	}
 }
 
-void AgentProxy::getRobot(
+bool AgentProxy::getRobot(
 		std::string const & iRobotName,
 		std::string const & iProperty,
 		std::string & oValue) const
 {
+	bool aOK = false;
 	ORWELL_LOG_INFO("get robot '" << iRobotName << "' " << iProperty);
 	try
 	{
 		std::shared_ptr< orwell::game::Robot > aRobot =
 			m_application.accessServer()->accessContext().accessRobot(iRobotName);
-		if ("id" == iProperty)
+		switch (m_outputMode)
 		{
-			oValue = aRobot->getRobotId();
-			ORWELL_LOG_INFO("id = " << oValue);
-		}
-		else if ("video_url" == iProperty)
-		{
-			oValue = aRobot->getVideoUrl();
-		}
-		else if ("video_port" == iProperty)
-		{
-			oValue = boost::lexical_cast< std::string >(aRobot->getVideoRetransmissionPort());
-			ORWELL_LOG_INFO("video retransmission port = " << oValue);
-		}
-		else if ("video_command_port" == iProperty)
-		{
-			oValue = boost::lexical_cast< std::string >(aRobot->getServerCommandPort());
-			ORWELL_LOG_INFO("video retransmission port = " << oValue);
-		}
-		else
-		{
-			oValue = "KO";
-			ORWELL_LOG_WARN("Unknown property for a robot: '" << iProperty << "'");
+			case OutputMode::kText:
+			{
+				if ("id" == iProperty)
+				{
+					oValue = aRobot->getRobotId();
+					ORWELL_LOG_INFO("id = " << oValue);
+					aOK = true;
+				}
+				else if ("video_url" == iProperty)
+				{
+					oValue = aRobot->getVideoUrl();
+					aOK = true;
+				}
+				else if ("video_port" == iProperty)
+				{
+					oValue = boost::lexical_cast< std::string >(aRobot->getVideoRetransmissionPort());
+					ORWELL_LOG_INFO("video retransmission port = " << oValue);
+					aOK = true;
+				}
+				else if ("video_command_port" == iProperty)
+				{
+					oValue = boost::lexical_cast< std::string >(aRobot->getServerCommandPort());
+					ORWELL_LOG_INFO("video retransmission port = " << oValue);
+					aOK = true;
+				}
+				else
+				{
+					oValue = "KO";
+					ORWELL_LOG_WARN("Unknown property for a robot: '" << iProperty << "'");
+				}
+				break;
+			}
+
+			case OutputMode::kJson:
+			{
+				json aJsonRobot;
+				if ("id" == iProperty)
+				{
+					aJsonRobot[iProperty] = aRobot->getRobotId();
+					aOK = true;
+				}
+				// the other properties make no sense now
+				else
+				{
+					ORWELL_LOG_WARN("Unknown property for a robot: '" << iProperty << "'");
+				}
+				oValue = aJsonRobot.dump();
+				ORWELL_LOG_INFO(iProperty << " = " << oValue);
+				break;
+			}
 		}
 	}
 	catch (std::exception const & anException)
 	{
 		ORWELL_LOG_ERROR(anException.what());
 	}
+	return aOK;
 }
 
 void AgentProxy::listPlayer(std::string & ioReply) const
@@ -868,45 +941,80 @@ void AgentProxy::stopGame()
 	m_application.accessServer()->accessContext().stop();
 }
 
-void AgentProxy::getGame(
+bool AgentProxy::getGame(
 		std::string const & iProperty,
 		std::string & oValue) const
 {
+	bool aOK = false;
 	ORWELL_LOG_INFO("get game " << iProperty);
 	try
 	{
-		if ("time" == iProperty)
+		orwell::game::Game const& aGame = m_application.accessServer()->accessContext();
+		switch (m_outputMode)
 		{
-			oValue = boost::lexical_cast< std::string >(
-					m_application.accessServer()
-						->accessContext().getSecondsLeft());
-			ORWELL_LOG_INFO("time = " << oValue);
-		}
-		else if ("running" == iProperty)
-		{
-			oValue = boost::lexical_cast< std::string >(
-					m_application.accessServer()
-						->accessContext().getIsRunning());
-			ORWELL_LOG_INFO("running = " << oValue);
-		}
-		else if ("duration" == iProperty)
-		{
-			oValue = boost::lexical_cast< std::string >(
-					m_application.accessServer()
-						->accessContext().getDuration().total_seconds());
-			ORWELL_LOG_INFO("duration = " << oValue);
-		}
-		else
-		{
-			oValue = "KO";
-			ORWELL_LOG_WARN(
-					"Unknown property for a game: '" << iProperty << "'");
+			case OutputMode::kText:
+			{
+				if ("time" == iProperty)
+				{
+					oValue = boost::lexical_cast< std::string >(aGame.getSecondsLeft());
+					ORWELL_LOG_INFO("time = " << oValue);
+					aOK = true;
+				}
+				else if ("running" == iProperty)
+				{
+					oValue = boost::lexical_cast< std::string >(aGame.getIsRunning());
+					ORWELL_LOG_INFO("running = " << oValue);
+					aOK = true;
+				}
+				else if ("duration" == iProperty)
+				{
+					oValue = boost::lexical_cast< std::string >(aGame.getDuration().total_seconds());
+					ORWELL_LOG_INFO("duration = " << oValue);
+					aOK = true;
+				}
+				else
+				{
+					oValue = "KO";
+					ORWELL_LOG_WARN(
+							"Unknown property for a game: '" << iProperty << "'");
+				}
+				break;
+			}
+
+			case OutputMode::kJson:
+			{
+				json aJsonGame;
+				if ("time" == iProperty)
+				{
+					aJsonGame[iProperty] = aGame.getSecondsLeft();
+					aOK = true;
+				}
+				else if ("running" == iProperty)
+				{
+					aJsonGame[iProperty] = aGame.getIsRunning();
+					aOK = true;
+				}
+				else if ("duration" == iProperty)
+				{
+					aJsonGame[iProperty] = aGame.getDuration().total_seconds();
+					aOK = true;
+				}
+				else
+				{
+					ORWELL_LOG_WARN(
+							"Unknown property for a game: '" << iProperty << "'");
+				}
+				oValue = aJsonGame.dump();
+				ORWELL_LOG_INFO(iProperty << " = " << oValue);
+				break;
+			}
 		}
 	}
 	catch (std::exception const & anException)
 	{
 		ORWELL_LOG_ERROR(anException.what());
 	}
+	return aOK;
 }
 
 void AgentProxy::setGame(
