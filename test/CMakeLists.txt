@@ -66,6 +66,7 @@ FUNCTION(add_orwell_test test_filename)
 		${test_name}
 		orwell_server_game
 		orwell_test)
+	cotire(${test_name})
 	add_test(${test_name} ${CMAKE_CURRENT_BINARY_DIR}/${test_name})
 	foreach(configFile ${CONFIG})
 		add_custom_command(TARGET ${test_name} COMMAND ${CMAKE_COMMAND} -E copy_if_different ${configFile} ${CMAKE_CURRENT_BINARY_DIR})
@@ -84,6 +85,7 @@ FUNCTION(add_google_test test_filename)
 		${test_name}
 		orwell_server_game
 		orwell_test)
+	cotire(${test_name})
 	add_test(${test_name} ${CMAKE_CURRENT_BINARY_DIR}/${test_name})
 	foreach(configFile ${CONFIG})
 		add_custom_command(TARGET ${test_name} COMMAND ${CMAKE_COMMAND} -E copy_if_different ${configFile} ${CMAKE_CURRENT_BINARY_DIR})

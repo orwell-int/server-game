@@ -8,7 +8,7 @@ services:
     - docker
 
 before_install:
-    - docker pull ubuntu:18.04
+    - docker pull ubuntu:19.10
 
 script:
     - git submodule update --init
