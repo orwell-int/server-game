@@ -10,6 +10,19 @@
 
 uint32_t const gGameDuration = 10;
 
+namespace
+{
+std::string Replace(std::string iText, std::string const& iSearch, std::string const& iReplace)
+{
+	std::string::size_type const aIndex = iText.find(iSearch);
+	if (std::string::npos == aIndex)
+	{
+		return iText;
+	}
+	return iText.replace(aIndex, iSearch.size(), iReplace);
+}
+}
+
 class TestAgentProxyJson: public ::testing::Test
 {
 protected:
@@ -31,7 +44,6 @@ protected:
 		aCommandLineArguments.m_pullerPort = 9000;
 		aCommandLineArguments.m_agentPort = m_agentPort;
 		aCommandLineArguments.m_tickInterval = 500;
-		aCommandLineArguments.m_gameDuration = 300;
 		aCommandLineArguments.m_dryRun = true;
 		aCommandLineArguments.m_broadcast = false;
 		aCommandLineArguments.m_gameDuration = gGameDuration;
@@ -70,8 +82,16 @@ TEST_F(TestAgentProxyJson, Test1)
 	std::string aExpectedTeam = R"({"Team":{"name":"TEAM","robots":[],"score":0}})";
 	EXPECT_EQ(aAgentReply, aExpectedTeam) << "empty team KO";
 	// } json view team
+	// json get team score {
+	EXPECT_TRUE(aAgentProxy.step("json get team TEAM score", aAgentReply));
+	EXPECT_EQ(aAgentReply, R"({"score":0})");
+	// } json get team score
 	EXPECT_TRUE(aAgentProxy.step("add player Player1", aAgentReply));
 	EXPECT_TRUE(aAgentProxy.step("add robot Robot1 TEAM", aAgentReply));
+	// json get robot id {
+	EXPECT_TRUE(aAgentProxy.step("json get robot Robot1 id", aAgentReply));
+	EXPECT_EQ(aAgentReply, R"({"id":"robot_0"})");
+	// } json get robot id
 	// json list team {
 	EXPECT_TRUE(aAgentProxy.step("json list team", aTeamList));
 	ORWELL_LOG_DEBUG("aTeamList = " << aTeamList);
@@ -107,7 +127,6 @@ TEST_F(TestAgentProxyJson, Test1)
 	EXPECT_TRUE(aAgentProxy.step("unregister robot Robot1", aAgentReply));
 	// } unregister robot
 	EXPECT_TRUE(aAgentProxy.step("start game", aAgentReply));
-	EXPECT_TRUE(aAgentProxy.step("stop game", aAgentReply));
 	EXPECT_TRUE(aAgentProxy.step("remove robot Robot1", aAgentReply));
 	// add robot with space in the name {
 	EXPECT_TRUE(aAgentProxy.step("add robot \"Robot One\" TEAM", aAgentReply));
@@ -141,6 +160,21 @@ TEST_F(TestAgentProxyJson, Test1)
 	EXPECT_TRUE(aAgentProxy.step("json view team TEAM", aAgentReply));
 	aExpectedTeam = R"({"Team":null})";
 	EXPECT_EQ(aAgentReply, aExpectedTeam) << "null team KO";
+	// get game properties {
+	// Since the game has not run, time and duration are equal
+	EXPECT_TRUE(aAgentProxy.step("json get game duration", aAgentReply));
+	std::string aExpectedGame = Replace(
+			R"({"duration":%duration%})",
+			"%duration%",
+			std::to_string(gGameDuration));;
+	ASSERT_EQ(aAgentReply, aExpectedGame);
+	aExpectedGame = Replace(
+			aExpectedGame,
+			R"("duration")",
+			R"("time")");
+	EXPECT_TRUE(aAgentProxy.step("json get game time", aAgentReply));
+	EXPECT_EQ(aAgentReply, aExpectedGame);
+	// } get game properties
 	EXPECT_TRUE(aAgentProxy.step("stop application", aAgentReply));
 }
 

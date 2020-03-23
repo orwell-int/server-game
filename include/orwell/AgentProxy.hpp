@@ -43,7 +43,7 @@ public :
 	void removeTeam(std::string const & iTeamName) override;
 
 	/// get property <property> of team <name>
-	void getTeam(
+	bool getTeam(
 			std::string const & iTeamName,
 			std::string const & iProperty,
 			std::string & oValue) const override;
@@ -79,7 +79,7 @@ public :
 			std::string const & iValue) override;
 
 	/// get property <property> of robot <name>
-	void getRobot(
+	bool getRobot(
 			std::string const & iRobotName,
 			std::string const & iProperty,
 			std::string & oValue) const override;
@@ -101,7 +101,7 @@ public :
 	void stopGame() override;
 
 	/// get property <property> of game
-	void getGame(
+	bool getGame(
 			std::string const & iProperty,
 			std::string & oValue) const override;
 
