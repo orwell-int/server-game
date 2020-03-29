@@ -105,6 +105,7 @@ add_subdirectory(third_party/googletest/)
 
 # do not run tests
 set(JSON_BuildTests OFF CACHE INTERNAL "")
+set(JSON_MultipleHeaders ON CACHE INTERNAL "")
 add_subdirectory(third_party/nlohmann_json/)
 
 # } nlohmann_json

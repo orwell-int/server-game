@@ -25,12 +25,6 @@
 
 #include "MissingFromTheStandard.hpp"
 
-using std::map;
-using std::string;
-using std::pair;
-using std::shared_ptr;
-using std::make_shared;
-
 namespace orwell
 {
 namespace game
@@ -55,12 +49,17 @@ Game::~Game()
 }
 
 
-shared_ptr<Robot> Game::accessRobot(string const & iRobotName)
+std::shared_ptr<Robot> Game::accessRobot(std::string const & iRobotName)
 {
 	return m_robots.at(iRobotName);
 }
 
-shared_ptr< Robot > Game::accessRobotById(string const & iRobotName)
+std::shared_ptr<Robot const> Game::getRobot(std::string const & iRobotName) const
+{
+	return m_robots.at(iRobotName);
+}
+
+std::shared_ptr< Robot > Game::accessRobotById(std::string const & iRobotName)
 {
 	return m_robotsById.at(iRobotName);
 }
@@ -70,22 +69,22 @@ bool Game::getHasRobotById(std::string const & iRobotId) const
 	return (m_robotsById.end() != m_robotsById.find(iRobotId));
 }
 
-map<string, shared_ptr<Robot> > const & Game::getRobots() const
+std::map<std::string, std::shared_ptr<Robot> > const & Game::getRobots() const
 {
 	return m_robots;
 }
 
-std::shared_ptr< Player > Game::accessPlayer(string const & iPlayerName)
+std::shared_ptr< Player > Game::accessPlayer(std::string const & iPlayerName)
 {
 	return m_players.at(iPlayerName);
 }
 
-map< string, std::shared_ptr< Player > > const & Game::getPlayers()
+std::map< std::string, std::shared_ptr< Player > > const & Game::getPlayers() const
 {
 	return m_players;
 }
 
-bool Game::addPlayer(string const & iName)
+bool Game::addPlayer(std::string const & iName)
 {
 	bool aAddedPlayerSuccess = false;
 	if (m_players.find(iName) != m_players.end())
@@ -105,7 +104,7 @@ bool Game::addPlayer(string const & iName)
 	return aAddedPlayerSuccess;
 }
 
-bool Game::removePlayer(string const & iName)
+bool Game::removePlayer(std::string const & iName)
 {
 	bool aRemovedPlayerSuccess = false;
 	auto aFound = m_players.find(iName);
@@ -255,8 +254,8 @@ Team & Game::accessTeam(std::string const & iTeamName)
 }
 
 bool Game::addRobot(
-		string const & iName,
-		string const & iTeamName,
+		std::string const & iName,
+		std::string const & iTeamName,
 		uint16_t const iVideoRetransmissionPort,
 		uint16_t const iServerCommandPort,
 		std::string iRobotId)
@@ -276,26 +275,27 @@ bool Game::addRobot(
 		std::map<std::string, Team>::iterator aTeamIterator = m_teams.find(iTeamName);
 		if (m_teams.end() != aTeamIterator)
 		{
-			shared_ptr<Robot> aRobot = Robot::MakeRobot(
+			std::shared_ptr<Robot> aRobot = Robot::MakeRobot(
 					m_systemProxy,
 					iName,
 					iRobotId,
 					aTeamIterator->second,
 					iVideoRetransmissionPort,
 					iServerCommandPort);
-			m_robots.insert(pair< string, shared_ptr< Robot > >(iName, aRobot));
-			m_robotsById.insert(pair< string, shared_ptr< Robot > >(iRobotId, aRobot));
+			m_robots.insert(std::make_pair<>(iName, aRobot));
+			m_robotsById.insert(std::make_pair<>(iRobotId, aRobot));
 			ORWELL_LOG_INFO("new Robot added with name='" << iName << "', " <<
 					"ID='" << iRobotId << "'");
-			std::shared_ptr< item::FlagDetector > aFlagDetector = make_shared< item::FlagDetector >(*this, aRobot);
-			m_flagDetectorsByRobot.insert(pair< string, shared_ptr< item::FlagDetector > >(iRobotId, aFlagDetector));
+			std::shared_ptr< item::FlagDetector > aFlagDetector =
+				std::make_shared< item::FlagDetector >(*this, aRobot);
+			m_flagDetectorsByRobot.insert(std::make_pair<>(iRobotId, aFlagDetector));
 			aAddedRobotSuccess = true;
 		}
 	}
 	return aAddedRobotSuccess;
 }
 
-bool Game::removeRobot(string const & iName)
+bool Game::removeRobot(std::string const & iName)
 {
 	bool aRemovedRobotSuccess = false;
 	auto aFound = m_robots.find(iName);
@@ -317,7 +317,7 @@ void Game::step()
 std::shared_ptr< Robot > Game::getRobotWithoutRealRobot(
 		std::string const & iTemporaryRobotId) const
 {
-	shared_ptr< Robot > aFoundRobot;
+	std::shared_ptr< Robot > aFoundRobot;
 	auto const aRegistrationIterator = m_registeredRobots.find(iTemporaryRobotId);
 	if (m_registeredRobots.end() != aRegistrationIterator)
 	{
@@ -325,7 +325,7 @@ std::shared_ptr< Robot > Game::getRobotWithoutRealRobot(
 	}
 	else
 	{
-		map< string, std::shared_ptr< Robot > >::const_iterator aIterOnRobots;
+		std::map< std::string, std::shared_ptr< Robot > >::const_iterator aIterOnRobots;
 		aIterOnRobots = m_robots.begin();
 		while (aIterOnRobots != m_robots.end() && aIterOnRobots->second->getHasRealRobot())
 		{
@@ -344,10 +344,10 @@ std::shared_ptr< Robot > Game::getRobotWithoutRealRobot(
 
 std::shared_ptr<Robot> Game::getAvailableRobot() const
 {
-	shared_ptr<Robot> aFoundRobot;
+	std::shared_ptr<Robot> aFoundRobot;
 
 	//search for the first robot which is not already associated to a player
-	map<string, std::shared_ptr<Robot>>::const_iterator aIterOnRobots;
+	std::map<std::string, std::shared_ptr<Robot>>::const_iterator aIterOnRobots;
 	aIterOnRobots = m_robots.begin();
 	while (aIterOnRobots != m_robots.end() && (not aIterOnRobots->second->getIsAvailable()))
 	{
@@ -367,11 +367,11 @@ boost::optional< std::string > const & Game::getWinner() const
 	return m_winner;
 }
 
-std::shared_ptr< Robot > Game::getRobotForPlayer(string const & iPlayer) const
+std::shared_ptr< Robot > Game::getRobotForPlayer(std::string const & iPlayer) const
 {
 	std::shared_ptr< Robot > aFoundRobot;
 	
-	for (pair<string, std::shared_ptr<Robot>> const & aElemement : m_robots)
+	for (std::pair<std::string, std::shared_ptr<Robot>> const & aElemement : m_robots)
 	{
 		std::shared_ptr< Player > aPlayer = aElemement.second.get()->getPlayer();
 		if ((nullptr != aPlayer) and (aPlayer->getName() == iPlayer))
@@ -463,7 +463,7 @@ std::string Game::getNewRobotId() const
 
 void Game::readImages()
 {
-	for (pair<string, std::shared_ptr<Robot>> const & aElemement : m_robots)
+	for (std::pair<std::string, std::shared_ptr<Robot>> const & aElemement : m_robots)
 	{
 		aElemement.second->readImage();
 	}

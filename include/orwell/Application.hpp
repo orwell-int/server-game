@@ -12,7 +12,7 @@
 
 #include "orwell/game/Ruleset.hpp"
 #include "orwell/game/Landmark.hpp"
-#include "orwell/AgentProxy.hpp"
+#include "orwell/proxy/AgentProxy.hpp"
 
 namespace orwell
 {
@@ -24,7 +24,6 @@ class ISystemProxy;
 
 class Server;
 class BroadcastServer;
-class AgentProxy;
 
 
 struct Application_CommandLineParameters
@@ -90,7 +89,7 @@ public :
 	void clean();
 
 protected :
-	friend class AgentProxy;
+	friend class proxy::AgentProxy;
 	orwell::Server * accessServer(bool const iUnsafe = false);
 
 private:
@@ -135,7 +134,7 @@ private:
 		STOPPED,
 	};
 	State m_state;
-	orwell::AgentProxy m_agentProxy;
+	orwell::proxy::AgentProxy m_agentProxy;
 	std::vector< uint16_t > m_availablePorts;
 	std::vector< uint16_t > m_takenPorts;
 };
