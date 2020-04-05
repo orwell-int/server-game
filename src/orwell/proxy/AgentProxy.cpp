@@ -7,6 +7,7 @@
 
 #include "orwell/proxy/Tokens.hpp"
 #include "orwell/proxy/List.hpp"
+#include "orwell/proxy/View.hpp"
 #include "orwell/proxy/Get.hpp"
 #include "orwell/proxy/OutputMode.hpp"
 #include "orwell/proxy/SimpleTeam.hpp"
@@ -26,11 +27,13 @@ namespace proxy
 {
 
 static const List GlobalList;
+static const View GlobalView;
 static const Get GlobalGet;
 
 static const ActionMap GlobalActionMap =
 {
 	GlobalList.get(),
+	GlobalView.get(),
 	GlobalGet.get()
 };
 
@@ -135,18 +138,7 @@ bool AgentProxy::step(
 	else
 	{
 		ORWELL_LOG_DEBUG("Could NOT find '" << aAction << "' in GlobalActionMap");
-		if ("view" == aAction)
-		{
-			std::string aObject;
-			aStream >> aObject;
-			if ("team" == aObject)
-			{
-				std::string const aName = ReadName(aStream);
-				viewTeam(aName, ioReply);
-				aResult = true;
-			}
-		}
-		else if (OutputMode::kText == m_outputMode)
+		if (OutputMode::kText == m_outputMode)
 		{
 			if ("start" == aAction)
 			{
@@ -516,58 +508,6 @@ void AgentProxy::setGame(
 	catch (std::exception const & anException)
 	{
 		ORWELL_LOG_ERROR(anException.what());
-	}
-}
-
-void AgentProxy::viewTeam(
-		std::string const & iName,
-		std::string & oReply) const
-{
-	ORWELL_LOG_INFO("view team '" << iName << "' " << m_outputMode);
-	game::Team const & aTeam = m_application.accessServer()->accessContext().getTeam(iName);
-	switch (m_outputMode)
-	{
-		case OutputMode::kText:
-		{
-			if (aTeam.getIsNeutralTeam())
-			{
-				oReply = "Invalid team name (" + iName + ")";
-				return;
-			}
-			oReply = "Team " + iName + ":\n";
-			oReply += "\tscore = " + std::to_string(aTeam.getScore())  + " ; ";
-			oReply += "robots = [";
-
-			bool aFirst(true);
-			for (std::string const & aRobotName: aTeam.getRobots())
-			{
-				if (aFirst)
-				{
-					aFirst = false;
-				}
-				else
-				{
-					oReply += ", ";
-				}
-				oReply += "\"" + aRobotName + "\"";
-			}
-			oReply += "]";
-			break;
-		}
-		case OutputMode::kJson:
-		{
-			json aJsonTeam;
-			if (aTeam.getIsNeutralTeam())
-			{
-				aJsonTeam["Team"] = nullptr;
-			}
-			else
-			{
-				aJsonTeam["Team"] = SimpleTeam(aTeam);
-			}
-			oReply = aJsonTeam.dump();
-			break;
-		}
 	}
 }
 

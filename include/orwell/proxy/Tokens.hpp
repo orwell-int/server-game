@@ -20,6 +20,13 @@ static std::string const kGame("game");
 static std::string const kRobot("robot");
 static std::string const kPlayer("player");
 static std::string const kTeam("team");
+namespace reply
+{
+static std::string const kTeam("Team");
+static std::string const kTeams("Teams");
+static std::string const kPlayers("Players");
+static std::string const kRobots("Robots");
+}
 }
 
 namespace properties

@@ -37,7 +37,7 @@ Reply ListPlayer(
 	{
 		case OutputMode::kText:
 		{
-			aReply = "Players:\n";
+			aReply = objects::reply::kPlayers + ":\n";
 			for (auto const & aPair : aPlayers)
 			{
 				aReply += "\t" + aPair.first + " -> ";
@@ -63,7 +63,7 @@ Reply ListPlayer(
 			{
 				aPlayerList.push_back({ aPair.second });
 			}
-			aJsonPlayers["Players"] = aPlayerList;
+			aJsonPlayers[objects::reply::kPlayers] = aPlayerList;
 			aReply = aJsonPlayers.dump();
 			break;
 		}
@@ -85,7 +85,7 @@ Reply ListRobot(
 	{
 		case OutputMode::kText:
 		{
-			aReply = "Robots:\n";
+			aReply = objects::reply::kRobots + ":\n";
 			for (auto const & aPair : aRobots)
 			{
 				aReply += "\t" + aPair.first + " -> ";
@@ -117,7 +117,7 @@ Reply ListRobot(
 			{
 				aRobotList.push_back({ aPair.second });
 			}
-			aJsonRobots["Robots"] = aRobotList;
+			aJsonRobots[objects::reply::kRobots] = aRobotList;
 			aReply = aJsonRobots.dump();
 			break;
 		}
@@ -139,7 +139,7 @@ Reply ListTeam(
 	{
 		case OutputMode::kText:
 		{
-			aReply = "Teams:\n";
+			aReply = objects::reply::kTeams + ":\n";
 			for (auto const & aTeam : aTeams)
 			{
 				aReply += "\t" + aTeam + "\n";
@@ -149,7 +149,7 @@ Reply ListTeam(
 		case OutputMode::kJson:
 		{
 			json aJsonTeams;
-			aJsonTeams["Teams"] = aTeams;
+			aJsonTeams[objects::reply::kTeams] = aTeams;
 			aReply = aJsonTeams.dump();
 			break;
 		}
