@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 
 #include "orwell/Application.hpp"
-#include "orwell/AgentProxy.hpp"
+#include "orwell/proxy/AgentProxy.hpp"
 #include "orwell/Server.hpp"
 
 #include "Common.hpp"
@@ -21,6 +21,7 @@ protected:
 
 	static void TearDownTestSuite()
 	{
+		orwell::Application::GetInstance().stop();
 	}
 
 	TestAgentProxyJson()
@@ -60,7 +61,7 @@ TEST_F(TestAgentProxyJson, Test1)
 {
 	TestAgent aTestAgent(m_agentPort);
 	ORWELL_LOG_DEBUG("test_1");
-	orwell::AgentProxy aAgentProxy(m_application);
+	orwell::proxy::AgentProxy aAgentProxy(m_application);
 	std::string aAgentReply;
 	std::string aTeamList;
 	std::string aPlayerList;

@@ -24,7 +24,7 @@
 #include "orwell/com/RawMessage.hpp"
 #include "orwell/callbacks/ProcessDecider.hpp"
 #include "orwell/callbacks/ProcessTimer.hpp"
-#include "orwell/AgentProxy.hpp"
+#include "orwell/proxy/AgentProxy.hpp"
 
 #define UDP_MESSAGE_LIMIT 512
 
@@ -38,7 +38,7 @@ namespace orwell
 
 Server::Server(
 		support::ISystemProxy const & iSystemProxy,
-		orwell::IAgentProxy & ioAgentProxy,
+		orwell::proxy::IAgentProxy & ioAgentProxy,
 		game::Ruleset const & iRuleset,
 		std::string const & iAgentUrl,
 		std::string const & iPullUrl,

@@ -64,7 +64,6 @@ protected:
 	uint32_t const m_gameDuration;
 	long const m_ticDuration;
 	FakeSystemProxy m_fakeSystemProxy;
-	FakeAgentProxy m_fakeAgentProxy;
 	orwell::game::Ruleset m_ruleset;
 	std::string const m_agentUrl;
 	std::string const m_pullUrl;

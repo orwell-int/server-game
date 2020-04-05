@@ -10,7 +10,7 @@
 
 #include <zmq.hpp>
 
-#include "orwell/IAgentProxy.hpp"
+#include "orwell/proxy/IAgentProxy.hpp"
 #include "orwell/support/ISystemProxy.hpp"
 #include "orwell/com/Socket.hpp"
 #include "orwell/IServer.hpp"
@@ -123,74 +123,12 @@ public:
 
 };
 
-class FakeAgentProxy : public orwell::IAgentProxy
+class FakeAgentProxy : public orwell::proxy::IAgentProxy
 {
 public:
 	MOCK_METHOD2(step, bool(
 				std::string const & iCommand,
 				std::string & ioReply));
-
-	MOCK_METHOD0(stopApplication, void());
-	
-	MOCK_CONST_METHOD1(listTeam, void(std::string & ioReply));
-
-	MOCK_METHOD1(addTeam, void(std::string const & iTeamName));
-
-	MOCK_METHOD1(removeTeam, void(std::string const & iTeamName));
-
-	MOCK_CONST_METHOD3(getTeam, bool(
-			std::string const & iTeamName,
-			std::string const & iProperty,
-			std::string & oValue));
-
-	MOCK_METHOD3(setTeam, void(
-			std::string const & iTeamName,
-			std::string const & iProperty,
-			std::string const & iValue));
-
-	MOCK_CONST_METHOD1(listRobot, void(std::string & ioReply));
-
-	MOCK_METHOD2(addRobot, void(
-				std::string const & iRobotName,
-				std::string const & iTeamName));
-
-	MOCK_METHOD1(removeRobot, void(std::string const & iRobotName));
-
-	MOCK_METHOD1(registerRobot, void(std::string const & iRobotName));
-	
-	MOCK_METHOD1(unregisterRobot, void(std::string const & iRobotName));
-	
-	MOCK_METHOD3(setRobot, void(
-			std::string const & iRobotName,
-			std::string const & iProperty,
-			std::string const & iValue));
-
-	MOCK_CONST_METHOD3(getRobot, bool(
-			std::string const & iRobotName,
-			std::string const & iProperty,
-			std::string & oValue));
-
-	MOCK_CONST_METHOD1(listPlayer, void(std::string & ioReply));
-
-	MOCK_METHOD1(addPlayer, void(std::string const & iPlayerName));
-
-	MOCK_METHOD1(removePlayer, void(std::string const & iPlayerName));
-
-	MOCK_METHOD0(startGame, void());
-
-	MOCK_METHOD0(stopGame, void());
-
-	MOCK_CONST_METHOD2(getGame, bool(
-			std::string const & iProperty,
-			std::string & oValue));
-
-	MOCK_METHOD2(setGame, void(
-			std::string const & iProperty,
-			uint32_t const iValue));
-
-	MOCK_CONST_METHOD2(viewTeam, void(
-			std::string const & iName,
-			std::string & oReply));
 };
 
 struct TempFile

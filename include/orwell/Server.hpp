@@ -21,7 +21,10 @@ class Receiver;
 class Sender;
 }
 
+namespace proxy
+{
 class IAgentProxy;
+}
 
 class Server : public IServer
 {
@@ -33,7 +36,7 @@ public:
 	///  Duration of the game in seconds.
 	Server(
 			support::ISystemProxy const & iSystemProxy,
-			orwell::IAgentProxy & ioAgentProxy,
+			orwell::proxy::IAgentProxy & ioAgentProxy,
 			game::Ruleset const & iRuleset,
 			std::string const & iAgentUrl =  "tcp://*:9003",
 			std::string const & iPullUrl = "tcp://*:9000",
@@ -65,7 +68,7 @@ private:
 			orwell::com::RawMessage & ioMessage);
 
 	zmq::context_t m_zmqContext;
-	orwell::IAgentProxy & m_agentProxy;
+	orwell::proxy::IAgentProxy & m_agentProxy;
 	std::shared_ptr< com::Socket > m_agentSocket;
 	std::shared_ptr< com::Receiver > m_puller;
 	std::shared_ptr< com::Sender > m_publisher;
