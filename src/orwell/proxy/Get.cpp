@@ -60,7 +60,7 @@ Reply GetRobot(
 				}
 				else
 				{
-					aReply.fail("KO");
+					aReply.fail(actions::reply::kKO);
 					ORWELL_LOG_WARN(
 							"Unknown property for a robot: '" <<
 							iProperty << "'");
@@ -127,7 +127,7 @@ Reply GetTeam(
 				}
 				else
 				{
-					aReply.fail("KO");
+					aReply.fail(actions::reply::kKO);
 					ORWELL_LOG_WARN("Unknown property for a team: '" << iProperty << "'");
 				}
 				break;
@@ -189,7 +189,7 @@ Reply GetGame(
 				}
 				else
 				{
-					aReply.fail("KO");
+					aReply.fail(actions::reply::kKO);
 					ORWELL_LOG_WARN(
 							"Unknown property for a game: '" << iProperty << "'");
 				}

@@ -25,6 +25,7 @@
 #include "orwell/callbacks/ProcessDecider.hpp"
 #include "orwell/callbacks/ProcessTimer.hpp"
 #include "orwell/proxy/AgentProxy.hpp"
+#include "orwell/proxy/Tokens.hpp"
 
 #define UDP_MESSAGE_LIMIT 512
 
@@ -170,7 +171,7 @@ void Server::feedAgentProxy(bool const iBlocking)
 {
 	std::string aMessage;
 	ORWELL_LOG_TRACE("Try to read agent command ...");
-	std::string aReply("KO");
+	std::string aReply(proxy::actions::reply::kKO);
 	if (m_agentSocket->receiveString(aMessage, iBlocking))
 	{
 		ORWELL_LOG_DEBUG("command received: '" << aMessage << "'");
