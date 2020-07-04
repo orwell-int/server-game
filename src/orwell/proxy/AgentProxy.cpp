@@ -7,6 +7,7 @@
 
 #include "orwell/proxy/Tokens.hpp"
 #include "orwell/proxy/List.hpp"
+#include "orwell/proxy/View.hpp"
 #include "orwell/proxy/Get.hpp"
 #include "orwell/proxy/OutputMode.hpp"
 #include "orwell/proxy/SimpleTeam.hpp"
@@ -26,11 +27,13 @@ namespace proxy
 {
 
 static const List GlobalList;
+static const View GlobalView;
 static const Get GlobalGet;
 
 static const ActionMap GlobalActionMap =
 {
 	GlobalList.get(),
+	GlobalView.get(),
 	GlobalGet.get()
 };
 
@@ -115,11 +118,6 @@ bool AgentProxy::step(
 	using std::placeholders::_1;
 	std::istringstream aStream(iCommand);
 	aStream >> aAction;
-	for (auto aPair: GlobalActionMap)
-	{
-		ORWELL_LOG_DEBUG("GlobalActionMap has key '" << aPair.first << "' -> name = '" << aPair.second.get().getName() << "'");
-		ORWELL_LOG_DEBUG("Check get.first = '" << aPair.second.get().get().first << "'");
-	}
 	ActionMap::const_iterator aActionPair = GlobalActionMap.find(aAction);
 	if (GlobalActionMap.end() != aActionPair)
 	{
@@ -135,24 +133,13 @@ bool AgentProxy::step(
 	else
 	{
 		ORWELL_LOG_DEBUG("Could NOT find '" << aAction << "' in GlobalActionMap");
-		if ("view" == aAction)
+		if (OutputMode::kText == m_outputMode)
 		{
-			std::string aObject;
-			aStream >> aObject;
-			if ("team" == aObject)
-			{
-				std::string const aName = ReadName(aStream);
-				viewTeam(aName, ioReply);
-				aResult = true;
-			}
-		}
-		else if (OutputMode::kText == m_outputMode)
-		{
-			if ("start" == aAction)
+			if (actions::kStart == aAction)
 			{
 				std::string aObject;
 				aStream >> aObject;
-				if ("game" == aObject)
+				if (objects::kGame == aObject)
 				{
 					Dispatch(
 							aStream,
@@ -161,11 +148,11 @@ bool AgentProxy::step(
 							ioReply);
 				}
 			}
-			else if ("stop" == aAction)
+			else if (actions::kStop == aAction)
 			{
 				std::string aObject;
 				aStream >> aObject;
-				if ("application" == aObject)
+				if (objects::kApplication == aObject)
 				{
 					Dispatch(
 							aStream,
@@ -173,7 +160,7 @@ bool AgentProxy::step(
 							aResult,
 							ioReply);
 				}
-				else if ("game" == aObject)
+				else if (objects::kGame == aObject)
 				{
 					Dispatch(
 							aStream,
@@ -182,11 +169,11 @@ bool AgentProxy::step(
 							ioReply);
 				}
 			}
-			else if ("add" == aAction)
+			else if (actions::kAdd == aAction)
 			{
 				std::string aObject;
 				aStream >> aObject;
-				if ("team" == aObject)
+				if (objects::kTeam == aObject)
 				{
 					DispatchArgument(
 							aStream,
@@ -194,7 +181,7 @@ bool AgentProxy::step(
 							aResult,
 							ioReply);
 				}
-				else if ("robot" == aObject)
+				else if (objects::kRobot == aObject)
 				{
 					std::string const aName = ReadName(aStream);
 					std::string const aTeam = ReadName(aStream);
@@ -204,7 +191,7 @@ bool AgentProxy::step(
 							aResult,
 							ioReply);
 				}
-				else if ("player" == aObject)
+				else if (objects::kPlayer == aObject)
 				{
 					DispatchArgument(
 							aStream,
@@ -213,11 +200,11 @@ bool AgentProxy::step(
 							ioReply);
 				}
 			}
-			else if ("remove" == aAction)
+			else if (actions::kRemove == aAction)
 			{
 				std::string aObject;
 				aStream >> aObject;
-				if ("team" == aObject)
+				if (objects::kTeam == aObject)
 				{
 					DispatchArgument(
 							aStream,
@@ -225,7 +212,7 @@ bool AgentProxy::step(
 							aResult,
 							ioReply);
 				}
-				else if ("robot" == aObject)
+				else if (objects::kRobot == aObject)
 				{
 					DispatchArgument(
 							aStream,
@@ -233,7 +220,7 @@ bool AgentProxy::step(
 							aResult,
 							ioReply);
 				}
-				else if ("player" == aObject)
+				else if (objects::kPlayer == aObject)
 				{
 					DispatchArgument(
 							aStream,
@@ -242,11 +229,11 @@ bool AgentProxy::step(
 							ioReply);
 				}
 			}
-			else if ("register" == aAction)
+			else if (actions::kRegister == aAction)
 			{
 				std::string aObject;
 				aStream >> aObject;
-				if ("robot" == aObject)
+				if (objects::kRobot == aObject)
 				{
 					DispatchArgument(
 							aStream,
@@ -255,11 +242,11 @@ bool AgentProxy::step(
 							ioReply);
 				}
 			}
-			else if ("unregister" == aAction)
+			else if (actions::kUnregister == aAction)
 			{
 				std::string aObject;
 				aStream >> aObject;
-				if ("robot" == aObject)
+				if (objects::kRobot == aObject)
 				{
 					DispatchArgument(
 							aStream,
@@ -268,11 +255,11 @@ bool AgentProxy::step(
 							ioReply);
 				}
 			}
-			else if ("set" == aAction)
+			else if (actions::kSet == aAction)
 			{
 				std::string aObject;
 				aStream >> aObject;
-				if ("game" == aObject)
+				if (objects::kGame == aObject)
 				{
 					std::string aProperty;
 					aStream >> aProperty;
@@ -284,7 +271,7 @@ bool AgentProxy::step(
 							aResult,
 							ioReply);
 				}
-				else if ("robot" == aObject)
+				else if (objects::kRobot == aObject)
 				{
 					std::string const aName = ReadName(aStream);
 					std::string aProperty;
@@ -297,7 +284,7 @@ bool AgentProxy::step(
 							aResult,
 							ioReply);
 				}
-				else if ("team" == aObject)
+				else if (objects::kTeam == aObject)
 				{
 					std::string const aName = ReadName(aStream);
 					std::string aProperty;
@@ -311,12 +298,12 @@ bool AgentProxy::step(
 							ioReply);
 				}
 			}
-			else if ("ping" == aAction)
+			else if (actions::kPing == aAction)
 			{
-				ioReply = "pong";
+				ioReply = actions::reply::kPong;
 				aResult = true;
 			}
-			else if ("json" == aAction)
+			else if (modes::kJson == aAction)
 			{
 				SwitchOutputMode aSentinel(OutputMode::kJson, *this);
 				std::string const aNewCommand(iCommand.substr(std::string("json ").size()));
@@ -335,7 +322,7 @@ bool AgentProxy::step(
 				{
 					case OutputMode::kText:
 					{
-						ioReply = "KO";
+						ioReply = actions::reply::kKO;
 						break;
 					}
 					case OutputMode::kJson:
@@ -516,58 +503,6 @@ void AgentProxy::setGame(
 	catch (std::exception const & anException)
 	{
 		ORWELL_LOG_ERROR(anException.what());
-	}
-}
-
-void AgentProxy::viewTeam(
-		std::string const & iName,
-		std::string & oReply) const
-{
-	ORWELL_LOG_INFO("view team '" << iName << "' " << m_outputMode);
-	game::Team const & aTeam = m_application.accessServer()->accessContext().getTeam(iName);
-	switch (m_outputMode)
-	{
-		case OutputMode::kText:
-		{
-			if (aTeam.getIsNeutralTeam())
-			{
-				oReply = "Invalid team name (" + iName + ")";
-				return;
-			}
-			oReply = "Team " + iName + ":\n";
-			oReply += "\tscore = " + std::to_string(aTeam.getScore())  + " ; ";
-			oReply += "robots = [";
-
-			bool aFirst(true);
-			for (std::string const & aRobotName: aTeam.getRobots())
-			{
-				if (aFirst)
-				{
-					aFirst = false;
-				}
-				else
-				{
-					oReply += ", ";
-				}
-				oReply += "\"" + aRobotName + "\"";
-			}
-			oReply += "]";
-			break;
-		}
-		case OutputMode::kJson:
-		{
-			json aJsonTeam;
-			if (aTeam.getIsNeutralTeam())
-			{
-				aJsonTeam["Team"] = nullptr;
-			}
-			else
-			{
-				aJsonTeam["Team"] = SimpleTeam(aTeam);
-			}
-			oReply = aJsonTeam.dump();
-			break;
-		}
 	}
 }
 

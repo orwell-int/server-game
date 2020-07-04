@@ -83,11 +83,6 @@ public :
 			std::string const & iProperty,
 			uint32_t const iValue);
 
-	/// view a team in details
-	void viewTeam(
-			std::string const & iName,
-			std::string & oReply) const;
-
 protected :
 	friend class SwitchOutputMode;
 	void setOutputMode(OutputMode const iOutputMode);

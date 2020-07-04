@@ -13,6 +13,23 @@ namespace modes
 static std::string const kJson("json");
 }
 
+namespace actions
+{
+static std::string const kStart("start");
+static std::string const kStop("stop");
+static std::string const kAdd("add");
+static std::string const kRemove("remove");
+static std::string const kRegister("register");
+static std::string const kUnregister("unregister");
+static std::string const kSet("set");
+static std::string const kPing("ping");
+namespace reply
+{
+static std::string const kPong("pong");
+static std::string const kKO("KO");
+}
+}
+
 namespace objects
 {
 static std::string const kApplication("application");
@@ -20,6 +37,13 @@ static std::string const kGame("game");
 static std::string const kRobot("robot");
 static std::string const kPlayer("player");
 static std::string const kTeam("team");
+namespace reply
+{
+static std::string const kTeam("Team");
+static std::string const kTeams("Teams");
+static std::string const kPlayers("Players");
+static std::string const kRobots("Robots");
+}
 }
 
 namespace properties
