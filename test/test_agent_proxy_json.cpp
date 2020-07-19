@@ -12,14 +12,24 @@ uint32_t const gGameDuration = 10;
 
 namespace
 {
-std::string Replace(std::string iText, std::string const& iSearch, std::string const& iReplace)
+struct Replacement
 {
-	std::string::size_type const aIndex = iText.find(iSearch);
-	if (std::string::npos == aIndex)
+	std::string const m_search;
+	std::string const m_replace;
+};
+
+std::string Replace(std::string iText, std::vector< Replacement> const & iReplacements)
+{
+	for (auto const & aReplacement: iReplacements)
 	{
-		return iText;
+
+		std::string::size_type const aIndex = iText.find(aReplacement.m_search);
+		if (std::string::npos != aIndex)
+		{
+			iText =  iText.replace(aIndex, aReplacement.m_search.size(), aReplacement.m_replace);
+		}
 	}
-	return iText.replace(aIndex, iSearch.size(), iReplace);
+	return iText;
 }
 }
 
@@ -127,7 +137,6 @@ TEST_F(TestAgentProxyJson, Test1)
 	// unregister robot {
 	EXPECT_TRUE(aAgentProxy.step("unregister robot Robot1", aAgentReply));
 	// } unregister robot
-	EXPECT_TRUE(aAgentProxy.step("start game", aAgentReply));
 	EXPECT_TRUE(aAgentProxy.step("remove robot Robot1", aAgentReply));
 	// add robot with space in the name {
 	EXPECT_TRUE(aAgentProxy.step("add robot \"Robot One\" TEAM", aAgentReply));
@@ -163,17 +172,14 @@ TEST_F(TestAgentProxyJson, Test1)
 	EXPECT_EQ(aAgentReply, aExpectedTeam) << "null team KO";
 	// get game properties {
 	// Since the game has not run, time and duration are equal
-	EXPECT_TRUE(aAgentProxy.step("json get game duration", aAgentReply));
 	std::string aExpectedGame = Replace(
-			R"({"duration":%duration%})",
-			"%duration%",
-			std::to_string(gGameDuration));;
-	ASSERT_EQ(aAgentReply, aExpectedGame);
-	aExpectedGame = Replace(
-			aExpectedGame,
-			R"("duration")",
-			R"("time")");
-	EXPECT_TRUE(aAgentProxy.step("json get game time", aAgentReply));
+			R"({"duration":%duration%,"running":false,"time":%time%})",
+			std::vector< Replacement >{
+			Replacement { "%duration%", std::to_string(gGameDuration) },
+			Replacement { "%time%", std::to_string(gGameDuration) }
+			}
+			);
+	EXPECT_TRUE(aAgentProxy.step("json get game", aAgentReply));
 	EXPECT_EQ(aAgentReply, aExpectedGame);
 	// } get game properties
 	EXPECT_TRUE(aAgentProxy.step("stop application", aAgentReply));
