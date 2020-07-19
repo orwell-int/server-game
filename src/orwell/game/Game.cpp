@@ -33,12 +33,10 @@ namespace game
 Game::Game(
 		support::ISystemProxy const & iSystemProxy,
 		boost::posix_time::time_duration const & iGameDuration,
-		Ruleset const & iRuleset,
-		IServer & ioServer)
+		Ruleset const & iRuleset)
 	: m_systemProxy(iSystemProxy)
 	, m_isRunning(false)
 	, m_gameDuration(iGameDuration)
-	, m_server(ioServer)
 	, m_ruleset(iRuleset)
 {
 	ORWELL_LOG_DEBUG("Game duration: " << m_gameDuration.total_seconds() << " second(s).");
@@ -160,7 +158,7 @@ void Game::start(
 	}
 	if (not m_isRunning)
 	{
-		for (auto const aPair : m_robots)
+		for (auto const & aPair : m_robots)
 		{
 			std::shared_ptr< Robot > aRobot = aPair.second;
 			try
@@ -194,7 +192,7 @@ void Game::stop()
 	ORWELL_LOG_INFO("GAME STOP");
 	if (m_isRunning)
 	{
-		for (auto const aPair : m_robots)
+		for (auto const & aPair : m_robots)
 		{
 			std::shared_ptr< Robot > aRobot = aPair.second;
 			aRobot->stop();
@@ -371,7 +369,7 @@ std::shared_ptr< Robot > Game::getRobotForPlayer(std::string const & iPlayer) co
 {
 	std::shared_ptr< Robot > aFoundRobot;
 	
-	for (std::pair<std::string, std::shared_ptr<Robot>> const & aElemement : m_robots)
+	for (auto const & aElemement : m_robots)
 	{
 		std::shared_ptr< Player > aPlayer = aElemement.second.get()->getPlayer();
 		if ((nullptr != aPlayer) and (aPlayer->getName() == iPlayer))
@@ -412,7 +410,7 @@ void Game::stopIfGameIsFinished()
 	else
 	{
 		std::vector< std::string > aWinningTeams;
-		for (std::pair< std::string, Team > const & aTeamElement : m_teams)
+		for (auto const & aTeamElement : m_teams)
 		{
 			if (aTeamElement.second.getScore() >= m_ruleset.m_scoreToWin)
 			{
@@ -447,8 +445,8 @@ std::string Game::getNewRobotId() const
 	while (aAlreadyThere)
 	{
 		aAlreadyThere = false;
-		aFullRobotId = aRobotIdPrefix + boost::lexical_cast< std::string >(aIndex);
-		for (std::pair< std::string, std::shared_ptr< Robot > > const & aElemement : m_robots)
+		aFullRobotId = aRobotIdPrefix + std::to_string(aIndex);
+		for (auto const & aElemement : m_robots)
 		{
 			if (aElemement.second->getRobotId() == aFullRobotId)
 			{
@@ -463,7 +461,7 @@ std::string Game::getNewRobotId() const
 
 void Game::readImages()
 {
-	for (std::pair<std::string, std::shared_ptr<Robot>> const & aElemement : m_robots)
+	for (auto const & aElemement : m_robots)
 	{
 		aElemement.second->readImage();
 	}

@@ -870,14 +870,14 @@ std::ostream & operator<<(
 	ioOstream << "dry run [" << iParameters.m_commandLineParameters.m_dryRun << "] ; ";
 	ioOstream << "broadcast [" << iParameters.m_commandLineParameters.m_broadcast << "] ";
 	ioOstream << "robots [";
-	for (auto const aPair : iParameters.m_robots)
+	for (auto const & aPair : iParameters.m_robots)
 	{
 		std::string const & aKey = aPair.first;
 		orwell::Application::Parameters::Robot const & aRobot = aPair.second;
 		ioOstream << aKey << ":" << aRobot.m_name << "@" << aRobot.m_team << ", ";
 	}
 	bool aFirstRfid;
-	for (auto const aPair : iParameters.m_items)
+	for (auto const & aPair : iParameters.m_items)
 	{
 		std::string const & aKey = aPair.first;
 		orwell::Application::Parameters::Item const & aItem = aPair.second;
