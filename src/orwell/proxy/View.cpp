@@ -2,14 +2,9 @@
 
 #include "orwell/proxy/OutputMode.hpp"
 #include "orwell/proxy/Tokens.hpp"
-#include "orwell/proxy/SimplePlayer.hpp"
-#include "orwell/proxy/SimpleRobot.hpp"
 #include "orwell/proxy/SimpleTeam.hpp"
 
-#include "orwell/Application.hpp"
 #include "orwell/game/Game.hpp"
-#include "orwell/game/Player.hpp"
-#include "orwell/game/Robot.hpp"
 #include "orwell/game/Team.hpp"
 
 #include "orwell/support/GlobalLogger.hpp"

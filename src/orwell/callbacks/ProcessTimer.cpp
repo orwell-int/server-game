@@ -48,13 +48,13 @@ void ProcessTimer::execute()
 	}
 	std::vector< std::string > aTeams;
 	m_game->getTeams(aTeams);
-	for (auto const aTeamName: aTeams)
+	for (auto const & aTeamName: aTeams)
 	{
 		orwell::messages::Team * aTeam = aGameState.add_teams();
 		aTeam->set_name(aTeamName);
 		aTeam->set_score(m_game->getTeam(aTeamName).getScore());
 	}
-	for (auto const aItem: game::Item::GetAllItems())
+	for (auto const & aItem: game::Item::GetAllItems())
 	{
 		messages::Item * aMessageItem = aGameState.add_items();
 		aItem->getEncoder()->encode(*aMessageItem);

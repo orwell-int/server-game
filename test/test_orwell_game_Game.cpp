@@ -31,8 +31,7 @@ protected:
 		, m_game(
 				m_fakeSystemProxy,
 				boost::posix_time::time_duration(0, 0, m_gameDuration),
-				m_ruleset,
-				m_server)
+				m_ruleset)
 		, m_now(boost::posix_time::microsec_clock::local_time())
 		, m_robotId("robot_id")
 		, m_teamName("team")

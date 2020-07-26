@@ -16,7 +16,6 @@
 
 namespace orwell
 {
-class IServer;
 
 namespace support
 {
@@ -45,8 +44,7 @@ public:
 	Game(
 			support::ISystemProxy const & iSystemProxy,
 			boost::posix_time::time_duration const & iGameDuration,
-			Ruleset const & iRuleset,
-			IServer & ioServer);
+			Ruleset const & iRuleset);
 	~Game();
 
 //	std::shared_ptr< com::Sender > getPublisher();
@@ -210,8 +208,6 @@ private:
 	typedef std::map< std::string, std::unique_ptr< Contact > > ContactMap;
 	//Contacts between robots and flags. The key is the robotId
 	ContactMap m_contacts;
-
-	IServer & m_server;
 
 	boost::optional< std::string > m_winner;
 
