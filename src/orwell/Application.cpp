@@ -625,6 +625,18 @@ void Application::run(Parameters const & iParam)
 	ORWELL_LOG_INFO("Exit normally.");
 }
 
+void Application::loopUntilOneMessageIsProcessed()
+{
+	if (State::RUNNING != m_state)
+	{
+		ORWELL_LOG_WARN(
+				"loopUntilOneMessageIsProcessed can only be called "
+				"when in state RUNNING");
+		return;
+	}
+	m_server->loopUntilOneMessageIsProcessed();
+}
+
 bool Application::stop()
 {
 	bool aStopped = false;

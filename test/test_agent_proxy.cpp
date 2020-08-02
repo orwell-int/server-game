@@ -1,14 +1,19 @@
-#include <sys/types.h>
-
-#include <boost/lexical_cast.hpp>
-
-#include <gtest/gtest.h>
-
 #include "orwell/Application.hpp"
 #include "orwell/proxy/AgentProxy.hpp"
 #include "orwell/Server.hpp"
 
+#include "orwell/com/RawMessage.hpp"
+
+#include "controller.pb.h"
+
 #include "Common.hpp"
+
+#include <gtest/gtest.h>
+
+#include <boost/lexical_cast.hpp>
+
+#include <sys/types.h>
+
 
 uint32_t const gGameDuration = 10;
 
@@ -27,11 +32,13 @@ protected:
 	TestAgentProxyJson()
 		: m_application(orwell::Application::GetInstance())
 		, m_agentPort(9003)
+		, m_replierPort(9002)
 	{
 
 		orwell::Application::CommandLineParameters aCommandLineArguments;
 		aCommandLineArguments.m_publisherPort = 9001;
 		aCommandLineArguments.m_pullerPort = 9000;
+		aCommandLineArguments.m_replierPort = m_replierPort;
 		aCommandLineArguments.m_agentPort = m_agentPort;
 		aCommandLineArguments.m_tickInterval = 500;
 		aCommandLineArguments.m_gameDuration = 300;
@@ -55,6 +62,7 @@ protected:
 
 	orwell::Application & m_application;
 	uint16_t const m_agentPort;
+	uint16_t const m_replierPort;
 };
 
 TEST_F(TestAgentProxyJson, Test1)
@@ -66,6 +74,7 @@ TEST_F(TestAgentProxyJson, Test1)
 	std::string aTeamList;
 	std::string aPlayerList;
 	std::string aRobotList;
+	std::string const aFakeAddress("1.2.3.4");
 	std::string const aTeamName = "TEAM";
 	EXPECT_TRUE(aAgentProxy.step("add team " + aTeamName, aAgentReply));
 	// view team {
@@ -88,15 +97,39 @@ TEST_F(TestAgentProxyJson, Test1)
 	EXPECT_TRUE(aAgentProxy.step("list player", aPlayerList));
 	ORWELL_LOG_DEBUG("aPlayerList = " << aPlayerList);
 	std::string aExpectedPlayerList(R"(Players:
-	Player1 -> name = Player1 ; robot = 
+	Player1 -> Player name = Player1 ; address =  ; robot = 
 )");
 	EXPECT_EQ(aPlayerList, aExpectedPlayerList) << "list player KO";
 	// } list player
+	// get / set player {
+	EXPECT_TRUE(aAgentProxy.step("get player Player1", aAgentReply));
+	ORWELL_LOG_DEBUG("Player1 = " << aAgentReply);
+	{
+		std::string const aExpectedPlayer(
+				R"(Player name = Player1 ; address =  ; robot = )");
+		EXPECT_EQ(aAgentReply, aExpectedPlayer) << "get player KO";
+	}
+	EXPECT_TRUE(
+			aAgentProxy.step("set player Player1 address " + aFakeAddress,
+				aAgentReply));
+	EXPECT_TRUE(aAgentProxy.step("get player Player1", aAgentReply));
+	ORWELL_LOG_DEBUG("Player1 = " << aAgentReply);
+	{
+		std::string const aExpectedPlayer = Common::Replace(
+				R"(Player name = Player1 ; address = %address% ; robot = )",
+				std::vector< Common::Replacement >{
+				Common::Replacement { "%address%", aFakeAddress }
+				}
+				);
+		EXPECT_EQ(aAgentReply, aExpectedPlayer)
+			<< "get player (with address) KO";
+	}
+	// } get / set player
 	// list robot {
 	EXPECT_TRUE(aAgentProxy.step("list robot", aRobotList));
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
 	std::string aExpectedRobotList(R"(Robots:
-	Robot1 -> name = Robot1 ; not registered ; video_url =  ; player = 
+	Robot1 -> Robot name = Robot1 ; not registered ; video_url =  ; player = 
 )");
 	EXPECT_EQ(aRobotList, aExpectedRobotList) << "list robot KO";
 	// } list robot
@@ -106,13 +139,50 @@ TEST_F(TestAgentProxyJson, Test1)
 	EXPECT_TRUE(aAgentProxy.step("list robot", aRobotList));
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
 	aExpectedRobotList = (R"(Robots:
-	Robot1 -> name = Robot1 ; registered ; video_url =  ; player = 
+	Robot1 -> Robot name = Robot1 ; registered ; video_url =  ; player = 
 )");
 	EXPECT_EQ(aRobotList, aExpectedRobotList) << "register KO";
 	// } register robot
+	// get robot {
+	EXPECT_TRUE(aAgentProxy.step("get robot Robot1", aAgentReply));
+	ORWELL_LOG_DEBUG("Robot1 = " << aAgentReply);
+	std::string const aExpectedRobot =
+		(R"(Robot name = Robot1 ; registered ; video_url =  ; player = )");
+	EXPECT_EQ(aAgentReply, aExpectedRobot) << "get robot KO";
+	// } get robot
 	// set robot {
 	EXPECT_TRUE(aAgentProxy.step("set robot Robot1 video_url titi", aAgentReply));
 	// } set robot
+
+	orwell::messages::Hello aHelloMessage;
+	aHelloMessage.set_name("PlayerWithAddress");
+	aHelloMessage.set_address(aFakeAddress);
+	orwell::com::RawMessage aMessage(
+			"randomid", "Hello", aHelloMessage.SerializeAsString());
+	std::string const aRequesterUrl =
+		"tcp://127.0.0.1:" + std::to_string(m_replierPort);
+	ORWELL_LOG_INFO("create requester");
+	zmq::context_t aContext;
+	orwell::com::Socket aRequester(
+			aRequesterUrl,
+			ZMQ_REQ,
+			orwell::com::ConnectionMode::CONNECT,
+			aContext);
+	aRequester.send(aMessage);
+
+	// make the application handle the Hello message
+	m_application.loopUntilOneMessageIsProcessed();
+	orwell::com::RawMessage aResponse;
+	aRequester.receive(aResponse, true);
+	EXPECT_EQ(aResponse._type, "Welcome")
+		<< "The response to Hello should be Welcome";
+	std::string aPlayerAddress;
+	EXPECT_TRUE(aAgentProxy.step(
+				"get player PlayerWithAddress address", aPlayerAddress));
+	EXPECT_EQ(aPlayerAddress, aFakeAddress);
+	EXPECT_TRUE(aAgentProxy.step(
+				"remove player PlayerWithAddress", aAgentReply));
+
 	// get / set team score {
 	std::string const aScore = "2";
 	EXPECT_TRUE(aAgentProxy.step("get team " + aTeamName + " score 0", aAgentReply));
@@ -126,7 +196,7 @@ TEST_F(TestAgentProxyJson, Test1)
 	EXPECT_TRUE(aAgentProxy.step("list robot", aRobotList));
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
 	aExpectedRobotList = (R"(Robots:
-	Robot1 -> name = Robot1 ; not registered ; video_url = titi ; player = 
+	Robot1 -> Robot name = Robot1 ; not registered ; video_url = titi ; player = 
 )");
 	EXPECT_EQ(aRobotList, aExpectedRobotList) << "unregister KO";
 	// } unregister robot
@@ -138,7 +208,7 @@ TEST_F(TestAgentProxyJson, Test1)
 	EXPECT_TRUE(aAgentProxy.step("list robot", aRobotList));
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
 	std::string aExpectedRobotListWithSpace(R"(Robots:
-	Robot One -> name = Robot One ; not registered ; video_url =  ; player = 
+	Robot One -> Robot name = Robot One ; not registered ; video_url =  ; player = 
 )");
 	EXPECT_EQ(aRobotList, aExpectedRobotListWithSpace) << "list robot KO";
 	EXPECT_TRUE(aAgentProxy.step("remove robot \"Robot One\"", aAgentReply));
@@ -149,6 +219,7 @@ TEST_F(TestAgentProxyJson, Test1)
 	score = 0 ; robots = ["Robot1", "Robot One"])";
 	EXPECT_EQ(aAgentReply, aExpectedTeam) << "view team KO";
 	// } view team
+
 	EXPECT_TRUE(aAgentProxy.step("remove player Player1", aAgentReply));
 	EXPECT_TRUE(aAgentProxy.step("remove team TEAM", aAgentReply));
 	EXPECT_TRUE(aAgentProxy.step("list team", aTeamList));
@@ -165,15 +236,24 @@ TEST_F(TestAgentProxyJson, Test1)
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
 	aExpectedRobotList = (R"(Robots:
 )");
+	EXPECT_EQ(aRobotList, aExpectedRobotList) << "empty robot KO";
 	// get and set game duration {
 	EXPECT_TRUE(aAgentProxy.step("get game duration", aAgentReply));
-	ASSERT_EQ(boost::lexical_cast< std::string >(gGameDuration), aAgentReply);
+	ASSERT_EQ(aAgentReply, std::to_string(gGameDuration));
 	std::string const aNewGameDuration = "30";
 	EXPECT_TRUE(aAgentProxy.step("set game duration " + aNewGameDuration, aAgentReply));
 	EXPECT_TRUE(aAgentProxy.step("get game duration", aAgentReply));
 	ASSERT_EQ(aNewGameDuration, aAgentReply);
+	EXPECT_TRUE(aAgentProxy.step("get game", aAgentReply));
+	std::string const aExpectedGame = Common::Replace(
+			R"(Game time = %time% ; running = 0 ; duration = %duration%)",
+			std::vector< Common::Replacement >{
+			Common::Replacement { "%duration%", aNewGameDuration },
+			Common::Replacement { "%time%", aNewGameDuration }
+			}
+			);
+	ASSERT_EQ(aExpectedGame, aAgentReply);
 	// } get and set game duration
-	EXPECT_EQ(aRobotList, aExpectedRobotList) << "empty robot KO";
 	EXPECT_TRUE(aAgentProxy.step("stop application", aAgentReply));
 }
 

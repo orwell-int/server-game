@@ -77,6 +77,11 @@ std::shared_ptr< Player > Game::accessPlayer(std::string const & iPlayerName)
 	return m_players.at(iPlayerName);
 }
 
+std::shared_ptr< Player const > Game::getPlayer(std::string const & iPlayerName) const
+{
+	return m_players.at(iPlayerName);
+}
+
 std::map< std::string, std::shared_ptr< Player > > const & Game::getPlayers() const
 {
 	return m_players;
@@ -525,6 +530,15 @@ std::weak_ptr< orwell::game::item::FlagDetector > Game::getFlagDetector(std::str
 		aResult = aFound->second;
 	}
 	return aResult;
+}
+
+std::string Game::getAsString() const
+{
+	std::string aReply = "Game ";
+	aReply += "time = " + std::to_string(getSecondsLeft()) + " ; ";
+	aReply += "running = " + std::to_string(m_isRunning) + " ; ";
+	aReply += "duration = " + std::to_string(m_gameDuration.total_seconds());
+	return aReply;
 }
 
 } // namespace game

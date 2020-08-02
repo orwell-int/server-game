@@ -19,7 +19,7 @@ namespace proxy
 
 struct SimpleRobot
 {
-	SimpleRobot(std::shared_ptr< game::Robot > const iRobot);
+	SimpleRobot(std::shared_ptr< game::Robot const > const iRobot);
 
 	SimpleRobot(SimpleRobot const & iOther);
 

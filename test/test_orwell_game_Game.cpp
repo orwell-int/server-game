@@ -177,7 +177,7 @@ TEST_F(TestOrwellGameGame, RestartGameAfterWin)
 	m_game.start(true, m_now);
 	EXPECT_EQ(m_gameDuration, m_game.getSecondsLeft())
 		<< "We are back to the begining.";
-	EXPECT_FALSE(m_game.getWinner()) << "Game has a no winner yet.";
+	EXPECT_FALSE(m_game.getWinner()) << "Game has no winner yet.";
 }
 
 int main(int argc, char ** argv)

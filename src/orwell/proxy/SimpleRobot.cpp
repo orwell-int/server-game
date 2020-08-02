@@ -25,7 +25,7 @@ void to_json(json & oJson, SimpleRobot const & iRobot)
 }
 
 
-SimpleRobot::SimpleRobot(std::shared_ptr< game::Robot > const iRobot)
+SimpleRobot::SimpleRobot(std::shared_ptr< game::Robot const > const iRobot)
 	: m_name(iRobot->getName())
 	, m_player(iRobot->getHasPlayer() ? iRobot->getPlayer()->getName() : "")
 	, m_registered(iRobot->getHasRealRobot())

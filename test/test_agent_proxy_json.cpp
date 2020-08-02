@@ -10,29 +10,6 @@
 
 uint32_t const gGameDuration = 10;
 
-namespace
-{
-struct Replacement
-{
-	std::string const m_search;
-	std::string const m_replace;
-};
-
-std::string Replace(std::string iText, std::vector< Replacement> const & iReplacements)
-{
-	for (auto const & aReplacement: iReplacements)
-	{
-
-		std::string::size_type const aIndex = iText.find(aReplacement.m_search);
-		if (std::string::npos != aIndex)
-		{
-			iText =  iText.replace(aIndex, aReplacement.m_search.size(), aReplacement.m_replace);
-		}
-	}
-	return iText;
-}
-}
-
 class TestAgentProxyJson: public ::testing::Test
 {
 protected:
@@ -86,6 +63,7 @@ TEST_F(TestAgentProxyJson, Test1)
 	std::string aTeamList;
 	std::string aPlayerList;
 	std::string aRobotList;
+	std::string const aFakeAddress("5.6.7.8");
 	std::string const aTeamName = "TEAM";
 	EXPECT_TRUE(aAgentProxy.step("add team " + aTeamName, aAgentReply));
 	// json view team {
@@ -112,9 +90,29 @@ TEST_F(TestAgentProxyJson, Test1)
 	// json list player {
 	EXPECT_TRUE(aAgentProxy.step("json list player", aPlayerList));
 	ORWELL_LOG_DEBUG("aPlayerList = " << aPlayerList);
-	std::string aExpectedPlayerList(R"({"Players":[{"name":"Player1","robot":""}]})");
+	std::string aExpectedPlayerList(R"({"Players":[{"address":"","name":"Player1","robot":""}]})");
 	EXPECT_EQ(aPlayerList, aExpectedPlayerList) << "json list player KO";
 	// } json list player
+	// json get player {
+	EXPECT_TRUE(aAgentProxy.step("json get player Player1", aAgentReply));
+	ORWELL_LOG_DEBUG("Player1 = " << aAgentReply);
+	{
+		std::string const aExpectedPlayer(R"({"address":"","name":"Player1","robot":""})");
+		EXPECT_EQ(aAgentReply, aExpectedPlayer) << "json get player KO";
+	}
+	EXPECT_TRUE(aAgentProxy.step("set player Player1 address " + aFakeAddress, aAgentReply));
+	EXPECT_TRUE(aAgentProxy.step("json get player Player1", aAgentReply));
+	ORWELL_LOG_DEBUG("Player1 = " << aAgentReply);
+	{
+		std::string const aExpectedPlayer = Common::Replace(
+				R"({"address":"%address%","name":"Player1","robot":""})",
+				std::vector< Common::Replacement >{
+				Common::Replacement { "%address%", aFakeAddress },
+				}
+				);
+		EXPECT_EQ(aAgentReply, aExpectedPlayer) << "json get player (with address) KO";
+	}
+	// } json get player
 	// json list robot {
 	EXPECT_TRUE(aAgentProxy.step("json list robot", aRobotList));
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
@@ -172,11 +170,11 @@ TEST_F(TestAgentProxyJson, Test1)
 	EXPECT_EQ(aAgentReply, aExpectedTeam) << "null team KO";
 	// get game properties {
 	// Since the game has not run, time and duration are equal
-	std::string aExpectedGame = Replace(
+	std::string const aExpectedGame = Common::Replace(
 			R"({"duration":%duration%,"running":false,"time":%time%})",
-			std::vector< Replacement >{
-			Replacement { "%duration%", std::to_string(gGameDuration) },
-			Replacement { "%time%", std::to_string(gGameDuration) }
+			std::vector< Common::Replacement >{
+			Common::Replacement { "%duration%", std::to_string(gGameDuration) },
+			Common::Replacement { "%time%", std::to_string(gGameDuration) }
 			}
 			);
 	EXPECT_TRUE(aAgentProxy.step("json get game", aAgentReply));

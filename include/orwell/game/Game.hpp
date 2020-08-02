@@ -53,9 +53,11 @@ public:
 	std::shared_ptr<Robot const> getRobot(std::string const & iRobotName) const;
 	std::shared_ptr<Robot> accessRobotById(std::string const & iRobotId);
 	bool getHasRobotById(std::string const & iRobotId) const;
+	// key: robot name ; value: robot
 	std::map<std::string, std::shared_ptr<Robot> > const & getRobots() const;
 
 	std::shared_ptr< Player > accessPlayer(std::string const & iPlayerName);
+	std::shared_ptr< Player const > getPlayer(std::string const & iPlayerName) const;
 	std::map< std::string, std::shared_ptr< Player > > const & getPlayers() const;
 
 	bool getIsRunning() const;
@@ -174,6 +176,8 @@ public:
 
 	std::weak_ptr< orwell::game::item::FlagDetector > getFlagDetector(
 			std::string const & iRobotId);
+
+	std::string getAsString() const;
 private:
 	/// \return
 	///  A RobotID that is not already used.

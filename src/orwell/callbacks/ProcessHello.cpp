@@ -110,6 +110,14 @@ void ProcessHello::execute()
 		{
 			ORWELL_LOG_INFO("No robot available for player (" << aNewPlayerName << ")");
 		}
+		if (aHelloMessage.has_address())
+		{
+			std::shared_ptr< game::Player > aPlayer = m_game->accessPlayer(aNewPlayerName);
+			if (nullptr != aPlayer)
+			{
+				aPlayer->setAddress(aHelloMessage.address());
+			}
+		}
 	}
 	if (aFailure)
 	{

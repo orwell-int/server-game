@@ -85,6 +85,10 @@ public :
 			char * argv[],
 			Application::Parameters & oParam);
 	void run(Parameters const & iParam);
+	// When using dry-run allows to process incomming messages.
+	// Calls loopUntilOneMessageIsProcessed on the server.
+	// This is only supposed to be used in tests.
+	void loopUntilOneMessageIsProcessed();
 	bool stop();
 	void clean();
 
