@@ -22,10 +22,14 @@ public:
 	std::string const & getName() const;
 	std::shared_ptr< Robot > getRobot() const;
 	bool getHasRobot() const;
+	void setAddress(std::string const & iAddress);
+	std::string const & getAddress() const;
 
+	std::string getAsString() const;
 private:
 	std::string m_name;
 	std::weak_ptr< Robot > m_robot;
+	std::string m_address;
 };
 
 }

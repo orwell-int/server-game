@@ -16,6 +16,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include <boost/optional/optional_io.hpp>
+
 using json = nlohmann::json;
 
 namespace orwell
@@ -27,7 +29,7 @@ namespace proxy
 Reply GetRobot(
 		OutputMode const iOutputMode,
 		std::string const & iRobotName,
-		std::string const & iProperty,
+		boost::optional< std::string > const & iProperty,
 		orwell::game::Game const& iGame)
 {
 	Reply aReply;
@@ -40,30 +42,37 @@ Reply GetRobot(
 		{
 			case OutputMode::kText:
 			{
-				if (properties::robot::kId == iProperty)
+				if (iProperty)
 				{
-					aReply = aRobot->getRobotId();
-				}
-				else if ("video_url" == iProperty)
-				{
-					aReply = aRobot->getVideoUrl();
-				}
-				else if ("video_port" == iProperty)
-				{
-					aReply = std::to_string(
-							aRobot->getVideoRetransmissionPort());
-				}
-				else if ("video_command_port" == iProperty)
-				{
-					aReply = std::to_string(
-							aRobot->getServerCommandPort());
+					if (properties::robot::kId == *iProperty)
+					{
+						aReply = aRobot->getRobotId();
+					}
+					else if (properties::robot::kVideoUrl == *iProperty)
+					{
+						aReply = aRobot->getVideoUrl();
+					}
+					else if (properties::robot::kVideoPort == *iProperty)
+					{
+						aReply = std::to_string(
+								aRobot->getVideoRetransmissionPort());
+					}
+					else if (properties::robot::kVideoCommandPort == *iProperty)
+					{
+						aReply = std::to_string(
+								aRobot->getServerCommandPort());
+					}
+					else
+					{
+						aReply.fail(actions::reply::kKO);
+						ORWELL_LOG_WARN(
+								"Unknown property for a robot: '" <<
+								iProperty << "'");
+					}
 				}
 				else
 				{
-					aReply.fail(actions::reply::kKO);
-					ORWELL_LOG_WARN(
-							"Unknown property for a robot: '" <<
-							iProperty << "'");
+					aReply = aRobot->getAsString();
 				}
 				break;
 			}
@@ -71,17 +80,24 @@ Reply GetRobot(
 			case OutputMode::kJson:
 			{
 				json aJsonRobot;
-				if (properties::robot::kId == iProperty)
+				if (iProperty)
 				{
-					aJsonRobot[iProperty] = aRobot->getRobotId();
+					if (properties::robot::kId == *iProperty)
+					{
+						aJsonRobot[*iProperty] = aRobot->getRobotId();
+					}
+					// the other properties make no sense now
+					else
+					{
+						aReply.fail();
+						ORWELL_LOG_WARN(
+								"Unknown property for a robot: '" <<
+								iProperty << "'");
+					}
 				}
-				// the other properties make no sense now
 				else
 				{
-					aReply.fail();
-					ORWELL_LOG_WARN(
-							"Unknown property for a robot: '" <<
-							iProperty << "'");
+					to_json(aJsonRobot, aRobot);
 				}
 				aReply = aJsonRobot.dump();
 				break;
@@ -103,7 +119,7 @@ Reply GetRobot(
 Reply GetTeam(
 		OutputMode const iOutputMode,
 		std::string const & iTeamName,
-		std::string const & iProperty,
+		boost::optional< std::string > const & iProperty,
 		orwell::game::Game const& iGame)
 {
 	Reply aReply;
@@ -121,7 +137,12 @@ Reply GetTeam(
 		{
 			case OutputMode::kText:
 			{
-				if (properties::team::kScore == iProperty)
+				if (not iProperty)
+				{
+					aReply.fail(actions::reply::kKO);
+					ORWELL_LOG_WARN("Missing property for get team");
+				}
+				else if (properties::team::kScore == *iProperty)
 				{
 					aReply = std::to_string(aTeam.getScore());
 				}
@@ -136,9 +157,14 @@ Reply GetTeam(
 			case OutputMode::kJson:
 			{
 				json aJsonTeam;
-				if (properties::team::kScore == iProperty)
+				if (not iProperty)
 				{
-					aJsonTeam[iProperty] = aTeam.getScore();
+					aReply.fail();
+					ORWELL_LOG_WARN("Missing property for get team");
+				}
+				else if (properties::team::kScore == *iProperty)
+				{
+					aJsonTeam[*iProperty] = aTeam.getScore();
 				}
 				else
 				{
@@ -161,6 +187,83 @@ Reply GetTeam(
 	return aReply;
 }
 
+/// get property <property> of team <name>
+Reply GetPlayer(
+		OutputMode const iOutputMode,
+		std::string const & iPlayerName,
+		boost::optional< std::string > const & iProperty,
+		orwell::game::Game const& iGame)
+{
+	Reply aReply;
+	ORWELL_LOG_INFO("get player " << iPlayerName << " " << iProperty);
+	try
+	{
+		std::shared_ptr< orwell::game::Player const > aPlayer = iGame.getPlayer(iPlayerName);
+		switch (iOutputMode)
+		{
+			case OutputMode::kText:
+			{
+				if (iProperty)
+				{
+					if (properties::player::kAddress == *iProperty)
+					{
+						aReply = aPlayer->getAddress();
+					}
+					else
+					{
+						aReply.fail(actions::reply::kKO);
+						ORWELL_LOG_WARN("Unknown property for a team: '" << *iProperty << "'");
+					}
+				}
+				else
+				{
+					aReply = aPlayer->getAsString();
+				}
+				break;
+			}
+
+			case OutputMode::kJson:
+			{
+				json aJsonPlayer;
+				if (iProperty)
+				{
+					if (properties::player::kAddress == *iProperty)
+					{
+						aJsonPlayer[*iProperty] = aPlayer->getAddress();
+					}
+					else
+					{
+						aReply.fail();
+						ORWELL_LOG_WARN("Unknown property for a team: '" << *iProperty << "'");
+					}
+				}
+				else
+				{
+					to_json(aJsonPlayer, aPlayer);
+				}
+				aReply = aJsonPlayer.dump();
+				break;
+			}
+		}
+	}
+	catch (std::out_of_range const & aException)
+	{
+		aReply.fail();
+		ORWELL_LOG_WARN("Invalid player name '" << iPlayerName << "'");
+		return aReply;
+	}
+	catch (std::exception const & aException)
+	{
+		ORWELL_LOG_ERROR(aException.what());
+	}
+	if (aReply)
+	{
+		ORWELL_LOG_INFO(iProperty << " = " << aReply);
+	}
+	return aReply;
+}
+
+
 /// get all properties of game
 Reply GetGameJson(orwell::game::Game const& iGame)
 {
@@ -176,30 +279,37 @@ Reply GetGameJson(orwell::game::Game const& iGame)
 
 /// get property <property> of game
 Reply GetGameText(
-		std::string const & iProperty,
+		boost::optional< std::string > const & iProperty,
 		orwell::game::Game const& iGame)
 {
 	Reply aReply;
 	ORWELL_LOG_INFO("get game " << iProperty);
 	try
 	{
-		if (properties::game::kTime == iProperty)
+		if (iProperty)
 		{
-			aReply = std::to_string(iGame.getSecondsLeft());
-		}
-		else if (properties::game::kRunning == iProperty)
-		{
-			aReply = std::to_string(iGame.getIsRunning());
-		}
-		else if (properties::game::kDuration == iProperty)
-		{
-			aReply = std::to_string(iGame.getDuration().total_seconds());
+			if (properties::game::kTime == *iProperty)
+			{
+				aReply = std::to_string(iGame.getSecondsLeft());
+			}
+			else if (properties::game::kRunning == *iProperty)
+			{
+				aReply = std::to_string(iGame.getIsRunning());
+			}
+			else if (properties::game::kDuration == *iProperty)
+			{
+				aReply = std::to_string(iGame.getDuration().total_seconds());
+			}
+			else
+			{
+				aReply.fail(actions::reply::kKO);
+				ORWELL_LOG_WARN(
+						"Unknown property for a game: '" << iProperty << "'");
+			}
 		}
 		else
 		{
-			aReply.fail(actions::reply::kKO);
-			ORWELL_LOG_WARN(
-					"Unknown property for a game: '" << iProperty << "'");
+			aReply = iGame.getAsString();
 		}
 	}
 	catch (std::exception const & anException)
@@ -231,8 +341,9 @@ Reply Get::process(
 	bool const aIsRobot = (objects::kRobot == aObject);
 	bool const aIsTeam = (objects::kTeam == aObject);
 	bool const aIsGame = (objects::kGame == aObject);
+	bool const aIsPlayer = (objects::kPlayer == aObject);
 	std::string aName;
-	if ((aIsRobot) or (aIsTeam))
+	if ((aIsRobot) or (aIsTeam) or (aIsPlayer))
 	{
 		aName = ReadName(ioStream);
 	}
@@ -242,8 +353,13 @@ Reply Get::process(
 	}
 	else
 	{
-		std::string aProperty;
-		ioStream >> aProperty;
+		boost::optional< std::string > aProperty;
+		if (not ioStream.eof())
+		{
+			std::string aString;
+			ioStream >> aString;
+			aProperty = aString;
+		}
 		if (aIsRobot)
 		{
 			aReply = GetRobot(iOutputMode, aName, aProperty, iGame);
@@ -255,6 +371,10 @@ Reply Get::process(
 		else if (aIsGame)
 		{
 			aReply = GetGameText(aProperty, iGame);
+		}
+		else if (aIsPlayer)
+		{
+			aReply = GetPlayer(iOutputMode, aName, aProperty, iGame);
 		}
 		else
 		{

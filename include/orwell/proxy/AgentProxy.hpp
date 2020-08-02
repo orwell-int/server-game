@@ -72,6 +72,12 @@ public :
 	/// remove player <name>
 	void removePlayer(std::string const & iPlayerName);
 
+	/// set property <property> of player <name>
+	void setPlayer(
+			std::string const & iPlayerName,
+			std::string const & iProperty,
+			std::string const & iValue);
+
 	/// start game
 	void startGame();
 

@@ -94,17 +94,6 @@ void Arguments::addArgument(char const * const iArgument)
 	m_argv[m_argc - 1] = aCopy;
 }
 
-std::ostream & operator<<(
-		std::ostream & ioOstream,
-		Arguments const & iArguments)
-{
-	for (size_t i = 0 ; i < iArguments.m_argc ; ++i)
-	{
-		ioOstream << " " << iArguments.m_argv[i];
-	}
-	return ioOstream;
-}
-
 static void BuildArgument(
 		char const * const iValue,
 		Arguments & ioArguments)
@@ -251,8 +240,8 @@ void Common::Synchronize(
 		int32_t const iServerReplierPort,
 		zmq::context_t & ioContext)
 {
-	std::string aRequesterUrl = "tcp://127.0.0.1:" +
-		boost::lexical_cast<std::string>(iServerReplierPort);
+	std::string const aRequesterUrl =
+		"tcp://127.0.0.1:" + std::to_string(iServerReplierPort);
 	ORWELL_LOG_INFO("create requester");
 	orwell::com::Socket aRequester(
 			aRequesterUrl,
@@ -262,10 +251,27 @@ void Common::Synchronize(
 
 	orwell::messages::Hello aHello;
 	aHello.set_name("jambon");
-	orwell::com::RawMessage aHelloMessage("randomid", "Hello", aHello.SerializeAsString());
+	orwell::com::RawMessage aHelloMessage(
+			"randomid", "Hello", aHello.SerializeAsString());
 	aRequester.send(aHelloMessage);
 	orwell::com::RawMessage aHelloReply;
 	aRequester.receive(aHelloReply, true);
+}
+
+std::string Common::Replace(
+		std::string iText,
+		std::vector< Replacement> const & iReplacements)
+{
+	for (auto const & aReplacement: iReplacements)
+	{
+
+		std::string::size_type const aIndex = iText.find(aReplacement.m_search);
+		if (std::string::npos != aIndex)
+		{
+			iText =  iText.replace(aIndex, aReplacement.m_search.size(), aReplacement.m_replace);
+		}
+	}
+	return iText;
 }
 
 TestAgent::TestAgent(uint16_t const & iPort) :
@@ -347,4 +353,15 @@ int RunTest(int argc, char ** argv, std::string const& iTestName)
 	int const aResult = RUN_ALL_TESTS();
 	orwell::support::GlobalLogger::Clear();
 	return aResult;
+}
+
+std::ostream & operator<<(
+		std::ostream & ioOstream,
+		Arguments const & iArguments)
+{
+	for (size_t i = 0 ; i < iArguments.m_argc ; ++i)
+	{
+		ioOstream << " " << iArguments.m_argv[i];
+	}
+	return ioOstream;
 }

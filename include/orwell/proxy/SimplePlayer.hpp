@@ -19,11 +19,12 @@ namespace proxy
 
 struct SimplePlayer
 {
-	SimplePlayer(std::shared_ptr< game::Player > const iPlayer);
+	SimplePlayer(std::shared_ptr< game::Player const > const iPlayer);
 
 	SimplePlayer(SimplePlayer const & iOther);
 
 	std::string const m_name;
+	std::string const m_address;
 	std::string const m_robot;
 };
 

@@ -11,6 +11,7 @@
 #include <zmq.hpp>
 
 #include "orwell/game/Team.hpp"
+#include "orwell/game/Player.hpp"
 #include "orwell/com/ConnectionMode.hpp"
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/support/ISystemProxy.hpp"
@@ -158,6 +159,26 @@ void Robot::startVideo()
 	{
 		ORWELL_LOG_INFO("Do not know what to do for anything else than url starting with nc:");
 	}
+}
+
+std::string Robot::getAsString() const
+{
+	std::string aReply = "Robot ";
+	aReply += "name = " + m_name + " ; ";
+	if (not m_hasRealRobot)
+	{
+		aReply += "not ";
+	}
+	aReply += "registered ; ";
+	aReply += "video_url = " + m_videoUrl + " ; ";
+	auto const & aPlayer = getPlayer();
+	bool aHasPlayer(aPlayer);
+	aReply += "player = ";
+	if (aHasPlayer)
+	{
+		aReply += aPlayer->getName();
+	}
+	return aReply;
 }
 
 //void fillRobotStateMessage( messages::RobotState & oMessage )

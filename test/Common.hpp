@@ -121,6 +121,15 @@ public:
 			int32_t const iServerReplierPort,
 			zmq::context_t & ioContext);
 
+	struct Replacement
+	{
+		std::string const m_search;
+		std::string const m_replace;
+	};
+
+	static std::string Replace(
+			std::string iText,
+			std::vector< Replacement> const & iReplacements);
 };
 
 class FakeAgentProxy : public orwell::proxy::IAgentProxy

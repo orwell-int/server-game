@@ -271,6 +271,19 @@ bool AgentProxy::step(
 							aResult,
 							ioReply);
 				}
+				else if (objects::kPlayer == aObject)
+				{
+					std::string const aName = ReadName(aStream);
+					std::string aProperty;
+					aStream >> aProperty;
+					std::string aValue;
+					aStream >> aValue;
+					Dispatch(
+							aStream,
+							std::bind(&AgentProxy::setPlayer, this, aName, aProperty, aValue),
+							aResult,
+							ioReply);
+				}
 				else if (objects::kRobot == aObject)
 				{
 					std::string const aName = ReadName(aStream);
@@ -444,7 +457,7 @@ void AgentProxy::setRobot(
 	{
 		std::shared_ptr< orwell::game::Robot > aRobot =
 			m_application.accessServer()->accessContext().accessRobot(iRobotName);
-		if ("video_url" == iProperty)
+		if (properties::robot::kVideoUrl == iProperty)
 		{
 			aRobot->setVideoUrl(iValue);
 		}
@@ -469,6 +482,32 @@ void AgentProxy::removePlayer(std::string const & iPlayerName)
 {
 	ORWELL_LOG_INFO("remove player " << iPlayerName);
 	m_application.accessServer()->accessContext().removePlayer(iPlayerName);
+}
+
+void AgentProxy::setPlayer(
+		std::string const & iPlayerName,
+		std::string const & iProperty,
+		std::string const & iValue)
+{
+	ORWELL_LOG_INFO("set player '" << iPlayerName <<
+		"' '" << iProperty << "' '" << iValue << "'");
+	try
+	{
+		std::shared_ptr< orwell::game::Player > aPlayer =
+			m_application.accessServer()->accessContext().accessPlayer(iPlayerName);
+		if (properties::player::kAddress == iProperty)
+		{
+			aPlayer->setAddress(iValue);
+		}
+		else
+		{
+			ORWELL_LOG_WARN("Unknown property for a player: '" << iProperty << "'");
+		}
+	}
+	catch (std::exception const & anException)
+	{
+		ORWELL_LOG_ERROR(anException.what());
+	}
 }
 
 void AgentProxy::startGame()

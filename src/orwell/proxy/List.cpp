@@ -39,17 +39,7 @@ Reply ListPlayer(
 			for (auto const & aPair : aPlayers)
 			{
 				aReply += "\t" + aPair.first + " -> ";
-				aReply += "name = " + aPair.second->getName() + " ; ";
-				auto const& aRobot = aPair.second->getRobot();
-				bool aHasRobot(aRobot);
-				if (aHasRobot)
-				{
-					aReply += "robot = " + aRobot->getName() + "\n";
-				}
-				else
-				{
-					aReply += "robot = \n";
-				}
+				aReply += aPair.second->getAsString() + "\n";
 			}
 			break;
 		}
@@ -78,7 +68,7 @@ Reply ListRobot(
 	Reply aReply;
 	ORWELL_LOG_INFO("list robot " << iOutputMode);
 	std::map< std::string, std::shared_ptr< orwell::game::Robot > > aRobots =
-	iGame.getRobots();
+		iGame.getRobots();
 	switch (iOutputMode)
 	{
 		case OutputMode::kText:
@@ -87,23 +77,7 @@ Reply ListRobot(
 			for (auto const & aPair : aRobots)
 			{
 				aReply += "\t" + aPair.first + " -> ";
-				aReply += "name = " + aPair.second->getName() + " ; ";
-				if (not aPair.second->getHasRealRobot())
-				{
-					aReply += "not ";
-				}
-				aReply += "registered ; ";
-				aReply += "video_url = " + aPair.second->getVideoUrl() + " ; ";
-				auto const & aPlayer = aPair.second->getPlayer();
-				bool aHasPlayer(aPlayer);
-				if (aHasPlayer)
-				{
-					aReply += "player = " + aPlayer->getName() + "\n";
-				}
-				else
-				{
-					aReply += "player = \n";
-				}
+				aReply += aPair.second->getAsString() + "\n";
 			}
 			break;
 		}

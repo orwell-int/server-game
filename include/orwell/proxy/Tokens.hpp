@@ -51,6 +51,9 @@ namespace properties
 namespace robot
 {
 static std::string const kId("id");
+static std::string const kVideoUrl("video_url");
+static std::string const kVideoPort("video_port");
+static std::string const kVideoCommandPort("video_command_port");
 }
 namespace team
 {
@@ -61,6 +64,10 @@ namespace game
 static std::string const kDuration("duration");
 static std::string const kRunning("running");
 static std::string const kTime("time");
+}
+namespace player
+{
+static std::string const kAddress("address");
 }
 }
 

@@ -11,8 +11,6 @@
 #include <iostream>
 #include <unistd.h>
 
-#include <boost/lexical_cast.hpp>
-
 #include <zmq.hpp>
 
 #include "MissingFromTheStandard.hpp"

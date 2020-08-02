@@ -75,6 +75,7 @@ public:
 	void startVideo();
 //	void fillRobotStateMessage( messages::RobotState & oMessage );
 
+	std::string getAsString() const;
 private:
 	support::ISystemProxy const & m_systemProxy;
 	std::string m_name;
