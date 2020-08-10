@@ -28,9 +28,9 @@ Reply ListPlayer(
 		orwell::game::Game const& iGame)
 {
 	Reply aReply;
-	ORWELL_LOG_INFO("list player " << iOutputMode);
 	std::map< std::string, std::shared_ptr< orwell::game::Player > > aPlayers =
 		iGame.getPlayers();
+	ORWELL_LOG_INFO("list player " << iOutputMode << " (" << aPlayers.size() << ")");
 	switch (iOutputMode)
 	{
 		case OutputMode::kText:
@@ -66,9 +66,9 @@ Reply ListRobot(
 		orwell::game::Game const& iGame)
 {
 	Reply aReply;
-	ORWELL_LOG_INFO("list robot " << iOutputMode);
 	std::map< std::string, std::shared_ptr< orwell::game::Robot > > aRobots =
 		iGame.getRobots();
+	ORWELL_LOG_INFO("list robot " << iOutputMode << " (" << aRobots.size() << ")");
 	switch (iOutputMode)
 	{
 		case OutputMode::kText:
@@ -104,9 +104,9 @@ Reply ListTeam(
 		orwell::game::Game const& iGame)
 {
 	Reply aReply;
-	ORWELL_LOG_INFO("list team " << iOutputMode);
 	std::vector< std::string > aTeams;
 	iGame.getTeams(aTeams);
+	ORWELL_LOG_INFO("list team " << iOutputMode << " (" << aTeams.size() << ")");
 	switch (iOutputMode)
 	{
 		case OutputMode::kText:
