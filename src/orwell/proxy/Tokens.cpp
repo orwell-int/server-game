@@ -1,5 +1,7 @@
 #include "orwell/proxy/Tokens.hpp"
 
+#include "orwell/support/GlobalLogger.hpp"
+
 #include <sstream>
 
 namespace orwell
@@ -12,46 +14,22 @@ static char const kNameQuotes = '"';
 std::string ReadName(std::istringstream & ioStream)
 {
 	std::string aResult;
-	std::string aArg;
-	ioStream >> aArg;
-	size_t aLength = aArg.size();
-	if (0 < aLength)
+	ioStream >> aResult;
+	char const aFirstChar = aResult.front();
+	if (kNameQuotes == aFirstChar)
 	{
-		if (kNameQuotes == aArg.front())
+		ORWELL_LOG_DEBUG("Try to parse string in quotes starting with '" << aResult << "'");
+		std::string aFragment;
+		while (ioStream.good())
 		{
-			aArg = aArg.substr(1);
-			--aLength;
-			bool aContinue = true;
-			bool aFirst = true;
-			while (aContinue)
+			ioStream >> aFragment;
+			ORWELL_LOG_DEBUG(" add fragment '" << aFragment << "'");
+			aResult += " " + aFragment;
+			if (kNameQuotes == aFragment.back())
 			{
-				if (0 < aLength)
-				{
-					aContinue = (aArg.back() != kNameQuotes);
-					if (not aContinue)
-					{
-						aArg = aArg.substr(0, aLength - 1);
-					}
-				}
-				if (not aFirst)
-				{
-					aResult += " ";
-				}
-				else
-				{
-					aFirst = false;
-				}
-				aResult += aArg;
-				if ((aContinue) and (not ioStream.eof()))
-				{
-					ioStream >> aArg;
-					aLength = aArg.size();
-				}
+				aResult = aResult.substr(1, aResult.length() - 2);
+				break;
 			}
-		}
-		else
-		{
-			aResult = aArg;
 		}
 	}
 	return aResult;

@@ -88,7 +88,6 @@ bool Socket::receiveString(
 	}
 	if (aReceived)
 	{
-		ORWELL_LOG_TRACE("message received");
 		oMessage = std::string(
 				static_cast<char*>(aZmqMessage.data()), aZmqMessage.size());
 		ORWELL_LOG_DEBUG("message received: '" << Repr(oMessage) << "'");
@@ -140,7 +139,7 @@ void Socket::sendString(std::string const & iMessage) const
 	try
 	{
 		m_zmqSocket->send(aZmqMessage);
-		ORWELL_LOG_TRACE("Sent " << iMessage);
+		ORWELL_LOG_DEBUG("message sent '" << Repr(iMessage) << "'");
 	}
 	catch (zmq::error_t const & aException)
 	{
@@ -150,7 +149,7 @@ void Socket::sendString(std::string const & iMessage) const
 	}
 	catch (...)
 	{
-		ORWELL_LOG_TRACE("Failed to send zmq message.");
+		ORWELL_LOG_WARN("Failed to send zmq message.");
 	}
 }
 
