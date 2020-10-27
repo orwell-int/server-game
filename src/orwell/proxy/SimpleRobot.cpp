@@ -16,6 +16,7 @@ namespace proxy
 void to_json(json & oJson, SimpleRobot const & iRobot)
 {
 	oJson = json {
+			{"id", iRobot.m_id},
 			{"name", iRobot.m_name},
 			{"player", iRobot.m_player},
 			{"registered", iRobot.m_registered},
@@ -26,7 +27,8 @@ void to_json(json & oJson, SimpleRobot const & iRobot)
 
 
 SimpleRobot::SimpleRobot(std::shared_ptr< game::Robot const > const iRobot)
-	: m_name(iRobot->getName())
+	: m_id(iRobot->getRobotId())
+	, m_name(iRobot->getName())
 	, m_player(iRobot->getHasPlayer() ? iRobot->getPlayer()->getName() : "")
 	, m_registered(iRobot->getHasRealRobot())
 	, m_team(iRobot->getTeam().getName())
@@ -35,7 +37,8 @@ SimpleRobot::SimpleRobot(std::shared_ptr< game::Robot const > const iRobot)
 }
 
 SimpleRobot::SimpleRobot(SimpleRobot const & iOther)
-	: m_name(iOther.m_name)
+	: m_id(iOther.m_id)
+	, m_name(iOther.m_name)
 	, m_player(iOther.m_player)
 	, m_registered(iOther.m_registered)
 	, m_team(iOther.m_team)

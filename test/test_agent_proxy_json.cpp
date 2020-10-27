@@ -116,8 +116,8 @@ TEST_F(TestAgentProxyJson, Test1)
 	// json list robot {
 	EXPECT_TRUE(aAgentProxy.step("json list robot", aRobotList));
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
-	std::string aExpectedRobotList(
-			R"({"Robots":[{"name":"Robot1","player":"","registered":false,"team":"TEAM","video_url":""}]})");
+	std::string aExpectedRobotList =
+		R"({"Robots":[{"id":"robot_0","name":"Robot1","player":"","registered":false,"team":"TEAM","video_url":""}]})";
 	EXPECT_EQ(aRobotList, aExpectedRobotList) << "json list robot KO";
 	// } json list robot
 	// register robot {
@@ -126,7 +126,7 @@ TEST_F(TestAgentProxyJson, Test1)
 	EXPECT_TRUE(aAgentProxy.step("json list robot", aRobotList));
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
 	aExpectedRobotList =
-		R"({"Robots":[{"name":"Robot1","player":"","registered":true,"team":"TEAM","video_url":""}]})";
+		R"({"Robots":[{"id":"robot_0","name":"Robot1","player":"","registered":true,"team":"TEAM","video_url":""}]})";
 	EXPECT_EQ(aRobotList, aExpectedRobotList) << "register KO";
 	// } register robot
 	// set robot {
@@ -140,8 +140,8 @@ TEST_F(TestAgentProxyJson, Test1)
 	EXPECT_TRUE(aAgentProxy.step("add robot \"Robot One\" TEAM", aAgentReply));
 	EXPECT_TRUE(aAgentProxy.step("json list robot", aRobotList));
 	ORWELL_LOG_DEBUG("aRobotList = " << aRobotList);
-	std::string const aExpectedRobotListWithSpace(
-			R"({"Robots":[{"name":"Robot One","player":"","registered":false,"team":"TEAM","video_url":""}]})");
+	std::string const aExpectedRobotListWithSpace =
+		R"({"Robots":[{"id":"robot_0","name":"Robot One","player":"","registered":false,"team":"TEAM","video_url":""}]})";
 	EXPECT_EQ(aRobotList, aExpectedRobotListWithSpace) << "json list robot KO";
 	EXPECT_TRUE(aAgentProxy.step("remove robot \"Robot One\"", aAgentReply));
 	// } add robot with space in the name

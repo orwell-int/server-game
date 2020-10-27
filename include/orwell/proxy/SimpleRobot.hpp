@@ -23,6 +23,7 @@ struct SimpleRobot
 
 	SimpleRobot(SimpleRobot const & iOther);
 
+	std::string const m_id;
 	std::string const m_name;
 	std::string const m_player;
 	bool const m_registered;
