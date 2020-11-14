@@ -109,6 +109,10 @@ void Server::loopUntilOneMessageIsProcessed()
 	feedAgentProxy(false);
 	while (not aMessageHasBeenProcessed)
 	{
+		if (m_forcedStop)
+		{
+			break;
+		}
 		aCurrentTic = boost::posix_time::microsec_clock::local_time();
 		m_game.setTime(aCurrentTic);
 		aDuration = aCurrentTic - m_previousTic;
@@ -123,10 +127,6 @@ void Server::loopUntilOneMessageIsProcessed()
 				// sleep a fraction of ticduration
 				usleep(m_ticDuration.total_milliseconds() / 10);
 			}
-		}
-		else if (m_forcedStop)
-		{
-			break;
 		}
 		else
 		{
