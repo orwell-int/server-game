@@ -238,6 +238,8 @@ class MinimalistPrinter : public ::testing::EmptyTestEventListener
 
 int RunTest(int argc, char ** argv, std::string const& iTestName);
 
+std::string GetMainPath();
+
 std::ostream & operator<<(
 		std::ostream & ioOstream,
 		Arguments const & iArguments);

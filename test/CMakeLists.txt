@@ -9,7 +9,7 @@ file(GLOB CONFIG ${CMAKE_SOURCE_DIR}/*.ini)
 file(GLOB OPENCV_IMAGES ${CMAKE_SOURCE_DIR}/test/*.jpg)
 
 # Required libraries
-find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system filesystem)
 find_package(Protobuf REQUIRED)
 find_package(ZMQ REQUIRED)
 

@@ -1,8 +1,3 @@
-#include <stdlib.h>
-#include <thread>
-
-#include <log4cxx/ndc.h>
-
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/game/Game.hpp"
 #include "orwell/game/Landmark.hpp"
@@ -10,9 +5,15 @@
 #include "orwell/com/Url.hpp"
 #include "orwell/com/Receiver.hpp"
 #include "orwell/com/RawMessage.hpp"
-#include "server-game.pb.h"
 
 #include "Common.hpp"
+
+#include "server-game.pb.h"
+
+#include <log4cxx/ndc.h>
+
+#include <stdlib.h>
+#include <thread>
 
 int g_status = 0;
 
@@ -102,7 +103,8 @@ static void Application(
 		uint16_t const iAgentPort)
 {
 	system(std::string(
-				"../server_main -A " + std::to_string(iAgentPort)
+				GetMainPath()
+				+ " -A " + std::to_string(iAgentPort)
 				+ " --publisher-port " + std::to_string(iPublisherPort)
 				+ " --puller-port " + std::to_string(iPullerPort)
 				+ " --replier-port " + std::to_string(iReplierPort)

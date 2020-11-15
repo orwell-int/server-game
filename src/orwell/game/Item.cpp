@@ -164,7 +164,7 @@ std::shared_ptr< Item > Item::CreateItem(
 	return nullptr;
 }
 
-std::vector< std::shared_ptr< Item > > Item::GetAllItems()
+Item::ItemVector Item::GetAllItems()
 {
 	return s_allItems;
 }
@@ -182,6 +182,22 @@ std::string Item::toLogString() const
 	std::stringstream aLogString;
 	aLogString << *this;
 	return aLogString.str();
+}
+
+std::string Item::getAsString() const
+{
+	std::stringstream aReply;
+	aReply << "Item ";
+	aReply << "name = " << m_name << " ; ";
+	aReply << "RFID =";
+	for (std::string const& aRfid: m_rfids)
+	{
+		aReply << " " << aRfid;
+	}
+	aReply << " ; ";
+	aReply << "colour = " << m_colour << " ; ";
+	aReply << "team = " << m_owningTeam;
+	return aReply.str();
 }
 
 void Item::startCapture(std::string const & iCapturingTeam)

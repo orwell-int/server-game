@@ -17,24 +17,23 @@
 
 uint32_t const gGameDuration = 10;
 
-class TestAgentProxyJson: public ::testing::Test
+class TestAgentProxy: public ::testing::Test
 {
 protected:
-	static void SetUpTestSuite()
-	{
-	}
 
-	static void TearDownTestSuite()
-	{
-		orwell::Application::GetInstance().stop();
-	}
-
-	TestAgentProxyJson()
-		: m_application(orwell::Application::GetInstance())
-		, m_agentPort(9003)
+	TestAgentProxy()
+		: m_agentPort(9003)
 		, m_replierPort(9002)
 	{
+	}
 
+	void SetUp()
+	{
+		SetUp(boost::none);
+	}
+
+	void SetUp(boost::optional< std::string > iGameFilePath)
+	{
 		orwell::Application::CommandLineParameters aCommandLineArguments;
 		aCommandLineArguments.m_publisherPort = 9001;
 		aCommandLineArguments.m_pullerPort = 9000;
@@ -45,6 +44,10 @@ protected:
 		aCommandLineArguments.m_dryRun = true;
 		aCommandLineArguments.m_broadcast = false;
 		aCommandLineArguments.m_gameDuration = gGameDuration;
+		if (iGameFilePath)
+		{
+			aCommandLineArguments.m_gameFilePath = *iGameFilePath;
+		}
 
 		Arguments aArguments = Common::GetArguments(
 				aCommandLineArguments, true);
@@ -53,23 +56,20 @@ protected:
 				aArguments.m_argc,
 				aArguments.m_argv,
 				aParameters);
-		m_application.run(aParameters);
+		m_application.reset(new orwell::Application());
+		m_application->run(aParameters);
 	}
 
-	~TestAgentProxyJson()
-	{
-	}
-
-	orwell::Application & m_application;
+	std::unique_ptr< orwell::Application > m_application;
 	uint16_t const m_agentPort;
 	uint16_t const m_replierPort;
 };
 
-TEST_F(TestAgentProxyJson, Test1)
+TEST_F(TestAgentProxy, Test1)
 {
 	TestAgent aTestAgent(m_agentPort);
 	ORWELL_LOG_DEBUG("test_1");
-	orwell::proxy::AgentProxy aAgentProxy(m_application);
+	orwell::proxy::AgentProxy aAgentProxy(*m_application);
 	std::string aAgentReply;
 	std::string aTeamList;
 	std::string aPlayerList;
@@ -171,7 +171,7 @@ TEST_F(TestAgentProxyJson, Test1)
 	aRequester.send(aMessage);
 
 	// make the application handle the Hello message
-	m_application.loopUntilOneMessageIsProcessed();
+	m_application->loopUntilOneMessageIsProcessed();
 	orwell::com::RawMessage aResponse;
 	aRequester.receive(aResponse, true);
 	EXPECT_EQ(aResponse._type, "Welcome")
@@ -256,6 +256,35 @@ TEST_F(TestAgentProxyJson, Test1)
 	// } get and set game duration
 	EXPECT_TRUE(aAgentProxy.step("stop application", aAgentReply));
 }
+
+TEST_F(TestAgentProxy, TestFlags)
+{
+	SetUp(std::string("orwell-game_test.ini"));
+	TestAgent aTestAgent(m_agentPort);
+	ORWELL_LOG_DEBUG("test_flags");
+	orwell::proxy::AgentProxy aAgentProxy(*m_application);
+	std::string aFlagList;
+	std::string const aBlueFlag { R"(Item name = blue ; RFID = BBB ; colour = -1 ; team = )" };
+	std::string const aGreenFlag { R"(Item name = green ; RFID = GGG ; colour = -1 ; team = )" };
+	std::string const aYellowFlag { R"(Item name = yellow ; RFID = YYY ; colour = -1 ; team = )" };
+	EXPECT_TRUE(aAgentProxy.step("list flag", aFlagList));
+	EXPECT_EQ(
+			Common::Replace(
+				R"(Flags:
+	%blue_flag%
+	%green_flag%
+	%yellow_flag%
+)",
+				std::vector< Common::Replacement >{
+				Common::Replacement { "%blue_flag%", aBlueFlag },
+				Common::Replacement { "%green_flag%", aGreenFlag },
+				Common::Replacement { "%yellow_flag%", aYellowFlag },
+				}
+				),
+			aFlagList
+			);
+}
+
 
 int main(int argc, char **argv)
 {

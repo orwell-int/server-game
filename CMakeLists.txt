@@ -91,7 +91,9 @@ file(GLOB CONFIG *.ini)
 file(GLOB OPENCV_IMAGES ${CMAKE_SOURCE_DIR}/test/*.jpg)
 
 # Required libraries
-find_package(Boost REQUIRED COMPONENTS system program_options)
+# Boost::filesystem had to be added because it is used in tests and
+# code coverage stopped working with it here.
+find_package(Boost REQUIRED COMPONENTS system program_options filesystem)
 find_package(Protobuf REQUIRED)
 find_package(ZMQ REQUIRED)
 find_package(LOG4CXX_LIBRARIES REQUIRED)

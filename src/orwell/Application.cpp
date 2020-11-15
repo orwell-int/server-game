@@ -1,4 +1,5 @@
 #include "orwell/Application.hpp"
+
 #include "orwell/Server.hpp"
 #include "orwell/BroadcastServer.hpp"
 #include "orwell/support/GlobalLogger.hpp"
@@ -25,8 +26,6 @@ using boost::program_options::value;
 using boost::program_options::variables_map;
 using boost::property_tree::ini_parser::read_ini;
 using boost::property_tree::ptree;
-using std::make_shared;
-using std::string;
 
 static uint16_t const DEFAULT_PUBLISHER_PORT = 9000;
 static uint16_t const DEFAULT_PULLER_PORT = 9001;
@@ -38,13 +37,43 @@ static bool const DEFAULT_BROADCAST = true;
 static bool const DEFAULT_DRY_RUN = false;
 static uint16_t const DEFAULT_BROADCAST_PORT = 9080;
 
+namespace
+{
+orwell::support::ISystemProxy & GetSystemProxy()
+{
+	static orwell::support::SystemProxy m_systemProxy;
+	return m_systemProxy;
+}
+}
+
 namespace orwell
 {
 
+std::ostream & operator<<(std::ostream & ioStream, State const iState)
+{
+	switch (iState)
+	{
+		case State::CREATED:
+			ioStream << "CREATED";
+			break;
+		case State::RUNNING:
+			ioStream << "RUNNING";
+			break;
+		case State::STOPPED:
+			ioStream << "STOPPED";
+			break;
+	}
+	return ioStream;
+}
+
+Application::Application()
+	: Application(GetSystemProxy())
+{
+}
+
 Application & Application::GetInstance()
 {
-	static support::SystemProxy m_systemProxy;
-	static Application m_application(m_systemProxy);
+	static Application m_application(GetSystemProxy());
 	return m_application;
 }
 
@@ -74,9 +103,9 @@ bool Application::ReadParameters(
 				<< oParam.m_commandLineParameters.m_rcFilePath);
 	}
 
-	if (oParam.m_commandLineParameters.m_rcFilePath )
+	if (oParam.m_commandLineParameters.m_rcFilePath)
 	{
-		if ( not ParseParametersFromConfigFile(oParam) )
+		if (not ParseParametersFromConfigFile(oParam))
 		{
 			return false;
 		}
@@ -561,7 +590,7 @@ void Application::run(Parameters const & iParam)
 {
 	if (State::CREATED != m_state)
 	{
-		ORWELL_LOG_WARN("run can only be called when in state CREATED");
+		ORWELL_LOG_WARN("run can only be called when in state CREATED ; current state is " << m_state);
 		return;
 	}
 	if ((iParam.m_commandLineParameters.m_dryRun) and (*iParam.m_commandLineParameters.m_dryRun))
@@ -964,3 +993,4 @@ bool operator==(
 	}
 	return true;
 }
+
