@@ -4,11 +4,13 @@
 #include "orwell/proxy/Tokens.hpp"
 #include "orwell/proxy/SimplePlayer.hpp"
 #include "orwell/proxy/SimpleRobot.hpp"
+#include "orwell/proxy/SimpleItem.hpp"
 
 #include "orwell/game/Game.hpp"
 #include "orwell/game/Player.hpp"
 #include "orwell/game/Robot.hpp"
 #include "orwell/game/Team.hpp"
+#include "orwell/game/Item.hpp"
 
 #include "orwell/support/GlobalLogger.hpp"
 
@@ -130,6 +132,44 @@ Reply ListTeam(
 }
 
 
+/// List all the flags present.
+///
+Reply ListFlag(
+		OutputMode const iOutputMode,
+		orwell::game::Game const& iGame)
+{
+	Reply aReply;
+	orwell::game::Item::ItemVector aItems = orwell::game::Item::GetAllItems();
+	ORWELL_LOG_INFO("list flag " << iOutputMode);
+	switch (iOutputMode)
+	{
+		case OutputMode::kText:
+		{
+			aReply = objects::reply::kFlags + ":\n";
+			for (auto const & aItem : aItems)
+			{
+				aReply += "\t" + aItem->getAsString() + "\n";
+			}
+			break;
+		}
+		case OutputMode::kJson:
+		{
+			json aJsonFlags;
+			// for now all items are flags
+			std::vector< SimpleItem > aFlagList;
+			for (auto const & aItem : aItems)
+			{
+				aFlagList.push_back({ aItem });
+			}
+			aJsonFlags[objects::reply::kFlags] = aFlagList;
+			aReply = aJsonFlags.dump();
+			break;
+		}
+	}
+	return aReply;
+}
+
+
 List::List()
 	: IAction("list")
 {
@@ -158,6 +198,10 @@ Reply List::process(
 		else if (objects::kTeam == aObject)
 		{
 			aReply = ListTeam(iOutputMode, iGame);
+		}
+		else if (objects::kFlag == aObject)
+		{
+			aReply = ListFlag(iOutputMode, iGame);
 		}
 		else
 		{

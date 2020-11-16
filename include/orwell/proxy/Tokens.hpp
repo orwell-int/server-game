@@ -33,16 +33,18 @@ static std::string const kKO("KO");
 namespace objects
 {
 static std::string const kApplication("application");
+static std::string const kFlag("flag");
 static std::string const kGame("game");
-static std::string const kRobot("robot");
 static std::string const kPlayer("player");
+static std::string const kRobot("robot");
 static std::string const kTeam("team");
 namespace reply
 {
-static std::string const kTeam("Team");
-static std::string const kTeams("Teams");
+static std::string const kFlags("Flags");
 static std::string const kPlayers("Players");
 static std::string const kRobots("Robots");
+static std::string const kTeam("Team");
+static std::string const kTeams("Teams");
 }
 }
 

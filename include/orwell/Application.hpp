@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <string>
@@ -43,6 +42,16 @@ struct Application_CommandLineParameters
 	boost::optional< uint16_t > m_broadcastPort;
 };
 
+enum class State
+{
+	CREATED,
+	// it does not seem to be needed
+	//INITIALISED,
+	RUNNING,
+	STOPPED,
+};
+
+std::ostream & operator<<(std::ostream & ioStream, orwell::State const iState);
 
 class Application
 {
@@ -75,6 +84,8 @@ public :
 		game::Ruleset m_ruleset;
 		std::vector< game::Landmark > m_mapLimits;
 	};
+
+	Application();
 
 	virtual ~Application();
 
@@ -129,14 +140,6 @@ private:
 	/// Broadcast server for UDP discovery
 	orwell::BroadcastServer * m_broadcastServer;
 
-	enum class State
-	{
-		CREATED,
-		// it does not seem to be needed
-		//INITIALISED,
-		RUNNING,
-		STOPPED,
-	};
 	State m_state;
 	orwell::proxy::AgentProxy m_agentProxy;
 	std::vector< uint16_t > m_availablePorts;

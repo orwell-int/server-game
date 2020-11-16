@@ -1,10 +1,3 @@
-#include <stdlib.h>
-#include <thread>
-
-#include <log4cxx/ndc.h>
-
-#include <boost/lexical_cast.hpp>
-
 #include "orwell/support/GlobalLogger.hpp"
 #include "orwell/game/Game.hpp"
 #include "orwell/game/Landmark.hpp"
@@ -12,9 +5,19 @@
 #include "orwell/com/Url.hpp"
 #include "orwell/com/Receiver.hpp"
 #include "orwell/com/RawMessage.hpp"
+
 #include "server-game.pb.h"
 
 #include "Common.hpp"
+
+#include <log4cxx/ndc.h>
+
+#include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
+
+#include <stdlib.h>
+#include <thread>
+
 
 int g_status = 0;
 
@@ -101,10 +104,13 @@ static void Application(
 		uint16_t const iAgentPort)
 {
 	system(std::string(
-				"../server_main -A "
-				+ std::to_string(9003) + " --publisher-port "
-				+ std::to_string(iPublisherPort)
-				+ " --puller-port 9002 --tic 10 --game-duration 2 --gamefile orwell-game_test.ini").c_str());
+				GetMainPath()
+				+ " -A " + std::to_string(9003)
+				+ " --publisher-port " + std::to_string(iPublisherPort)
+				+ " --puller-port 9002"
+				+ " --tic 10"
+				+ " --game-duration 2"
+				+ " --gamefile orwell-game_test.ini").c_str());
 }
 
 static void Stopper(

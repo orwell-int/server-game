@@ -1,18 +1,18 @@
-#include <stdlib.h>
-#include <thread>
-
-#include <log4cxx/ndc.h>
-
 #include "orwell/game/Game.hpp"
-
 #include "orwell/support/GlobalLogger.hpp"
 
 #include "Common.hpp"
 
+#include <log4cxx/ndc.h>
+
+#include <stdlib.h>
+#include <thread>
+
 static void Application(uint16_t const iAgentPort)
 {
 	system(std::string(
-				"../server_main -A " + std::to_string(iAgentPort)
+				GetMainPath()
+				+ " -A " + std::to_string(iAgentPort)
 				+ " --tic 10").c_str());
 }
 

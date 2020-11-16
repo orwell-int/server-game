@@ -1,13 +1,5 @@
 #include "Common.hpp"
 
-#include <iostream>
-
-#include <boost/date_time/posix_time/posix_time.hpp>
-
-#include <unistd.h>
-
-#include <log4cxx/ndc.h>
-
 #include "orwell/com/Url.hpp"
 #include "orwell/com/Receiver.hpp"
 #include "orwell/com/Sender.hpp"
@@ -17,6 +9,15 @@
 #include "orwell/Application.hpp"
 #include "controller.pb.h"
 #include "MissingFromTheStandard.hpp"
+
+#include <log4cxx/ndc.h>
+
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/filesystem.hpp>
+
+#include <iostream>
+#include <unistd.h>
+
 
 #define ARG_HELP "-h"
 #define ARG_PUBLISHER_PORT "-P"
@@ -353,6 +354,24 @@ int RunTest(int argc, char ** argv, std::string const& iTestName)
 	int const aResult = RUN_ALL_TESTS();
 	orwell::support::GlobalLogger::Clear();
 	return aResult;
+}
+
+std::string GetMainPath()
+{
+	std::string aPath;
+	for (std::string const& aCheckPath: { "../server_main", "./server_main" })
+	{
+		if (boost::filesystem::exists(aCheckPath))
+		{
+			aPath = aCheckPath;
+		}
+	}
+	if (aPath.empty())
+	{
+		ORWELL_LOG_FATAL("Could not find server_main");
+		throw std::runtime_error("server_main is missing");
+	}
+	return aPath;
 }
 
 std::ostream & operator<<(

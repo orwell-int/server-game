@@ -57,11 +57,14 @@ public:
 			int32_t const iColourCode,
 			Ruleset const & iRuleset);
 
-	static std::vector< std::shared_ptr< Item > > GetAllItems();
+	typedef std::vector< std::shared_ptr< Item > > ItemVector;
+	static ItemVector GetAllItems();
 
 	static void ResetAllItems();
 
 	virtual std::string toLogString() const;
+
+	virtual std::string getAsString() const;
 
 	void startCapture(std::string const & iCapturingTeam);
 	void abortCapture();
